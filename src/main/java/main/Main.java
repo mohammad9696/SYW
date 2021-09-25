@@ -1,46 +1,34 @@
 package main;
 
-import Constants.ConstantsEnum;
-import DTO.ProductDTO;
-import DTO.MacroProductDTO;
-import Services.PostRequestExecutor;
-import Services.SheetsServiceUtil;
-import Services.SpreadsheetSnippets;
-import com.google.api.services.sheets.v4.model.ValueRange;
-
-import java.util.List;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.Console;
+import java.util.Scanner;
 
 public class Main {
-
     public static void main(String[] args) {
-        try {
-            SpreadsheetSnippets snippet = new SpreadsheetSnippets(SheetsServiceUtil.getSheetsService());
-            String spreadsheetId = (String) ConstantsEnum.MAIN_SPREADSHEET_ID.getConstantValue();
-            ValueRange valueRange = snippet.getValues(spreadsheetId, (String) ConstantsEnum.MAIN_SPREADSHEET_DATA_RANGE.getConstantValue());
-            System.out.println(valueRange);
+        System.out.println("Welcome to Smartify Your Work");
+        chooseProcedure();
 
-            Map<String, MacroProductDTO> sheetsProductList = SheetsServiceUtil.getProductList(valueRange);
-            List<ProductDTO> productsFromShopify = PostRequestExecutor.getProductsFromShopify();
+    }
 
-            SheetsServiceUtil sheetsServiceUtil = new SheetsServiceUtil();
-            List<List<Object>> _values = sheetsServiceUtil.getMainSheetValues(sheetsProductList, productsFromShopify);
-            snippet.updateValues(spreadsheetId, "A1","RAW", _values);
-            //end updates
-
-            //new reading
-            valueRange = snippet.getValues(spreadsheetId, ConstantsEnum.MAIN_SPREADSHEET_DATA_RANGE.getConstantValue().toString());
-            sheetsProductList = SheetsServiceUtil.getProductList(valueRange);
-
-            snippet.updateValues(ConstantsEnum.KUANTOKUSTA_SPREADSHEET_ID.getConstantValue().toString(), "A1", "RAW", sheetsServiceUtil.getKuantokustaSheetValues(sheetsProductList));
-            snippet.updateValues(ConstantsEnum.DOTT_SPREADSHEET_ID.getConstantValue().toString(), "A1", "RAW", sheetsServiceUtil.getDottSheetValues(sheetsProductList));
-
-
-
-            System.out.println(valueRange);
-
-        } catch (Exception e) {
-            e.printStackTrace();
+    public static void chooseProcedure (){
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Do you want to:");
+        System.out.println("1. Update product feeds");
+        System.out.println("2. Check/update orders");
+        System.out.println("9. Exit program");
+        int option = scanner.nextInt();
+        if (option == 1){
+            UpdateFeeds.main(null);
+            chooseProcedure();
+        } else if (option == 2){
+            System.out.println("This feature is under construction. Please choose another one");
+            chooseProcedure();
+        } else if (option == 9){
+            System.out.println("Good bye!");
+        } else {
+            System.out.println("Option not available!");
+            chooseProcedure();
         }
     }
 }
