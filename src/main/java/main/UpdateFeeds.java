@@ -3,6 +3,7 @@ package main;
 import Constants.ConstantsEnum;
 import DTO.ProductDTO;
 import DTO.MacroProductDTO;
+import DTO.ProductListDTO;
 import Services.PostRequestExecutor;
 import Services.SheetsServiceUtil;
 import Services.SpreadsheetSnippets;
@@ -21,8 +22,8 @@ public class UpdateFeeds {
             System.out.println(valueRange);
 
             Map<String, MacroProductDTO> sheetsProductList = SheetsServiceUtil.getProductList(valueRange);
-            List<ProductDTO> productsFromShopify = PostRequestExecutor.getProductsFromShopify();
-
+            ProductListDTO list = PostRequestExecutor.getObjectRequest(ProductListDTO.class, ConstantsEnum.GET_REQUEST_SHOPIFY_PRODUCTS.getConstantValue().toString());
+            List<ProductDTO> productsFromShopify = list.getProducts();
             SheetsServiceUtil sheetsServiceUtil = new SheetsServiceUtil();
             List<List<Object>> _values = sheetsServiceUtil.getMainSheetValues(sheetsProductList, productsFromShopify);
             snippet.updateValues(spreadsheetId, "A1","RAW", _values);
