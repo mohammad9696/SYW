@@ -20,7 +20,7 @@ public class Main {
             UpdateFeeds.main(null);
             chooseProcedure();
         } else if (option == 2){
-            System.out.println("This feature is under construction. Please choose another one");
+            UpdateOrders.main(null);
             chooseProcedure();
         } else if (option == 9){
             System.out.println("Good bye!");

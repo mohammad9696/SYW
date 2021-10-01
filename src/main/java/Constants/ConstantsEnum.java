@@ -11,8 +11,11 @@ public enum ConstantsEnum {
     MAIN_SPREADSHEET_ID ("mainSpreadsheetId","insertValueInProperties"),
     MAIN_SPREADSHEET_DATA_RANGE("mainSpreadsheetDataRange","insertValueInProperties"),
     GET_REQUEST_SHOPIFY_PRODUCTS("getRequestShopifyProducts","insertValueInProperties"),
+    GET_REQUEST_SHOPIFY_ORDERS("getRequestShopifyOrders","insertValueInProperties"),
     KUANTOKUSTA_SPREADSHEET_ID("kuantokustaSpreadSheetId","insertValueInProperties"),
-    DOTT_SPREADSHEET_ID("dottSpreadSheetId","insertValueInProperties");
+    DOTT_SPREADSHEET_ID("dottSpreadSheetId","insertValueInProperties"),
+    SHOPIFY_MAIN_LOCATION_ID("shopifyMainLocationId","insertValueInProperties"),
+    TRACKING_URL_PREFIX("trackingUrlPrefix","insertValueInProperties");
 
 
     private String constantName;
