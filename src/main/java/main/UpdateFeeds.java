@@ -4,7 +4,7 @@ import Constants.ConstantsEnum;
 import DTO.ProductDTO;
 import DTO.MacroProductDTO;
 import DTO.ProductListDTO;
-import Services.PostRequestExecutor;
+import Services.HttpRequestExecutor;
 import Services.SheetsServiceUtil;
 import Services.SpreadsheetSnippets;
 import com.google.api.services.sheets.v4.model.ValueRange;
@@ -22,7 +22,7 @@ public class UpdateFeeds {
             System.out.println(valueRange);
 
             Map<String, MacroProductDTO> sheetsProductList = SheetsServiceUtil.getProductList(valueRange);
-            ProductListDTO list = PostRequestExecutor.getObjectRequest(ProductListDTO.class, ConstantsEnum.GET_REQUEST_SHOPIFY_PRODUCTS.getConstantValue().toString());
+            ProductListDTO list = HttpRequestExecutor.getObjectRequest(ProductListDTO.class, ConstantsEnum.GET_REQUEST_SHOPIFY_PRODUCTS.getConstantValue().toString());
             List<ProductDTO> productsFromShopify = list.getProducts();
             SheetsServiceUtil sheetsServiceUtil = new SheetsServiceUtil();
             List<List<Object>> _values = sheetsServiceUtil.getMainSheetValues(sheetsProductList, productsFromShopify);
