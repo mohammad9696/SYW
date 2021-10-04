@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OrderAddress {
+public class OrderAddressDTO {
 
     @JsonProperty("first_name")
     private String firstName;
@@ -32,6 +32,17 @@ public class OrderAddress {
 
     @JsonProperty("country_code")
     private String countryCode;
+
+    @JsonProperty("phone")
+    private String phone;
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
     public String getFirstName() {
         return firstName;

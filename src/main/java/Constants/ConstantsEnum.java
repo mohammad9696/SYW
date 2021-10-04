@@ -17,7 +17,22 @@ public enum ConstantsEnum {
     SHOPIFY_MAIN_LOCATION_ID("shopify.location.main.id","insertValueInProperties"),
     FULFILLMENT_REQUEST_URL_PREFIX("shopify.fulfillment.url.prefix","insertValueInProperties"),
     FULFILLMENT_REQUEST_URL_SUFIX("shopify.fulfillment.url.sufix","insertValueInProperties"),
-    TRACKING_URL_PREFIX("shopify.fulfillment.tracking.url.prefix","insertValueInProperties");
+    TRACKING_URL_PREFIX("shopify.fulfillment.tracking.url.prefix","insertValueInProperties"),
+    COURIER_REQUEST_LAST_HOUR("courier.request.last.hour", "insertValueInProperties"),
+    COURIER_SERVICE_CODE_NORMAL("courier.request.service.code.normal", "insertValueInProperties"),
+    COURIER_SERVICE_CODE_EXPRESS("courier.request.service.code.express", "insertValueInProperties"),
+    COURIER_SERVICE_CODE_URGENT("courier.request.service.code.urgent", "insertValueInProperties"),
+    SHOPIFY_COURIER_SERVICE_CODE_NORMAL("shopify.courier.request.service.code.normal", "insertValueInProperties"),
+    SHOPIFY_COURIER_SERVICE_CODE_EXPRESS("shopify.courier.request.service.code.express", "insertValueInProperties"),
+    SHOPIFY_COURIER_SERVICE_CODE_URGENT("shopify.courier.request.service.code.urgent", "insertValueInProperties"),
+    COURIER_REQUEST_SENDER_ADDRESS("courier.request.sender.order.address.object", "insertValueInProperties"),
+    COURIER_OAUTH_GRANT_TYPE("courier.oauth.grant.type","insertValueInProperties"),
+    COURIER_OAUTH_CLIENT_ID("courier.oauth.client.id","insertValueInProperties"),
+    COURIER_OAUTH_CLIENT_SECRET("courier.oauth.client.secret","insertValueInProperties"),
+    COURIER_OAUTH_USERNAME("courier.oauth.username","insertValueInProperties"),
+    COURIER_OAUTH_PASSWORD("courier.oauth.password","insertValueInProperties"),
+    COURIER_GET_OAUTH_URL("courier.oauth.get.token.request.url","insertValueInProperties"),
+    COURIER_CREATE_SHIPMENT_URL("courier.oauth.create.shipment.request.url","insertValueInProperties");
 
 
     private String constantName;

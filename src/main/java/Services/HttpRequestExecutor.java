@@ -1,5 +1,6 @@
 package Services;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -37,12 +38,21 @@ public class HttpRequestExecutor {
     }
 
     public static <S, T> S sendRequest (Class<S> responseObject, T requestObject, String requestUrl){
+        return sendRequest(responseObject, requestObject, requestUrl, null);
+    }
+
+    public static <S, T> S sendRequest (Class<S> responseObject, T requestObject, String requestUrl, String authBearerToken){
 
         try {
             URL url= new URL(requestUrl);
 
             HttpPost post = new HttpPost(url.toString());
-            post.addHeader("Content-Type", "application/json");
+            post.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+
+            if (authBearerToken != null){
+                post.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + authBearerToken);
+            }
+
             ObjectMapper mapper = new ObjectMapper();
             String jsonValue = mapper.writeValueAsString(requestObject);
             StringEntity stringEntity = new StringEntity(jsonValue);

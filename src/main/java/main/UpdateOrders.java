@@ -2,6 +2,7 @@ package main;
 
 import Constants.ConstantsEnum;
 import DTO.*;
+import Services.CourierExpeditionRequest;
 import Services.HttpRequestExecutor;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class UpdateOrders {
     }
 
     private static void fulfillOne (OrderDTO orderDTO){
+        CourierExpeditionRequest.shipAndFulfill(orderDTO);
         System.out.println(orderDTO);
     }
 
