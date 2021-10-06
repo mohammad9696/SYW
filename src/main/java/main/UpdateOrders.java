@@ -1,6 +1,7 @@
 package main;
 
 import Constants.ConstantsEnum;
+import Constants.CourierExpeditionEnum;
 import DTO.*;
 import Services.CourierExpeditionRequest;
 import Services.HttpRequestExecutor;
@@ -51,7 +52,7 @@ public class UpdateOrders {
             }
             showOrderOptions(orderList);
         } else if (option == 3){
-            fulfillManually(getOrder(orderList,scanner));
+            fulfillManually(getOrder(orderList,scanner), scanner);
             showOrderOptions(orderList);
         } else if (option == 9){
             System.out.println("Exiting orders menu\n");
@@ -61,10 +62,30 @@ public class UpdateOrders {
         }
     }
 
-    private static void fulfillManually(OrderDTO order) {
-        FulfillmentDTO fulfillmentDTO = new FulfillmentDTO("thisIsTrackingNumber", "http://www.ctt.pt", order);
-        Object result = HttpRequestExecutor.sendRequest(Object.class, new FulfillmentObject(fulfillmentDTO) , fulfillmentDTO.getRequestUrl());
-        System.out.println(result);
+    private static void fulfillManually(OrderDTO order, Scanner scanner) {
+        FulfillmentDTO fulfillmentDTO;
+        System.out.println("Do you want to:");
+        System.out.println("1. Process order only");
+        System.out.println("2. Process and ship order");
+        System.out.println("9. Exit menu");
+        int option = scanner.nextInt();
+        if (option == 1){
+            System.out.println("Please insert the tracking number");
+            String trackingNumber = scanner.next();
+            System.out.println("Please insert the tracking url");
+            String trackingUrl = scanner.next();
+            fulfillmentDTO = new FulfillmentDTO(trackingNumber, trackingUrl, order);
+            Object result = HttpRequestExecutor.sendRequest(Object.class, new FulfillmentObject(fulfillmentDTO) , fulfillmentDTO.getRequestUrl());
+            System.out.println(result);
+        } else if (option == 2){
+            System.out.println("Please insert the weight of the order in grams");
+            String weightOrder = scanner.next();
+            CourierExpeditionRequest.shipAndFulfill(order, weightOrder, CourierExpeditionEnum.getExpedition("UNVAILABLE"));
+        } else if (option == 9){
+            return;
+        } else {
+            fulfillManually(order, scanner);
+        }
     }
 
     private static OrderDTO getOrder(List<OrderDTO> orderList, Scanner scanner){

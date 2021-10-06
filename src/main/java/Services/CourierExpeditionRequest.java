@@ -11,8 +11,12 @@ import java.util.Scanner;
 public class CourierExpeditionRequest {
 
     public static void shipAndFulfill (OrderDTO order){
+        shipAndFulfill (order, null, null);
+    }
 
-        CourierExpeditionDTO courierExpeditionDTO = getCourierExpedition(order);
+    public static void shipAndFulfill (OrderDTO order, String weightOrder, CourierExpeditionEnum courierExpeditionEnum){
+
+        CourierExpeditionDTO courierExpeditionDTO = getCourierExpedition(order, weightOrder, courierExpeditionEnum);
         String accessToken = getOauthToken();
         String trackingCode = createShipmentWithCourier(courierExpeditionDTO, accessToken);
         fulfillOrder(order, trackingCode);
@@ -31,7 +35,7 @@ public class CourierExpeditionRequest {
          return courierOauthResponseDTO.getAccessToken();
     }
 
-    private static CourierExpeditionDTO getCourierExpedition  (OrderDTO order){
+    private static CourierExpeditionDTO getCourierExpedition  (OrderDTO order, String weightOrder, CourierExpeditionEnum courierExpeditionEnum){
         ObjectMapper objectMapper = new ObjectMapper();
         OrderAddressDTO senderAddress;
         try {
@@ -43,9 +47,23 @@ public class CourierExpeditionRequest {
         System.out.println("How many volumes are in the order below?");
         System.out.println(order.toString()+"\n");
         int volumes = scanner.nextInt();
-        Double weight = Double.parseDouble(order.getTotalWeight()) / 1000;
+        Double weight;
+        if (weightOrder == null) {
+            weight = Double.parseDouble(order.getTotalWeight()) / 1000;
+        } else {
+            weight = Double.parseDouble(weightOrder)/1000;
+        }
+
+        CourierExpeditionEnum expedition;
+        if (courierExpeditionEnum == null) {
+             expedition = CourierExpeditionEnum.getExpedition(order.getShippingLine().get(0).getShippingCode());
+        } else {
+            expedition = courierExpeditionEnum;
+        }
+
+
         CourierExpeditionDTO  courierExpeditionDTO = new CourierExpeditionDTO(order.getOrderNumber(), senderAddress, order.getShippingAddress(),
-                CourierExpeditionEnum.getExpedition(order.getShippingLine().get(0).getShippingCode()), ""+volumes,  weight.toString() );
+                expedition, ""+volumes,  weight.toString() );
 
         return courierExpeditionDTO;
     }
