@@ -67,12 +67,14 @@ public class CourierExpeditionDTO {
     private List<CourierVolumeDimensionDTO> dimensions;
 */
 
+
+
     public CourierExpeditionDTO(String reference, OrderAddressDTO sender, OrderAddressDTO recipient, CourierExpeditionEnum service, String volumes, String weight) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
         Calendar calendar = Calendar.getInstance();
         calendar.get(Calendar.HOUR);
 
-        if (Calendar.getInstance().get(Calendar.HOUR) >= Integer.parseInt(ConstantsEnum.COURIER_REQUEST_LAST_HOUR.getConstantValue().toString())){
+        if (calendar.get(Calendar.HOUR) >= Integer.parseInt(ConstantsEnum.COURIER_REQUEST_LAST_HOUR.getConstantValue().toString()) && calendar.get(Calendar.AM_PM) == Calendar.PM){
             calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
 
@@ -98,13 +100,13 @@ public class CourierExpeditionDTO {
         this.senderZipCode = sender.getPostalCode();
         this.senderCity = sender.getCity();
         this.senderCountry = sender.getCountryCode();
-        this.senderPhone = sender.getPhone();
+        this.senderPhone = sender.getPhone().replace(" ","");
         this.recipientName = recipient.getFirstName() + " " + recipient.getLastName();
         this.recipientAddress = recipient.getAddress1() + " " + recipient.getAddress2();
         this.recipientZipCode = recipient.getPostalCode();
         this.recipientCity = recipient.getCity();
         this.recipientCountry = recipient.getCountryCode();
-        this.recipientPhone = recipient.getPhone();
+        this.recipientPhone = recipient.getPhone().replace(" ","");
         this.volumes = volumes;
         this.weight = weight;
     }

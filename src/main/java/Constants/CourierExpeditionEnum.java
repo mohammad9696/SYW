@@ -7,7 +7,8 @@ import java.util.Scanner;
 public enum CourierExpeditionEnum {
     NORMAL(ConstantsEnum.COURIER_SERVICE_CODE_NORMAL.getConstantValue().toString(), ConstantsEnum.SHOPIFY_COURIER_SERVICE_CODE_NORMAL.getConstantValue().toString()),
     EXPRESS(ConstantsEnum.COURIER_SERVICE_CODE_EXPRESS.getConstantValue().toString(), ConstantsEnum.SHOPIFY_COURIER_SERVICE_CODE_EXPRESS.getConstantValue().toString()),
-    URGENT(ConstantsEnum.COURIER_SERVICE_CODE_URGENT.getConstantValue().toString(), ConstantsEnum.SHOPIFY_COURIER_SERVICE_CODE_URGENT.getConstantValue().toString());
+    URGENT(ConstantsEnum.COURIER_SERVICE_CODE_URGENT.getConstantValue().toString(), ConstantsEnum.SHOPIFY_COURIER_SERVICE_CODE_URGENT.getConstantValue().toString()),
+    ISLANDS(ConstantsEnum.COURIER_SERVICE_CODE_ISLANDS.getConstantValue().toString(), ConstantsEnum.SHOPIFY_COURIER_SERVICE_CODE_ISLANDS.getConstantValue().toString());
 
     private String courierServiceCode;
     private String shopifyServiceCode;

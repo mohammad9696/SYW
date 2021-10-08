@@ -55,11 +55,10 @@ public class HttpRequestExecutor {
 
             ObjectMapper mapper = new ObjectMapper();
             String jsonValue = mapper.writeValueAsString(requestObject);
-            StringEntity stringEntity = new StringEntity(jsonValue);
+            StringEntity stringEntity = new StringEntity(jsonValue, "UTF-8");
             stringEntity.setContentType("application/json");
 
             post.setEntity(stringEntity);
-
             CloseableHttpClient client = HttpClients.createDefault();
             CloseableHttpResponse getResponse = client.execute(post);
 

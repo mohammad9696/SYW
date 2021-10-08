@@ -41,6 +41,7 @@ public class UpdateOrders {
         System.out.println("1. Fulfill one");
         System.out.println("2. Fulfill all");
         System.out.println("3. Fulfill manually");
+        System.out.println("4. BETA TESTING");
         System.out.println("9. Exit menu");
         int option = scanner.nextInt();
         if (option == 1){
