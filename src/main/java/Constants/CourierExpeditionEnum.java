@@ -28,7 +28,7 @@ public enum CourierExpeditionEnum {
 
     public static CourierExpeditionEnum getExpedition (String shopifyServiceCode){
         for (CourierExpeditionEnum expedition : CourierExpeditionEnum.values()){
-            if (expedition.getShopifyServiceCode() == shopifyServiceCode) {
+            if (expedition.getShopifyServiceCode().equals(shopifyServiceCode)) {
                 return expedition;
             }
         }
