@@ -41,7 +41,6 @@ public class UpdateOrders {
         System.out.println("1. Fulfill one");
         System.out.println("2. Fulfill all");
         System.out.println("3. Fulfill manually");
-        System.out.println("4. BETA TESTING");
         System.out.println("9. Exit menu");
         int option = scanner.nextInt();
         if (option == 1){
@@ -90,6 +89,9 @@ public class UpdateOrders {
     }
 
     private static OrderDTO getOrder(List<OrderDTO> orderList, Scanner scanner){
+        for (OrderDTO order : orderList){
+            System.out.println(order);
+        }
         System.out.println("Please choose the order number");
         int order = scanner.nextInt();
         if (orderList.size() >= order){

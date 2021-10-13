@@ -69,7 +69,7 @@ public class CourierExpeditionRequest {
     }
 
     private static void fulfillOrder(OrderDTO order, String trackingNumber){
-        FulfillmentDTO fulfillmentDTO = new FulfillmentDTO(trackingNumber, ConstantsEnum.TRACKING_URL_PREFIX.getConstantValue().toString(), order);
+        FulfillmentDTO fulfillmentDTO = new FulfillmentDTO(trackingNumber, ConstantsEnum.TRACKING_URL_PREFIX.getConstantValue().toString()+trackingNumber, order);
         Object result = HttpRequestExecutor.sendRequest(Object.class, new FulfillmentObject(fulfillmentDTO) , fulfillmentDTO.getRequestUrl());
         System.out.println(result);
     }
