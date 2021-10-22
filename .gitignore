@@ -3,3 +3,4 @@
 /.idea/vcs.xml
 /src/main/resources/application.properties
 /src/main/resources/google-sheets-client-secret.json
+/src/main/resources/smartify-sheets-client-secret.json

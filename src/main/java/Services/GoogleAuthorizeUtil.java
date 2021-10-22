@@ -1,25 +1,16 @@
 package Services;
 
 import Constants.ConstantsEnum;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.store.MemoryDataStoreFactory;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.services.sheets.v4.SheetsScopes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 
 public class GoogleAuthorizeUtil {
-    public static Credential authorize() throws GeneralSecurityException, IOException {
+    /*public static Credential authorize() throws GeneralSecurityException, IOException {
         InputStream in = GoogleAuthorizeUtil.class.getResourceAsStream(ConstantsEnum.SHEETS_CLIENT_SECRET.getConstantValue().toString());
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JacksonFactory.getDefaultInstance(), new InputStreamReader(in));
 
@@ -31,4 +22,11 @@ public class GoogleAuthorizeUtil {
 
         return credential;
     }
+*/
+        public static GoogleCredential authorize() throws GeneralSecurityException, IOException {
+            InputStream in = Services.GoogleAuthorizeUtil.class.getResourceAsStream(ConstantsEnum.SHEETS_CLIENT_SECRET.getConstantValue().toString());
+            GoogleCredential googleCredential = GoogleCredential.fromStream(in).createScoped(Collections.singleton(SheetsScopes.SPREADSHEETS));
+            return googleCredential;
+        }
+
 }
