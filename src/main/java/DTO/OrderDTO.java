@@ -142,14 +142,9 @@ public class OrderDTO {
 
     @Override
     public String toString() {
-        String fullName = shippingAddress.getFirstName() + " "+ shippingAddress.getLastName() ;
-        fullName = normalizeStringLenght(30, fullName);
-
-        String city = shippingAddress.getCity();
-        city = normalizeStringLenght(15, shippingAddress.getCity());
-
-        String shippingMethod = shippingLine.get(0).getShippingCode();
-        shippingMethod = normalizeStringLenght(20, shippingMethod);
+        String fullName = normalizeStringLenght(30, shippingAddress.getFirstName() + " "+ shippingAddress.getLastName());
+        String city = normalizeStringLenght(15, shippingAddress.getCity());
+        String shippingMethod = normalizeStringLenght(20, shippingLine.get(0).getShippingCode());
 
         return
                  orderNumber + "   " + fullName + " " +
