@@ -41,6 +41,17 @@ public class OrderDTO {
     @JsonProperty("shipping_lines")
     private List<OrderShippingDTO> shippingLine;
 
+    @JsonProperty("note")
+    private String note;
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
     public String getId() {
         return id;
     }
@@ -131,29 +142,31 @@ public class OrderDTO {
 
     @Override
     public String toString() {
-        int spacingName = 30;
-        int spacingCity = 15;
         String fullName = shippingAddress.getFirstName() + " "+ shippingAddress.getLastName() ;
+        fullName = normalizeStringLenght(30, fullName);
+
+        String city = shippingAddress.getCity();
+        city = normalizeStringLenght(15, shippingAddress.getCity());
+
+        String shippingMethod = shippingLine.get(0).getShippingCode();
+        shippingMethod = normalizeStringLenght(20, shippingMethod);
+
+        return
+                 orderNumber + "   " + fullName + " " +
+                         totalPrice + "   " + shippingAddress.getPostalCode() + "   " +  city +
+                " " + Double.parseDouble(totalWeight)/1000 + " Kg  " + shippingMethod + "        " + note;
+    }
+
+    private String normalizeStringLenght(int spacing, String string){
         int lenghtToAdd = 0;
-        if (fullName.length() < spacingName){
-            lenghtToAdd = spacingName - fullName.length();
+        if(string.length() < spacing){
+            lenghtToAdd = spacing - string.length();
         }
-        String name = (String) fullName.subSequence(0, fullName.length() > spacingName ? spacingName : fullName.length());
-        for (int i = 0; i < lenghtToAdd; i++){
-            name = name + " ";
+        String result = (String) string.subSequence(0, string.length() > spacing ? spacing: string.length());
+        for (int i = 0; i<lenghtToAdd; i++ ){
+            result = result + " ";
         }
 
-        lenghtToAdd = 0;
-        if (shippingAddress.getCity().length() < spacingCity){
-            lenghtToAdd = spacingCity - shippingAddress.getCity().length();
-        }
-        String city = (String) shippingAddress.getCity().subSequence(0, shippingAddress.getCity().length() > spacingCity ? spacingCity : shippingAddress.getCity().length());
-        for (int i = 0; i < lenghtToAdd; i++){
-            city = city + " ";
-        }
-        return
-                 orderNumber + "   " + name + " " +
-                         totalPrice + "   " + shippingAddress.getPostalCode() + "   " +  city +
-                " " + Double.parseDouble(totalWeight)/1000 + " Kg";
+        return result;
     }
 }
