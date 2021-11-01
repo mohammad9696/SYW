@@ -12,6 +12,9 @@ public enum ConstantsEnum {
     MAIN_SPREADSHEET_DATA_RANGE("sheets.main.data.range","insertValueInProperties"),
     GET_REQUEST_SHOPIFY_PRODUCTS("shopify.get.products","insertValueInProperties"),
     GET_REQUEST_SHOPIFY_ORDERS("shopify.get.orders","insertValueInProperties"),
+    CREATE_ORDER_REQUEST_SHOPIFY("shopify.create.order","insertValueInProperties"),
+    UPDATE_ORDER_REQUEST_SHOPIFY_PREFIX("shopify.update.order.prefix","insertValueInProperties"),
+    UPDATE_ORDER_REQUEST_SHOPIFY_SUFIX("shopify.update.order.sufix","insertValueInProperties"),
     KUANTOKUSTA_SPREADSHEET_ID("sheets.kuantokusta.id","insertValueInProperties"),
     DOTT_SPREADSHEET_ID("sheets.dott.id","insertValueInProperties"),
     SHOPIFY_MAIN_LOCATION_ID("shopify.location.main.id","insertValueInProperties"),
@@ -34,7 +37,12 @@ public enum ConstantsEnum {
     COURIER_OAUTH_USERNAME("courier.oauth.username","insertValueInProperties"),
     COURIER_OAUTH_PASSWORD("courier.oauth.password","insertValueInProperties"),
     COURIER_GET_OAUTH_URL("courier.oauth.get.token.request.url","insertValueInProperties"),
-    COURIER_CREATE_SHIPMENT_URL("courier.oauth.create.shipment.request.url","insertValueInProperties");
+    COURIER_CREATE_SHIPMENT_URL("courier.oauth.create.shipment.request.url","insertValueInProperties"),
+    PRODUCTS_NOT_FOR_FEED("products.not.for.feed","insertValueInProperties"),
+    SHIPPING_PRODUCT_VARIANT_ID("shopify.shipping.product.variant.id","insertValueInProperties"),
+    KUANTOKUSTA_GET_ORDERS("kuantokusta.get.orders","insertValueInProperties"),
+    KUANTOKUSTA_API_KEY("kuantokusta.api.key","insertValueInProperties"),
+    KUANTOKUSTA_MESSAGE_SHOPIFY("kuantokusta.order.message.shopify","insertValueInProperties");
 
 
     private String constantName;

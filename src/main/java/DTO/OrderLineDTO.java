@@ -1,25 +1,49 @@
 package DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderLineDTO {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("id")
     private String id;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("name")
     private String name;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("price")
     private Double price;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("sku")
     private String sku;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("variant_id")
+    private String variantId;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("fulfillable_quantity")
     private int fulfillableQuantity;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("quantity")
+    private int quantity;
+
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 
     public String getId() {
         return id;
@@ -59,5 +83,13 @@ public class OrderLineDTO {
 
     public void setFulfillableQuantity(int fulfillableQuantity) {
         this.fulfillableQuantity = fulfillableQuantity;
+    }
+
+    public String getVariantId() {
+        return variantId;
+    }
+
+    public void setVariantId(String variantId) {
+        this.variantId = variantId;
     }
 }

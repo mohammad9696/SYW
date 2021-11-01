@@ -2,6 +2,7 @@ package Services;
 
 import Constants.ConstantsEnum;
 import Constants.CourierExpeditionEnum;
+import Constants.HttpRequestAuthTypeEnum;
 import DTO.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +25,7 @@ public class CourierExpeditionRequest {
 
     private static String createShipmentWithCourier(CourierExpeditionDTO courierExpeditionDTO, String accessToken) {
         CourierShipmentCreationResponseDTO response = HttpRequestExecutor.sendRequest(CourierShipmentCreationResponseDTO.class,
-                courierExpeditionDTO, ConstantsEnum.COURIER_CREATE_SHIPMENT_URL.getConstantValue().toString(), accessToken);
+                courierExpeditionDTO, ConstantsEnum.COURIER_CREATE_SHIPMENT_URL.getConstantValue().toString(), HttpRequestAuthTypeEnum.BEARER_TOKEN, accessToken);
 
         System.out.println(response.toString());
         return  response.getTrackingCode();

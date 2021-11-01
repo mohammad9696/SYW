@@ -1,38 +1,49 @@
 package DTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderAddressDTO {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("first_name")
     private String firstName;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("last_name")
     private String lastName;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("address1")
     private String address1;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("city")
     private String city;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("province")
     private String province;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("zip")
     private String postalCode;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("address2")
     private String address2;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("company")
     private String nipc;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("country_code")
     private String countryCode;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("phone")
     private String phone;
 
@@ -115,4 +126,5 @@ public class OrderAddressDTO {
     public void setCountryCode(String countryCode) {
         this.countryCode = countryCode;
     }
+
 }

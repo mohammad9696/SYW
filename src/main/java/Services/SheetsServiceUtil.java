@@ -15,6 +15,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
+import javax.crypto.Mac;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.text.NumberFormat;
@@ -49,7 +50,7 @@ public class SheetsServiceUtil {
         return productList;
     }
 
-    public  List<List<Object>> getMainSheetValues(Map<String, MacroProductDTO> originalProductList, List<ProductDTO> toUpdateProductsList){
+    public static List<List<Object>> getMainSheetValues(Map<String, MacroProductDTO> originalProductList, List<ProductDTO> toUpdateProductsList){
         List<List<Object>> _values = new ArrayList<>();
 
         _values.add(mainSheetHeaderRow());
@@ -67,11 +68,11 @@ public class SheetsServiceUtil {
         return _values;
     }
 
-    public  List<List<Object>> getKuantokustaSheetValues(Map<String, MacroProductDTO> originalProductList){
+    public static List<List<Object>> getKuantokustaSheetValues(Map<String, MacroProductDTO> originalProductList){
         List<List<Object>> _values = new ArrayList<>();
         _values.add(kuantokustaSheetHeaderRow());
         for (Map.Entry<String, MacroProductDTO> obj : originalProductList.entrySet()){
-            if(obj.getValue().getStatus().equals("active") && !obj.getValue().getId().equals("6407110230167") ){
+            if(obj.getValue().getStatus().equals("active") && isProductSellable(obj)){
                 _values.add(kuantokustaSheetProductRow(obj.getValue()));
             }
         }
@@ -79,11 +80,11 @@ public class SheetsServiceUtil {
         return _values;
     }
 
-    public  List<List<Object>> getDottSheetValues(Map<String, MacroProductDTO> originalProductList){
+    public static List<List<Object>> getDottSheetValues(Map<String, MacroProductDTO> originalProductList){
         List<List<Object>> _values = new ArrayList<>();
         _values.add(dottSheetHeaderRow());
         for (Map.Entry<String, MacroProductDTO> obj : originalProductList.entrySet()){
-            if(obj.getValue().getStatus().equals("active") && !obj.getValue().getId().equals("6407110230167") ){
+            if(obj.getValue().getStatus().equals("active") && isProductSellable(obj)){
                 _values.add(dottSheetProductRow(obj.getValue()));
             }
         }
@@ -91,7 +92,21 @@ public class SheetsServiceUtil {
         return _values;
     }
 
-    private List<Object> dottSheetHeaderRow(){
+    private static boolean isProductSellable (Map.Entry<String, MacroProductDTO> product){
+        String[] nonSellableProductsId = ConstantsEnum.PRODUCTS_NOT_FOR_FEED.getConstantValue().toString().split(",");
+        if (product.getValue().getTitle().toLowerCase(Locale.ROOT).contains("pré-venda") ||
+                product.getValue().getTitle().toLowerCase(Locale.ROOT).contains("pre-venda"))   {
+            return false;
+        }
+        for (String id : nonSellableProductsId){
+            if (product.getKey().equals(id)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static List<Object> dottSheetHeaderRow(){
         List<Object> headers = startDottSheetRow();
 
         headers.set(DottPropertiesEnum.ID.getColumn_number(), DottPropertiesEnum.ID.getColumn_name());
@@ -117,7 +132,7 @@ public class SheetsServiceUtil {
         return headers;
     }
 
-    private List<Object> dottSheetProductRow(MacroProductDTO macroProductDTO){
+    private static List<Object> dottSheetProductRow(MacroProductDTO macroProductDTO){
         List<Object> productRow = startDottSheetRow();
 
         if (macroProductDTO.getId() != null) {
@@ -203,7 +218,7 @@ public class SheetsServiceUtil {
         return productRow;
     }
 
-    private List<Object> kuantokustaSheetHeaderRow(){
+    private static List<Object> kuantokustaSheetHeaderRow(){
         List<Object> headers = startKuantokustaSheetRow();
 
         headers.set(KuantoKustaPropertiesEnum.ID.getColumn_number(), KuantoKustaPropertiesEnum.ID.getColumn_name());
@@ -229,7 +244,7 @@ public class SheetsServiceUtil {
         return headers;
     }
 
-    private List<Object> kuantokustaSheetProductRow(MacroProductDTO macroProductDTO){
+    private static List<Object> kuantokustaSheetProductRow(MacroProductDTO macroProductDTO){
         List<Object> productRow = startKuantokustaSheetRow();
 
         if (macroProductDTO.getId() != null) {
@@ -312,10 +327,11 @@ public class SheetsServiceUtil {
         return productRow;
     }
 
-    private List<Object> mainSheetHeaderRow(){
+    private static List<Object> mainSheetHeaderRow(){
         List<Object> headers = startMainSheetRow();
 
         headers.set(ProductPropertiesEnum.ID.getColumn_number(),ProductPropertiesEnum.ID.getColumn_name());
+        headers.set(ProductPropertiesEnum.VARIANT_ID.getColumn_number(), ProductPropertiesEnum.VARIANT_ID.getColumn_name());
         headers.set(ProductPropertiesEnum.TITLE.getColumn_number(),ProductPropertiesEnum.TITLE.getColumn_name());
         headers.set(ProductPropertiesEnum.BODY_HTML.getColumn_number(),ProductPropertiesEnum.BODY_HTML.getColumn_name());
         headers.set(ProductPropertiesEnum.BRAND.getColumn_number(),ProductPropertiesEnum.BRAND.getColumn_name());
@@ -346,11 +362,15 @@ public class SheetsServiceUtil {
         return headers;
     }
 
-    private  List<Object> mainSheetProductRow(Map<String, Object> productDTO){
+    private static  List<Object> mainSheetProductRow(Map<String, Object> productDTO){
         List<Object> productRow = startMainSheetRow();
 
         if (productDTO.containsKey(ProductPropertiesEnum.ID.getColumn_name()) && productDTO.get(ProductPropertiesEnum.ID.getColumn_name()) != null){
             productRow.set(ProductPropertiesEnum.ID.getColumn_number(),productDTO.get(ProductPropertiesEnum.ID.getColumn_name()));
+        }
+
+        if (productDTO.containsKey(ProductPropertiesEnum.VARIANT_ID.getColumn_name()) && productDTO.get(ProductPropertiesEnum.VARIANT_ID.getColumn_name()) != null){
+            productRow.set(ProductPropertiesEnum.VARIANT_ID.getColumn_number(),productDTO.get(ProductPropertiesEnum.VARIANT_ID.getColumn_name()));
         }
 
         if (productDTO.containsKey(ProductPropertiesEnum.TITLE.getColumn_name()) && productDTO.get(ProductPropertiesEnum.TITLE.getColumn_name()) != null){

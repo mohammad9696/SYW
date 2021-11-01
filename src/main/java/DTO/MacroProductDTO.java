@@ -13,6 +13,7 @@ import java.util.*;
 public class MacroProductDTO {
 
     private String id;
+    private String variantId;
     private String title;
     private String bodyHtml;
     private String brand;
@@ -39,8 +40,17 @@ public class MacroProductDTO {
     private Double priceFnacVat;
     private Double previousPriceFnacVat;
 
+    public String getVariantId() {
+        return variantId;
+    }
+
+    public void setVariantId(String variantId) {
+        this.variantId = variantId;
+    }
+
     public MacroProductDTO(ProductDTO productDTO){
         this.id = productDTO.getId();
+        this.variantId = productDTO.getVariants().get(0).getId();
         this.title = productDTO.getTitle();
         this.bodyHtml = productDTO.getBodyHtml();
         this.brand = productDTO.getBrand();
@@ -74,6 +84,12 @@ public class MacroProductDTO {
             this.id = (String) productObject.get(ProductPropertiesEnum.ID.getColumn_number());
         } else {
             this.id = null;
+        }
+
+        if (productObject.get(ProductPropertiesEnum.VARIANT_ID.getColumn_number()) != null){
+            this.variantId = (String) productObject.get(ProductPropertiesEnum.VARIANT_ID.getColumn_number());
+        } else {
+            this.variantId = null;
         }
 
         if (productObject.get(ProductPropertiesEnum.TITLE.getColumn_number()) != null){
@@ -281,6 +297,7 @@ public class MacroProductDTO {
     public Map<String, Object> getProductMap(){
         Map<String, Object> map = new LinkedHashMap<>();
         map.put(ProductPropertiesEnum.ID.getColumn_name(), id);
+        map.put(ProductPropertiesEnum.VARIANT_ID.getColumn_name(), variantId);
         map.put(ProductPropertiesEnum.TITLE.getColumn_name(), title);
         map.put(ProductPropertiesEnum.BODY_HTML.getColumn_name(), bodyHtml);
         map.put(ProductPropertiesEnum.BRAND.getColumn_name(), brand);
@@ -311,8 +328,9 @@ public class MacroProductDTO {
         return map;
     }
 
-    public MacroProductDTO(String id, String title, String bodyHtml, String brand, String productType, String createdAt, String updatedAt, String url, String status, String tags, Double price, String sku, String barcode, Double weight, String weightUnit, Boolean requiresShipping, List<ProductImageDTO> images, Integer inventory, Double priceDottVat, Double previousPriceDottVat, Double priceWortenVat, Double previousPriceWortenVat, Double priceAmazonVat, Double previousPriceAmazonVat, Double priceFnacVat, Double previousPriceFnacVat) {
+    public MacroProductDTO(String id, String variantId, String title, String bodyHtml, String brand, String productType, String createdAt, String updatedAt, String url, String status, String tags, Double price, String sku, String barcode, Double weight, String weightUnit, Boolean requiresShipping, List<ProductImageDTO> images, Integer inventory, Double priceDottVat, Double previousPriceDottVat, Double priceWortenVat, Double previousPriceWortenVat, Double priceAmazonVat, Double previousPriceAmazonVat, Double priceFnacVat, Double previousPriceFnacVat) {
         this.id = id;
+        this.variantId = variantId;
         this.title = title;
         this.bodyHtml = bodyHtml;
         this.brand = brand;
@@ -342,6 +360,7 @@ public class MacroProductDTO {
 
     public static MacroProductDTO updateProduct (MacroProductDTO original, MacroProductDTO update ){
         String id = update.getId();
+        String variantId = original.getVariantId().equals(update.getVariantId()) ? original.getVariantId() : update.getVariantId();
         String title = original.getTitle().equals(update.getTitle()) ? original.getTitle() : update.getTitle();
         String bodyHtml = original.getBodyHtml().equals(update.getBodyHtml()) ? original.getBodyHtml() : update.getBodyHtml();
         String brand = original.getBrand().equals(update.getBrand()) ? original.getBrand() : update.getBrand();
@@ -367,7 +386,7 @@ public class MacroProductDTO {
         Double previousPriceAmazonVat = original.getPreviousPriceAmazonVat();
         Double priceFnacVat = original.getPriceFnacVat();
         Double previousPriceFnacVat = original.getPreviousPriceFnacVat();
-        return new MacroProductDTO(id, title, bodyHtml, brand, productType, createdAt, updatedAt, handle, status, tags, price, sku, barcode,weight, weightUnit, requiresShipping, images, inventory, priceDottVat, previousPriceDottVat, priceWortenVat, previousPriceWortenVat, priceAmazonVat, previousPriceAmazonVat, priceFnacVat, previousPriceFnacVat);
+        return new MacroProductDTO(id, variantId, title, bodyHtml, brand, productType, createdAt, updatedAt, handle, status, tags, price, sku, barcode,weight, weightUnit, requiresShipping, images, inventory, priceDottVat, previousPriceDottVat, priceWortenVat, previousPriceWortenVat, priceAmazonVat, previousPriceAmazonVat, priceFnacVat, previousPriceFnacVat);
     }
 
     public String getTitle() {

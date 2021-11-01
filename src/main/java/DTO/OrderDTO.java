@@ -1,6 +1,8 @@
 package DTO;
 
+import Utils.Utils;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -8,41 +10,83 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderDTO {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("id")
     private String id;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("financial_status")
     private String financialStatus;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("fulfillment_status")
     private String fulfillmentStatus;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("name")
     private String orderNumber;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("order_status_url")
     private String orderStatusUrl;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("total_price")
     private String totalPrice;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("total_weight")
     private String totalWeight;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("billing_address")
     private OrderAddressDTO billingAdress;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("line_items")
     private List<OrderLineDTO> lineItems;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("shipping_address")
     private OrderAddressDTO shippingAddress;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("shipping_lines")
     private List<OrderShippingDTO> shippingLine;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("note")
     private String note;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("phone")
+    private String phone;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("inventory_behaviour")
+    private String inventoryBehaviour = "decrement_obeying_policy";
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("buyer_accepts_marketing")
+    private boolean buyer_accepts_marketing = true;
+
+
+
+    public String getInventoryBehaviour() {
+        return inventoryBehaviour;
+    }
+
+    public void setInventoryBehaviour(String inventoryBehaviour) {
+        this.inventoryBehaviour = inventoryBehaviour;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
     public String getNote() {
         return note;
@@ -140,28 +184,30 @@ public class OrderDTO {
         this.shippingLine = shippingLine;
     }
 
+    public OrderDTO() {
+    }
+
     @Override
     public String toString() {
-        String fullName = normalizeStringLenght(30, shippingAddress.getFirstName() + " "+ shippingAddress.getLastName());
-        String city = normalizeStringLenght(15, shippingAddress.getCity());
-        String shippingMethod = normalizeStringLenght(20, shippingLine.get(0).getShippingCode());
+        String fullName = "";
+        String shippingMethod = "";
+        String city = "";
+        String notes = "";
+        String postalCode = "";
+        if (shippingAddress != null ){
+            fullName = Utils.normalizeStringLenght(30, shippingAddress.getFirstName() + " "+ shippingAddress.getLastName());
+            city = Utils.normalizeStringLenght(15, shippingAddress.getCity());
+            postalCode = Utils.normalizeStringLenght(8, shippingAddress.getPostalCode());
+        }
+        if (!shippingMethod.isEmpty()){
+            shippingMethod = Utils.normalizeStringLenght(20, shippingLine.get(0).getShippingCode());
+        }
+        notes = Utils.normalizeStringLenght(30, note);
 
         return
                  orderNumber + "   " + fullName + " " +
-                         totalPrice + "   " + shippingAddress.getPostalCode() + "   " +  city +
-                " " + Double.parseDouble(totalWeight)/1000 + " Kg  " + shippingMethod + "        " + note;
+                         totalPrice + "   " + postalCode + "   " +  city +
+                " " + (totalWeight != null ? Double.parseDouble(totalWeight)/1000 : "") + " Kg  " + shippingMethod + "        " + notes;
     }
 
-    private String normalizeStringLenght(int spacing, String string){
-        int lenghtToAdd = 0;
-        if(string.length() < spacing){
-            lenghtToAdd = spacing - string.length();
-        }
-        String result = (String) string.subSequence(0, string.length() > spacing ? spacing: string.length());
-        for (int i = 0; i<lenghtToAdd; i++ ){
-            result = result + " ";
-        }
-
-        return result;
-    }
 }

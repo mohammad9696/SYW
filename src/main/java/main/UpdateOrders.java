@@ -5,6 +5,7 @@ import Constants.CourierExpeditionEnum;
 import DTO.*;
 import Services.CourierExpeditionRequest;
 import Services.HttpRequestExecutor;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.List;
 import java.util.Scanner;
@@ -18,7 +19,8 @@ public class UpdateOrders {
     }
 
     private static List<OrderDTO> getOrdersToFulfil(){
-        OrderListDTO list = HttpRequestExecutor.getObjectRequest(OrderListDTO.class, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS.getConstantValue().toString());
+        TypeReference<OrderListDTO> typeReference = new TypeReference<OrderListDTO>() {};
+        OrderListDTO list = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS.getConstantValue().toString());
 
         int i = 1;
         for (OrderDTO order : list.getOrders()){
@@ -89,8 +91,10 @@ public class UpdateOrders {
     }
 
     private static OrderDTO getOrder(List<OrderDTO> orderList, Scanner scanner){
+        int i = 1;
         for (OrderDTO order : orderList){
-            System.out.println(order);
+            System.out.println(i + "  " + order);
+            i++;
         }
         System.out.println("Please choose the order number");
         int order = scanner.nextInt();
