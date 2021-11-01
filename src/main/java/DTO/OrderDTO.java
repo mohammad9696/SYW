@@ -194,20 +194,34 @@ public class OrderDTO {
         String city = "";
         String notes = "";
         String postalCode = "";
+        String price ="";
+        String weight = "";
         if (shippingAddress != null ){
             fullName = Utils.normalizeStringLenght(30, shippingAddress.getFirstName() + " "+ shippingAddress.getLastName());
             city = Utils.normalizeStringLenght(15, shippingAddress.getCity());
             postalCode = Utils.normalizeStringLenght(8, shippingAddress.getPostalCode());
         }
-        if (!shippingMethod.isEmpty()){
+        if (!shippingLine.isEmpty()){
             shippingMethod = Utils.normalizeStringLenght(20, shippingLine.get(0).getShippingCode());
         }
-        notes = Utils.normalizeStringLenght(30, note);
+
+        if (totalPrice != null){
+            price = Utils.normalizeStringLenght(8, totalPrice);
+        }
+
+        if (totalWeight != null){
+            Double w =  Double.parseDouble(totalWeight)/1000;
+            weight = Utils.normalizeStringLenght(6, w.toString());
+        }
+
+        if(note != null){
+            notes = Utils.normalizeStringLenght(30, note);
+        }
 
         return
-                 orderNumber + "   " + fullName + " " +
-                         totalPrice + "   " + postalCode + "   " +  city +
-                " " + (totalWeight != null ? Double.parseDouble(totalWeight)/1000 : "") + " Kg  " + shippingMethod + "        " + notes;
+                 orderNumber + "|   " + fullName + "| " +
+                         price + "|   " + postalCode + "|   " +  city +
+                "| " + weight + " Kg  |" + shippingMethod + "|        " + notes;
     }
 
 }
