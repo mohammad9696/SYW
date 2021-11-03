@@ -1,5 +1,6 @@
 package DTO;
 
+import Utils.Utils;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -127,4 +128,16 @@ public class OrderAddressDTO {
         this.countryCode = countryCode;
     }
 
+    @Override
+    public String toString() {
+        String address = "";
+        String postalCode = "";
+        String city = "";
+
+        address = Utils.normalizeStringLenght(50, address1 + " " + address2);
+        postalCode = Utils.normalizeStringLenght(9, this.postalCode);
+        city = Utils.normalizeStringLenght(15, this.city);
+
+        return address + " | " + postalCode + " | " + city;
+    }
 }

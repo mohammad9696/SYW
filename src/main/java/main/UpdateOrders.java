@@ -12,9 +12,12 @@ import java.util.Scanner;
 
 public class UpdateOrders {
 
+
     public static void main(String[] args) {
+
+        OrderAddressDTO pickupAddres = CourierExpeditionRequest.getPickupAddress();
         List<OrderDTO> orderList = getOrdersToFulfil();
-        showOrderOptions(orderList);
+        showOrderOptions(orderList, pickupAddres);
 
     }
 
@@ -32,12 +35,12 @@ public class UpdateOrders {
         return list.getOrders();
     }
 
-    private static void fulfillOne (OrderDTO orderDTO){
-        CourierExpeditionRequest.shipAndFulfill(orderDTO);
+    private static void fulfillOne (OrderDTO orderDTO, OrderAddressDTO pickupAddress){
+        CourierExpeditionRequest.shipAndFulfill(orderDTO, pickupAddress);
         System.out.println(orderDTO);
     }
 
-    private static void showOrderOptions (List<OrderDTO> orderList) {
+    private static void showOrderOptions (List<OrderDTO> orderList, OrderAddressDTO pickupAddress) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Do you want to:");
         System.out.println("1. Fulfill one");
@@ -46,25 +49,25 @@ public class UpdateOrders {
         System.out.println("9. Exit menu");
         int option = scanner.nextInt();
         if (option == 1){
-            fulfillOne(getOrder(orderList, scanner));
-            showOrderOptions(orderList);
+            fulfillOne(getOrder(orderList, scanner), pickupAddress);
+            showOrderOptions(orderList, pickupAddress);
         } else if (option == 2){
             for (OrderDTO order : orderList){
-                fulfillOne(order);
+                fulfillOne(order, pickupAddress);
             }
-            showOrderOptions(orderList);
+            showOrderOptions(orderList, pickupAddress);
         } else if (option == 3){
-            fulfillManually(getOrder(orderList,scanner), scanner);
-            showOrderOptions(orderList);
+            fulfillManually(getOrder(orderList,scanner), scanner, pickupAddress);
+            showOrderOptions(orderList, pickupAddress);
         } else if (option == 9){
             System.out.println("Exiting orders menu\n");
         } else {
             System.out.println("Option not available!\n");
-            showOrderOptions(orderList);
+            showOrderOptions(orderList, pickupAddress);
         }
     }
 
-    private static void fulfillManually(OrderDTO order, Scanner scanner) {
+    private static void fulfillManually(OrderDTO order, Scanner scanner, OrderAddressDTO pickupAddress) {
         FulfillmentDTO fulfillmentDTO;
         System.out.println("Do you want to:");
         System.out.println("1. Process order only");
@@ -82,11 +85,11 @@ public class UpdateOrders {
         } else if (option == 2){
             System.out.println("Please insert the weight of the order in grams");
             String weightOrder = scanner.next();
-            CourierExpeditionRequest.shipAndFulfill(order, weightOrder, CourierExpeditionEnum.getExpedition("UNVAILABLE"));
+            CourierExpeditionRequest.shipAndFulfill(order, pickupAddress, weightOrder, CourierExpeditionEnum.getExpedition("UNAVAILABLE"));
         } else if (option == 9){
             return;
         } else {
-            fulfillManually(order, scanner);
+            fulfillManually(order, scanner, pickupAddress);
         }
     }
 
