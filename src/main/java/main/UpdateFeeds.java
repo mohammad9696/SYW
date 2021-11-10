@@ -9,7 +9,11 @@ import Services.SheetsServiceUtil;
 import Services.SpreadsheetSnippets;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import com.google.cloud.functions.HttpFunction;
+import com.google.cloud.functions.HttpRequest;
+import com.google.cloud.functions.HttpResponse;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
@@ -58,5 +62,11 @@ public class UpdateFeeds {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void service(HttpRequest request, HttpResponse response) throws Exception {
+        BufferedWriter writer = response.getWriter();
+        writer.write("Executing feeds!");
+        main(null);
     }
 }
