@@ -55,9 +55,11 @@ public class UpdateOrders {
             orderList.remove(order);
             showOrderOptions(orderList, pickupAddress);
         } else if (option == 2){
+            order = getOrder(orderList, scanner);
             System.out.println("Please insert the weight of the order in grams");
             String weightOrder = scanner.next();
             CourierExpeditionRequest.shipAndFulfill(order, pickupAddress, weightOrder, CourierExpeditionEnum.getExpedition("UNAVAILABLE"));
+            showOrderOptions(orderList, pickupAddress);
         } else if (option == 3){
             System.out.println("Please insert the tracking number");
             String trackingNumber = scanner.next();
