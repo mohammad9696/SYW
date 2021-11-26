@@ -82,7 +82,12 @@ public class CourierExpeditionRequest {
 
         CourierExpeditionEnum expedition;
         if (courierExpeditionEnum == null) {
-             expedition = CourierExpeditionEnum.getExpedition(order.getShippingLine().get(0).getShippingCode());
+            if (!order.getShippingLine().isEmpty()){
+                expedition = CourierExpeditionEnum.getExpedition(order.getShippingLine().get(0).getShippingCode());
+            } else {
+                expedition = CourierExpeditionEnum.getExpedition(null);
+            }
+
         } else {
             expedition = courierExpeditionEnum;
         }
