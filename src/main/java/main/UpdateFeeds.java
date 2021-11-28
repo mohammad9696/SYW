@@ -19,7 +19,7 @@ import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 
-public class UpdateFeeds implements HttpFunction {
+public class UpdateFeeds {
 
     public static Map<String, MacroProductDTO> getUpdatedProductList() throws GeneralSecurityException, IOException {
         String spreadsheetId = (String) ConstantsEnum.MAIN_SPREADSHEET_ID.getConstantValue();
@@ -62,11 +62,5 @@ public class UpdateFeeds implements HttpFunction {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public void service(HttpRequest request, HttpResponse response) throws Exception {
-        BufferedWriter writer = response.getWriter();
-        writer.write("Executing feeds!");
-        main(null);
     }
 }
