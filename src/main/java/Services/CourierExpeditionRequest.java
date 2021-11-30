@@ -7,17 +7,19 @@ import DTO.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class CourierExpeditionRequest {
 
-    public static void shipAndFulfill (OrderDTO order){
-        shipAndFulfill (order, null, null);
+    public static void shipAndFulfill (OrderDTO order, OrderAddressDTO pickupAddress){
+        shipAndFulfill (order, pickupAddress, null, null);
     }
 
-    public static void shipAndFulfill (OrderDTO order, String weightOrder, CourierExpeditionEnum courierExpeditionEnum){
+    public static void shipAndFulfill (OrderDTO order, OrderAddressDTO pickupAddress, String weightOrder, CourierExpeditionEnum courierExpeditionEnum){
 
-        CourierExpeditionDTO courierExpeditionDTO = getCourierExpedition(order, weightOrder, courierExpeditionEnum);
+        CourierExpeditionDTO courierExpeditionDTO = getCourierExpedition(order, pickupAddress, weightOrder, courierExpeditionEnum);
         String accessToken = getOauthToken();
         String trackingCode = createShipmentWithCourier(courierExpeditionDTO, accessToken);
         fulfillOrder(order, trackingCode);
@@ -36,13 +38,36 @@ public class CourierExpeditionRequest {
          return courierOauthResponseDTO.getAccessToken();
     }
 
-    private static CourierExpeditionDTO getCourierExpedition  (OrderDTO order, String weightOrder, CourierExpeditionEnum courierExpeditionEnum){
-        ObjectMapper objectMapper = new ObjectMapper();
-        OrderAddressDTO senderAddress;
-        try {
-            senderAddress = objectMapper.readValue(ConstantsEnum.COURIER_REQUEST_SENDER_ADDRESS.getConstantValue().toString(), OrderAddressDTO.class);
-        } catch (JsonProcessingException e) {
-            throw new NullPointerException("Sender Address is Invalid");
+    public static OrderAddressDTO getPickupAddress () {
+        try{
+            String[] addreses = ConstantsEnum.COURIER_REQUEST_SENDER_ADDRESS.getConstantValue().toString().split("NEWADDRESS");
+            OrderAddressDTO pickupAddress = null;
+            ObjectMapper objectMapper = new ObjectMapper();
+            List<OrderAddressDTO> senderAddresses = new ArrayList<>();
+            for (String address : addreses){
+                pickupAddress = objectMapper.readValue(address, OrderAddressDTO.class);
+                senderAddresses.add(pickupAddress);
+            }
+
+            int i = 1;
+            System.out.println("Please choose the pickup address:");
+            for (OrderAddressDTO address : senderAddresses){
+                System.out.println(i + "  " + address.toString());
+                i++;
+            }
+
+            Scanner scanner = new Scanner(System.in);
+            int addressToCollect = scanner.nextInt();
+            return senderAddresses.get(addressToCollect - 1);
+        } catch (Exception e) {
+                throw new NullPointerException("Sender Address is Invalid");
+        }
+
+    }
+    private static CourierExpeditionDTO getCourierExpedition  (OrderDTO order, OrderAddressDTO pickupAddress, String weightOrder, CourierExpeditionEnum courierExpeditionEnum){
+
+        if (pickupAddress == null){
+            pickupAddress = getPickupAddress();
         }
         Scanner scanner = new Scanner(System.in);
         System.out.println("How many volumes are in the order below?");
@@ -57,13 +82,18 @@ public class CourierExpeditionRequest {
 
         CourierExpeditionEnum expedition;
         if (courierExpeditionEnum == null) {
-             expedition = CourierExpeditionEnum.getExpedition(order.getShippingLine().get(0).getShippingCode());
+            if (!order.getShippingLine().isEmpty()){
+                expedition = CourierExpeditionEnum.getExpedition(order.getShippingLine().get(0).getShippingCode());
+            } else {
+                expedition = CourierExpeditionEnum.getExpedition(null);
+            }
+
         } else {
             expedition = courierExpeditionEnum;
         }
 
 
-        CourierExpeditionDTO  courierExpeditionDTO = new CourierExpeditionDTO(order.getOrderNumber(), senderAddress, order.getShippingAddress(),
+        CourierExpeditionDTO  courierExpeditionDTO = new CourierExpeditionDTO(order.getOrderNumber(), pickupAddress, order.getShippingAddress(),
                 expedition, ""+volumes,  weight.toString() );
 
         return courierExpeditionDTO;

@@ -107,6 +107,9 @@ public class CourierExpeditionDTO {
         this.recipientCity = recipient.getCity();
         this.recipientCountry = recipient.getCountryCode();
         this.recipientPhone = recipient.getPhone().replace(" ","");
+        if (this.recipientPhone.contains("+351")){
+            this.recipientPhone = this.recipientPhone.replace("+351","");
+        }
         this.volumes = volumes;
         this.weight = weight;
     }

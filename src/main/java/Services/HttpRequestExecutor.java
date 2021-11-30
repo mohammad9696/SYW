@@ -94,8 +94,6 @@ public class HttpRequestExecutor {
     public static <S, T> S updateRequest (Class<S> responseObject, T requestObject, String requestUrl){
 
         try {
-            URL url= new URL(requestUrl);
-
             HttpPut put = new HttpPut(requestUrl);
             put.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
             

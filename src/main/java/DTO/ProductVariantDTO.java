@@ -1,52 +1,75 @@
 package DTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductVariantDTO {
 
     @JsonProperty("product_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String productId;
 
     @JsonProperty("id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String id;
 
     @JsonProperty("title")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String title;
 
     @JsonProperty("price")
-    private double price;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double price;
 
     @JsonProperty("sku")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String sku;
 
     @JsonProperty("position")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long position;
 
     @JsonProperty("barcode")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String barcode;
 
     @JsonProperty("grams")
-    private double grams;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double grams;
 
     @JsonProperty("weight")
-    private double weight;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double weight;
 
     @JsonProperty("weight_unit")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String weightUnit;
 
     @JsonProperty("inventory_item_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long inventoryItemId;
 
     @JsonProperty("inventory_quantity")
-    private int inventoryQuantity;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer inventoryQuantity;
 
     @JsonProperty("old_inventory_quantity")
-    private int oldInventoryQuantity;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer oldInventoryQuantity;
 
     @JsonProperty("requires_shipping")
-    private boolean requiresShipping;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean requiresShipping;
+
+    @JsonProperty("compare_at_price")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double compareAtPrice;
+
+    @JsonProperty("admin_graphql_api_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String adminGraphqlApiId;
 
     @Override
     public String toString() {
@@ -68,10 +91,6 @@ public class ProductVariantDTO {
                 ", adminGraphqlApiId='" + adminGraphqlApiId + '\'' +
                 '}';
     }
-
-    @JsonProperty("admin_graphql_api_id")
-    private String adminGraphqlApiId;
-
 
     public String getProductId() {
         return productId;
@@ -97,7 +116,7 @@ public class ProductVariantDTO {
         this.title = title;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
@@ -129,19 +148,19 @@ public class ProductVariantDTO {
         this.barcode = barcode;
     }
 
-    public double getGrams() {
+    public Double getGrams() {
         return grams;
     }
 
-    public void setGrams(double grams) {
+    public void setGrams(Double grams) {
         this.grams = grams;
     }
 
-    public double getWeight() {
+    public Double getWeight() {
         return weight;
     }
 
-    public void setWeight(double weight) {
+    public void setWeight(Double weight) {
         this.weight = weight;
     }
 
@@ -161,28 +180,36 @@ public class ProductVariantDTO {
         this.inventoryItemId = inventoryItemId;
     }
 
-    public int getInventoryQuantity() {
+    public Integer getInventoryQuantity() {
         return inventoryQuantity;
     }
 
-    public void setInventoryQuantity(int inventoryQuantity) {
+    public void setInventoryQuantity(Integer inventoryQuantity) {
         this.inventoryQuantity = inventoryQuantity;
     }
 
-    public int getOldInventoryQuantity() {
+    public Integer getOldInventoryQuantity() {
         return oldInventoryQuantity;
     }
 
-    public void setOldInventoryQuantity(int oldInventoryQuantity) {
+    public void setOldInventoryQuantity(Integer oldInventoryQuantity) {
         this.oldInventoryQuantity = oldInventoryQuantity;
     }
 
-    public boolean isRequiresShipping() {
+    public Boolean getRequiresShipping() {
         return requiresShipping;
     }
 
-    public void setRequiresShipping(boolean requiresShipping) {
+    public void setRequiresShipping(Boolean requiresShipping) {
         this.requiresShipping = requiresShipping;
+    }
+
+    public Double getCompareAtPrice() {
+        return compareAtPrice;
+    }
+
+    public void setCompareAtPrice(Double compareAtPrice) {
+        this.compareAtPrice = compareAtPrice;
     }
 
     public String getAdminGraphqlApiId() {

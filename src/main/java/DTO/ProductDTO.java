@@ -1,6 +1,7 @@
 package DTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -9,78 +10,72 @@ import java.util.List;
 public class ProductDTO {
 
     @JsonProperty("id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String id;
 
     @JsonProperty("title")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String title;
 
     @JsonProperty("body_html")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String bodyHtml;
 
     @JsonProperty("vendor")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String brand;
 
     @JsonProperty("product_type")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String productType;
 
     @JsonProperty("created_at")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String createdAt;
 
     @JsonProperty("handle")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String handle;
 
     @JsonProperty("updated_at")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String updatedAt;
 
     @JsonProperty("published_at")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String publishedAt;
 
     @JsonProperty("template_suffix")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String templateSuffix;
 
     @JsonProperty("status")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String status;
 
     @JsonProperty("published_scope")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String publishedScope;
 
     @JsonProperty("tags")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String tags;
 
     @JsonProperty("admin_graphql_api_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String adminGraphqlApiId;
 
     @JsonProperty("variants")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<ProductVariantDTO> variants;
 
     @JsonProperty("images")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<ProductImageDTO> images;
 
     @JsonProperty("image")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private ProductImageDTO image;
-
-    @Override
-    public String toString() {
-        return "DTO.ProductDTO{" +
-                "id='" + id + '\'' +
-                ", title='" + title + '\'' +
-                ", bodyHtml='" + bodyHtml + '\'' +
-                ", brand='" + brand + '\'' +
-                ", productType='" + productType + '\'' +
-                ", createdAt='" + createdAt + '\'' +
-                ", handle='" + handle + '\'' +
-                ", updateddAt='" + updatedAt + '\'' +
-                ", publishedAt='" + publishedAt + '\'' +
-                ", templateSuffix='" + templateSuffix + '\'' +
-                ", status='" + status + '\'' +
-                ", publishedScope='" + publishedScope + '\'' +
-                ", tags='" + tags + '\'' +
-                ", adminGraphqlApiId='" + adminGraphqlApiId + '\'' +
-                ", variants=" + variants +
-                ", images=" + images +
-                ", image=" + image +
-                '}';
-    }
 
     public String getId() {
         return id;
@@ -216,5 +211,12 @@ public class ProductDTO {
 
     public void setImage(ProductImageDTO image) {
         this.image = image;
+    }
+
+    @Override
+    public String toString() {
+        return "ProductDTO{" +
+                "title='" + title + '\'' +
+                '}';
     }
 }
