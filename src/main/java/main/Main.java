@@ -15,7 +15,7 @@ public class Main {
         try {
             Scanner scanner = new Scanner(System.in);
             System.out.println("Do you want to:");
-            System.out.println("1. Update product feeds");
+            System.out.println("1. Update products/feeds");
             System.out.println("2. Check/update orders");
             System.out.println("9. Exit program");
             System.out.println("99. Restart (at any time)");

@@ -42,7 +42,14 @@ public enum ConstantsEnum {
     SHIPPING_PRODUCT_VARIANT_ID("shopify.shipping.product.variant.id","insertValueInProperties"),
     KUANTOKUSTA_GET_ORDERS("kuantokusta.get.orders","insertValueInProperties"),
     KUANTOKUSTA_API_KEY("kuantokusta.api.key","insertValueInProperties"),
-    KUANTOKUSTA_MESSAGE_SHOPIFY("kuantokusta.order.message.shopify","insertValueInProperties");
+    KUANTOKUSTA_MESSAGE_SHOPIFY("kuantokusta.order.message.shopify","insertValueInProperties"),
+    SHOPIFY_UPDATE_PRODUCT_PREFIX("shopify.update.product.prefix","insertValueInProperties"),
+    SHOPIFY_UPDATE_PRODUCT_SUFIX("shopify.update.product.sufix","insertValueInProperties"),
+    SHOPIFY_UPDATE_PRODUCT_VARIANT_PRE_SUFIX("shopify.update.product.variant.pre.sufix","insertValueInProperties"),
+    SHOPIFY_UPDATE_PRODUCT_VARIANT_POS_PREFIX("shopify.update.product.variant.pos.sufix","insertValueInProperties"),
+    SHOPIFY_UPDATE_INVENTORY_PRODUCT_URL("shopify.update.inventory.product.url","insertValueInProperties"),
+    PRODUCT_PRE_SALE_MESSAGE("product.pre.sale.message","insertValueInProperties"),
+    PRODUCT_PRE_SALE_TITLE("product.pre.sale.title","insertValueInProperties");
 
 
     private String constantName;

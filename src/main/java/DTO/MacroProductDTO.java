@@ -65,7 +65,7 @@ public class MacroProductDTO {
         this.barcode = productDTO.getVariants().get(0).getBarcode();
         this.weight = productDTO.getVariants().get(0).getWeight();
         this.weightUnit = productDTO.getVariants().get(0).getWeightUnit();
-        this.requiresShipping = productDTO.getVariants().get(0).isRequiresShipping();
+        this.requiresShipping = productDTO.getVariants().get(0).getRequiresShipping();
         this.images = productDTO.getImages();
         this.inventory = productDTO.getVariants().get(0).getInventoryQuantity();
     }
