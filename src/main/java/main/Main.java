@@ -33,6 +33,8 @@ public class Main {
                 System.out.println("Option not available!");
                 chooseProcedure();
             }
+        } catch (NumberFormatException e){
+            System.out.println("Will proceed with invalid tracking number");
         } catch (Exception e){
             chooseProcedure();
         }

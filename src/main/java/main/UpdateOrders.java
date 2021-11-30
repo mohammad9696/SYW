@@ -59,7 +59,7 @@ public class UpdateOrders {
             order = getOrder(orderList, scanner);
             System.out.println("Please insert the weight of the order in grams");
             String weightOrder = scanner.next();
-            Main.isExit(Integer.parseInt(weightOrder));
+            //Main.isExit(Integer.parseInt(weightOrder));
             CourierExpeditionRequest.shipAndFulfill(order, pickupAddress, weightOrder, CourierExpeditionEnum.getExpedition("UNAVAILABLE"));
             orderList.remove(order);
             showOrderOptions(orderList, pickupAddress);
@@ -67,10 +67,10 @@ public class UpdateOrders {
             order = getOrder(orderList, scanner);
             System.out.println("Please insert the tracking number");
             String trackingNumber = scanner.next();
-            Main.isExit(Integer.parseInt(trackingNumber));
+            //Main.isExit(Integer.parseInt(trackingNumber));
             System.out.println("Please insert the tracking url");
             String trackingUrl = scanner.next();
-            Main.isExit(Integer.parseInt(trackingUrl));
+            //Main.isExit(Integer.parseInt(trackingUrl));
             FulfillmentDTO fulfillmentDTO = new FulfillmentDTO(trackingNumber, trackingUrl, order);
             Object result = HttpRequestExecutor.sendRequest(Object.class, new FulfillmentObject(fulfillmentDTO) , fulfillmentDTO.getRequestUrl());
             System.out.println(result);
