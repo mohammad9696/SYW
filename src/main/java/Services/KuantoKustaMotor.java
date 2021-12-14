@@ -21,12 +21,12 @@ public class KuantoKustaMotor {
         List<KuantoKustaOrderDTO> ordersToApprove = retrieveOrders();
         for (KuantoKustaOrderDTO kuantoKustaOrderDTO : ordersToApprove){
 
-            String orderId = null;
+            OrderDTO order = null;
             try {
-                //orderId = createOrderDtoFromKuantoKustaOrderDto(kuantoKustaOrderDTO);
-
-                if (orderId == null){
-                    //throw new Exception("Order not created");
+                order = createOrderDtoFromKuantoKustaOrderDto(kuantoKustaOrderDTO);
+                order = CreateOrderService.createDraftOrder(order);
+                if (order == null){
+                    throw new Exception("Order not created");
                 }
 
                 approveOrderKuantoKusta(kuantoKustaOrderDTO.getKuantoKustaOrderId());
@@ -48,7 +48,7 @@ public class KuantoKustaMotor {
     public static void approveOrderKuantoKusta(String kuantokustaOrderId){
         TypeReference<Object> typeReference = new TypeReference<Object>() {};
         System.out.println("kuantokusta order id " + kuantokustaOrderId );
-        HttpRequestExecutor.getObjectRequest(typeReference, KuantoKustaOrdersEnum.getUrlApproveOrder(kuantokustaOrderId), HttpRequestAuthTypeEnum.XXX_API_KEY, ConstantsEnum.KUANTOKUSTA_API_KEY.getConstantValue().toString());
+        HttpRequestExecutor.patchObjectRequest(typeReference, KuantoKustaOrdersEnum.getUrlApproveOrder(kuantokustaOrderId), HttpRequestAuthTypeEnum.XXX_API_KEY, ConstantsEnum.KUANTOKUSTA_API_KEY.getConstantValue().toString());
     }
 
     public static void updateOrderShopify(String orderId, String note){
@@ -58,7 +58,7 @@ public class KuantoKustaMotor {
         HttpRequestExecutor.updateRequest(OrderDTO.class, null, requestUrl);
     }
 
-    public static String createOrderDtoFromKuantoKustaOrderDto (KuantoKustaOrderDTO kuantoKustaOrderDTO) throws GeneralSecurityException, IOException {
+    public static OrderDTO createOrderDtoFromKuantoKustaOrderDto (KuantoKustaOrderDTO kuantoKustaOrderDTO) throws GeneralSecurityException, IOException {
         OrderDTO orderDTO = new OrderDTO();
         orderDTO.setPhone(kuantoKustaOrderDTO.getShippingAddress().getPhone());
         orderDTO.setBillingAdress(getOrderAddressDtoFromKuantoKustaOrderAddressDto(kuantoKustaOrderDTO.getBillingAddress()));
@@ -66,27 +66,18 @@ public class KuantoKustaMotor {
         Map<String, MacroProductDTO> productListDTO = UpdateFeeds.getUpdatedProductList();
 
         List<OrderLineDTO> lineItems = getOrderLinesFromKuantoKustaOrdersDto(kuantoKustaOrderDTO.getProducts(), productListDTO);
-        addShippingMethod(lineItems, kuantoKustaOrderDTO.getShippingPrice());
-        orderDTO.setLineItems(lineItems);
-        orderDTO.setFinancialStatus("paid");
-
-        OrderObjectDTO object = HttpRequestExecutor.sendRequest(OrderObjectDTO.class, new OrderObjectDTO(orderDTO), ConstantsEnum.CREATE_ORDER_REQUEST_SHOPIFY.getConstantValue().toString());
-        System.out.println(object);
-
-        return object.getOrder().getId();
-
-    }
-
-    public static void addShippingMethod(List<OrderLineDTO>  orderLines, Double shippingPrice){
-
-        if (shippingPrice == null){
-            shippingPrice = 0.0;
+        String shippingPrice = null;
+        if (kuantoKustaOrderDTO.getShippingPrice() == null){
+            shippingPrice = "0";
+        } else {
+            shippingPrice = String.valueOf(kuantoKustaOrderDTO.getShippingPrice());
         }
-        OrderLineDTO orderLineDTO = new OrderLineDTO();
-        orderLineDTO.setVariantId(ConstantsEnum.SHIPPING_PRODUCT_VARIANT_ID.getConstantValue().toString());
-        orderLineDTO.setPrice(shippingPrice);
-        orderLineDTO.setQuantity(1);
-        orderLines.add(orderLineDTO);
+        orderDTO.setShippingDTO (new OrderShippingDTO("KK", shippingPrice ,true));
+        orderDTO.setLineItems(lineItems);
+
+
+        return orderDTO;
+
     }
 
     public static List<OrderLineDTO> getOrderLinesFromKuantoKustaOrdersDto (List<KuantoKustaProductDTO> kuantokustaProducts, Map<String, MacroProductDTO> productListDTO){
@@ -96,6 +87,7 @@ public class KuantoKustaMotor {
             for (Map.Entry<String, MacroProductDTO> product: productListDTO.entrySet()) {
                 if (kkProduct.getOfferSku().equals(product.getValue().getId())){
                     OrderLineDTO orderLineDTO = new OrderLineDTO();
+
                     orderLineDTO.setVariantId(product.getValue().getVariantId());
                     orderLineDTO.setQuantity(kkProduct.getQuantity());
                     listOrderLines.add(orderLineDTO);
@@ -118,7 +110,7 @@ public class KuantoKustaMotor {
         orderAddressDTO.setProvince(kuantoKustaOrderAddressDTO.getCity());
         orderAddressDTO.setNipc(kuantoKustaOrderAddressDTO.getNipc());
         orderAddressDTO.setPhone(kuantoKustaOrderAddressDTO.getPhone());
-        orderAddressDTO.setCountryCode(kuantoKustaOrderAddressDTO.getCountry().equals("Portugal") ? "PT":"");
+        orderAddressDTO.setCountry(kuantoKustaOrderAddressDTO.getCountry());
 
 
         return orderAddressDTO;

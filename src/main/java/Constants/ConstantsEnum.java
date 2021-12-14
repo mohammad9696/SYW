@@ -15,6 +15,9 @@ public enum ConstantsEnum {
     CREATE_ORDER_REQUEST_SHOPIFY("shopify.create.order","insertValueInProperties"),
     UPDATE_ORDER_REQUEST_SHOPIFY_PREFIX("shopify.update.order.prefix","insertValueInProperties"),
     UPDATE_ORDER_REQUEST_SHOPIFY_SUFIX("shopify.update.order.sufix","insertValueInProperties"),
+    CREATE_DRAFT_ORDER_REQUEST_SHOPIFY("shopify.create.draft.order","insertValueInProperties"),
+    COMPLETE_DRAFT_ORDER_REQUEST_SHOPIFY_PREFIX("shopify.complete.draft.order.prefix","insertValueInProperties"),
+    COMPLETE_DRAFT_ORDER_REQUEST_SHOPIFY_SUFIX("shopify.complete.draft.order.sufix","insertValueInProperties"),
     KUANTOKUSTA_SPREADSHEET_ID("sheets.kuantokusta.id","insertValueInProperties"),
     DOTT_SPREADSHEET_ID("sheets.dott.id","insertValueInProperties"),
     SHOPIFY_MAIN_LOCATION_ID("shopify.location.main.id","insertValueInProperties"),
@@ -49,7 +52,10 @@ public enum ConstantsEnum {
     SHOPIFY_UPDATE_PRODUCT_VARIANT_POS_PREFIX("shopify.update.product.variant.pos.sufix","insertValueInProperties"),
     SHOPIFY_UPDATE_INVENTORY_PRODUCT_URL("shopify.update.inventory.product.url","insertValueInProperties"),
     PRODUCT_PRE_SALE_MESSAGE("product.pre.sale.message","insertValueInProperties"),
-    PRODUCT_PRE_SALE_TITLE("product.pre.sale.title","insertValueInProperties");
+    PRODUCT_PRE_SALE_TITLE("product.pre.sale.title","insertValueInProperties"),
+    GET_CUSTOMER_BY_EMAIL_URL("shopify.customer.get.by.email","insertValueInProperties"),
+    GET_CUSTOMER_BY_PHONE_URL("shopify.customer.get.by.phone","insertValueInProperties"),
+    CREATE_CUSTOMER_URL("shopify.customer.create.costumer","insertValueInProperties");
 
 
     private String constantName;

@@ -45,6 +45,10 @@ public class OrderAddressDTO {
     private String countryCode;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("country")
+    private String country;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("phone")
     private String phone;
 
@@ -126,6 +130,14 @@ public class OrderAddressDTO {
 
     public void setCountryCode(String countryCode) {
         this.countryCode = countryCode;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     @Override

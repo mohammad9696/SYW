@@ -79,7 +79,7 @@ public class UpdateProductService {
         ProductDTO product = new ProductDTO();
         product.setId(productToUpdate.getId());
         product.setBodyHtml("<p>" + ConstantsEnum.PRODUCT_PRE_SALE_MESSAGE.getConstantValue().toString() + " " + dateAvailable + ".\r\n</p>" +productToUpdate.getBodyHtml());
-        product.setTitle(ConstantsEnum.PRODUCT_PRE_SALE_TITLE.getConstantValue().toString() + productToUpdate.getTitle());
+        product.setTitle(ConstantsEnum.PRODUCT_PRE_SALE_TITLE.getConstantValue().toString() + " " + productToUpdate.getTitle());
 
         HttpRequestExecutor.updateRequest(Object.class, new ProductObjectDTO(product), getUpdateProductRequestUrl(productToUpdate));
 
@@ -108,7 +108,7 @@ public class UpdateProductService {
         String body = productToUpdate.getBodyHtml().split("</p>",2)[1];
         product.setBodyHtml(body);
 
-        String title = productToUpdate.getTitle().replace(ConstantsEnum.PRODUCT_PRE_SALE_TITLE.getConstantValue().toString(), "");
+        String title = productToUpdate.getTitle().replace(ConstantsEnum.PRODUCT_PRE_SALE_TITLE.getConstantValue().toString() + " ", "");
         product.setTitle(title);
 
         HttpRequestExecutor.updateRequest(Object.class, new ProductObjectDTO(product), getUpdateProductRequestUrl(productToUpdate));
@@ -170,11 +170,5 @@ public class UpdateProductService {
 
     private static String getUpdateProductInventoryRequestUrl(ProductDTO productDTO){
         return  ConstantsEnum.SHOPIFY_UPDATE_INVENTORY_PRODUCT_URL.getConstantValue().toString();
-    }
-
-    public static void main(String[] args) {
-        removeProductDiscount(getProductToUpdate(ProductSellTypeEnum.DISCOUNTED_PRODUCT));
-        //preSaleProduct();
-        //removePreSaleProduct();
     }
 }

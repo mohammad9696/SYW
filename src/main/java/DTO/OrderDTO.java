@@ -55,6 +55,10 @@ public class OrderDTO {
     private List<OrderShippingDTO> shippingLine;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("shipping_line")
+    private OrderShippingDTO shippingDTO;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("note")
     private String note;
 
@@ -70,7 +74,54 @@ public class OrderDTO {
     @JsonProperty("buyer_accepts_marketing")
     private boolean buyer_accepts_marketing = true;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("email")
+    private String email;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("currency")
+    private String currency;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("customer")
+    private CustomerDTO customerDTO;
+
+    public OrderDTO(String id, String financialStatus) {
+        this.id = id;
+        this.financialStatus = financialStatus;
+    }
+
+    public OrderShippingDTO getShippingDTO() {
+        return shippingDTO;
+    }
+
+    public void setShippingDTO(OrderShippingDTO shippingDTO) {
+        this.shippingDTO = shippingDTO;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public boolean isBuyer_accepts_marketing() {
+        return buyer_accepts_marketing;
+    }
+
+    public void setBuyer_accepts_marketing(boolean buyer_accepts_marketing) {
+        this.buyer_accepts_marketing = buyer_accepts_marketing;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     public String getInventoryBehaviour() {
         return inventoryBehaviour;
@@ -182,6 +233,14 @@ public class OrderDTO {
 
     public void setShippingLine(List<OrderShippingDTO> shippingLine) {
         this.shippingLine = shippingLine;
+    }
+
+    public CustomerDTO getCustomerDTO() {
+        return customerDTO;
+    }
+
+    public void setCustomerDTO(CustomerDTO customerDTO) {
+        this.customerDTO = customerDTO;
     }
 
     public OrderDTO() {

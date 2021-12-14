@@ -368,7 +368,7 @@ public class MacroProductDTO {
         String createdAt = original.getCreatedAt().equals(update.getCreatedAt()) ? original.getCreatedAt() : update.getCreatedAt();
         String updatedAt = original.getUpdatedAt().equals(update.getUpdatedAt()) ? original.getUpdatedAt() : update.getUpdatedAt();
         String handle = original.getUrl().equals(update.getUrl()) ? original.getUrl() : update.getUrl();
-        String status = original.getStatus().equals(update.getStatus()) ? original.getStatus() : update.getTitle();
+        String status = original.getStatus().equals(update.getStatus()) ? original.getStatus() : update.getStatus();
         String tags = original.getTags().equals(update.getTags()) ? original.getTags() : update.getTags();
         Double price = original.getPrice() == update.getPrice() ? original.getPrice() : update.getPrice();
         String sku = original.getSku().equals(update.getSku()) ? original.getSku() : update.getSku();
