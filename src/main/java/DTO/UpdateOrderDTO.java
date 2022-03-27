@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UpdateOrderDTO {
-    @JsonProperty("orderId")
+    @JsonProperty("order_id")
     private String orderId;
 
     @JsonProperty("note")

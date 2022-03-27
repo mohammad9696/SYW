@@ -260,7 +260,7 @@ public class OrderDTO {
             city = Utils.normalizeStringLenght(15, shippingAddress.getCity());
             postalCode = Utils.normalizeStringLenght(8, shippingAddress.getPostalCode());
         }
-        if (!shippingLine.isEmpty()){
+        if (shippingLine != null && !shippingLine.isEmpty()){
             shippingMethod = Utils.normalizeStringLenght(20, shippingLine.get(0).getShippingCode());
         }
 

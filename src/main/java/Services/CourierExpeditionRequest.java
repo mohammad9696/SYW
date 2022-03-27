@@ -22,6 +22,9 @@ public class CourierExpeditionRequest {
         CourierExpeditionDTO courierExpeditionDTO = getCourierExpedition(order, pickupAddress, weightOrder, courierExpeditionEnum);
         String accessToken = getOauthToken();
         String trackingCode = createShipmentWithCourier(courierExpeditionDTO, accessToken);
+        if (trackingCode == null){
+            throw new NullPointerException("Tracking Code is null");
+        }
         fulfillOrder(order, trackingCode);
     }
 
@@ -100,7 +103,8 @@ public class CourierExpeditionRequest {
     }
 
     private static void fulfillOrder(OrderDTO order, String trackingNumber){
-        FulfillmentDTO fulfillmentDTO = new FulfillmentDTO(trackingNumber, ConstantsEnum.TRACKING_URL_PREFIX.getConstantValue().toString()+trackingNumber, order);
+        String tracking = ConstantsEnum.TRACKING_URL_PREFIX.getConstantValue().toString()+trackingNumber;
+        FulfillmentDTO fulfillmentDTO = new FulfillmentDTO(tracking, tracking, order);
         Object result = HttpRequestExecutor.sendRequest(Object.class, new FulfillmentObject(fulfillmentDTO) , fulfillmentDTO.getRequestUrl());
         System.out.println(result);
     }

@@ -20,7 +20,7 @@ public class KuantoKustaOrderDTO {
     @JsonProperty("products")
     private List<KuantoKustaProductDTO> products;
 
-    @JsonProperty("shippingPrice")
+    @JsonProperty("shippingsPrice")
     private Double shippingPrice;
 
     @JsonProperty("orderState")

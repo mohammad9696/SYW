@@ -46,7 +46,7 @@ public class HttpRequestExecutor {
         return null;
     }
 
-    public static <T> T patchObjectRequest (TypeReference<T> objectClass, String requestUrl, HttpRequestAuthTypeEnum httpRequestAuthTypeEnum, String authKey){
+    public static void patchObjectRequest (String requestUrl, HttpRequestAuthTypeEnum httpRequestAuthTypeEnum, String authKey){
         try {
             URL url= new URL(requestUrl);
             CloseableHttpClient client = HttpClients.createDefault();
@@ -56,20 +56,17 @@ public class HttpRequestExecutor {
             if (httpRequestAuthTypeEnum == HttpRequestAuthTypeEnum.XXX_API_KEY && authKey != null){
                 patch.addHeader("x-api-key", authKey);
             }
+            //patch.addHeader(HttpHeaders.CONTENT_LENGTH,"0");
 
             CloseableHttpResponse getResponse = client.execute(patch);
-            ObjectMapper mapper = new ObjectMapper();
-            Object object = mapper.readValue(EntityUtils.toString(getResponse.getEntity()), objectClass);
+            System.out.println(getResponse.getEntity());
 
-            return  (T) object;
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return null;
     }
 
     public static <S, T> S sendRequest (Class<S> responseObject, T requestObject, String requestUrl){

@@ -28,9 +28,10 @@ public class KuantoKustaMotor {
                 if (order == null){
                     throw new Exception("Order not created");
                 }
-
                 approveOrderKuantoKusta(kuantoKustaOrderDTO.getKuantoKustaOrderId());
-               // updateOrderShopify(orderId, ConstantsEnum.KUANTOKUSTA_MESSAGE_SHOPIFY.getConstantValue() + kuantoKustaOrderDTO.getKuantoKustaOrderId());
+                updateOrderShopify(order.getId(), ConstantsEnum.KUANTOKUSTA_MESSAGE_SHOPIFY.getConstantValue() + kuantoKustaOrderDTO.getKuantoKustaOrderId());
+
+                //updateOrderShopify("4628576895233", ConstantsEnum.KUANTOKUSTA_MESSAGE_SHOPIFY.getConstantValue() + "9529-511334-4247");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -46,16 +47,15 @@ public class KuantoKustaMotor {
     }
 
     public static void approveOrderKuantoKusta(String kuantokustaOrderId){
-        TypeReference<Object> typeReference = new TypeReference<Object>() {};
         System.out.println("kuantokusta order id " + kuantokustaOrderId );
-        HttpRequestExecutor.patchObjectRequest(typeReference, KuantoKustaOrdersEnum.getUrlApproveOrder(kuantokustaOrderId), HttpRequestAuthTypeEnum.XXX_API_KEY, ConstantsEnum.KUANTOKUSTA_API_KEY.getConstantValue().toString());
+        HttpRequestExecutor.patchObjectRequest(KuantoKustaOrdersEnum.getUrlApproveOrder(kuantokustaOrderId), HttpRequestAuthTypeEnum.XXX_API_KEY, ConstantsEnum.KUANTOKUSTA_API_KEY.getConstantValue().toString());
     }
 
     public static void updateOrderShopify(String orderId, String note){
         String requestUrl = ConstantsEnum.UPDATE_ORDER_REQUEST_SHOPIFY_PREFIX.getConstantValue() + orderId +
                 ConstantsEnum.UPDATE_ORDER_REQUEST_SHOPIFY_SUFIX.getConstantValue();
         UpdateOrderObjectDTO updateOrderObjectDTO = new UpdateOrderObjectDTO(orderId, note);
-        HttpRequestExecutor.updateRequest(OrderDTO.class, null, requestUrl);
+        OrderDTO orderDTO = HttpRequestExecutor.updateRequest(OrderDTO.class, updateOrderObjectDTO, requestUrl);
     }
 
     public static OrderDTO createOrderDtoFromKuantoKustaOrderDto (KuantoKustaOrderDTO kuantoKustaOrderDTO) throws GeneralSecurityException, IOException {
@@ -72,9 +72,8 @@ public class KuantoKustaMotor {
         } else {
             shippingPrice = String.valueOf(kuantoKustaOrderDTO.getShippingPrice());
         }
-        orderDTO.setShippingDTO (new OrderShippingDTO("KK", shippingPrice ,true));
+        orderDTO.setShippingDTO (new OrderShippingDTO("Portes kuantokusta", shippingPrice ,true));
         orderDTO.setLineItems(lineItems);
-
 
         return orderDTO;
 
