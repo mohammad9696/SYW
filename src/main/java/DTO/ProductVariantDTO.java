@@ -35,6 +35,18 @@ public class ProductVariantDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String barcode;
 
+    @JsonProperty("option1")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String option1;
+
+    @JsonProperty("option2")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String option2;
+
+    @JsonProperty("option3")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String option3;
+
     @JsonProperty("grams")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Double grams;
@@ -214,6 +226,34 @@ public class ProductVariantDTO {
 
     public String getAdminGraphqlApiId() {
         return adminGraphqlApiId;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public String getOption1() {
+        return option1;
+    }
+
+    public void setOption1(String option1) {
+        this.option1 = option1;
+    }
+
+    public String getOption2() {
+        return option2;
+    }
+
+    public void setOption2(String option2) {
+        this.option2 = option2;
+    }
+
+    public String getOption3() {
+        return option3;
+    }
+
+    public void setOption3(String option3) {
+        this.option3 = option3;
     }
 
     public void setAdminGraphqlApiId(String adminGraphqlApiId) {

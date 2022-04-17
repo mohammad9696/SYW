@@ -48,6 +48,9 @@ public class MacroProductDTO {
         this.variantId = variantId;
     }
 
+    public MacroProductDTO(){
+
+    }
     public MacroProductDTO(ProductDTO productDTO){
         this.id = productDTO.getId();
         this.variantId = productDTO.getVariants().get(0).getId();
@@ -68,6 +71,65 @@ public class MacroProductDTO {
         this.requiresShipping = productDTO.getVariants().get(0).getRequiresShipping();
         this.images = productDTO.getImages();
         this.inventory = productDTO.getVariants().get(0).getInventoryQuantity();
+    }
+
+    public MacroProductDTO(ProductDTO productDTO, ProductVariantDTO variantDTO){
+        this.id = productDTO.getId();
+        this.variantId = variantDTO.getId();
+        this.title = productDTO.getTitle();
+        if (variantDTO.getOption1() != null && !variantDTO.getOption1().equals("Default Title")){
+            this.title = this.title + " " + variantDTO.getOption1();
+        }
+        if (variantDTO.getOption2() != null && !variantDTO.getOption2().equals("Default Title")){
+            this.title = this.title + " " + variantDTO.getOption2();
+        }
+        if (variantDTO.getOption3() != null && !variantDTO.getOption3().equals("Default Title")){
+            this.title = this.title + " " + variantDTO.getOption3();
+        }
+        this.bodyHtml = productDTO.getBodyHtml();
+        this.brand = productDTO.getBrand();
+        this.productType = productDTO.getProductType();
+        this.createdAt = productDTO.getCreatedAt();
+        this.updatedAt = productDTO.getUpdatedAt();
+        this.url = ConstantsEnum.PRODUCT_URL_PREFIX.getConstantValue() + productDTO.getHandle() + "?variant=" + variantDTO.getId();
+        this.status = productDTO.getStatus();
+        this.tags = productDTO.getTags();
+        this.price = variantDTO.getPrice();
+        this.sku = variantDTO.getSku();
+        this.barcode = variantDTO.getBarcode();
+        this.weight = variantDTO.getWeight();
+        this.weightUnit = variantDTO.getWeightUnit();
+        this.requiresShipping = variantDTO.getRequiresShipping();
+        this.images = productDTO.getImages();
+        this.inventory = variantDTO.getInventoryQuantity();
+    }
+
+    public List<MacroProductDTO> getProductWithVariants(ProductDTO productDTO){
+        List<MacroProductDTO> macroProductDTOS = new ArrayList<>();
+        for (ProductVariantDTO variantDTO : productDTO.getVariants()){
+            MacroProductDTO dto = new MacroProductDTO();
+            dto.id = productDTO.getId();
+            dto.variantId = variantDTO.getId();
+            dto.title = productDTO.getTitle();
+            dto.bodyHtml = productDTO.getBodyHtml();
+            dto.brand = productDTO.getBrand();
+            dto.productType = productDTO.getProductType();
+            dto.createdAt = productDTO.getCreatedAt();
+            dto.updatedAt = productDTO.getUpdatedAt();
+            dto.url = ConstantsEnum.PRODUCT_URL_PREFIX.getConstantValue() + productDTO.getHandle() + "?variant=" + variantDTO.getId();
+            dto.status = productDTO.getStatus();
+            dto.tags = productDTO.getTags();
+            dto.price = variantDTO.getPrice();
+            dto.sku = variantDTO.getSku();
+            dto.barcode = variantDTO.getBarcode();
+            dto.weight = variantDTO.getWeight();
+            dto.weightUnit = variantDTO.getWeightUnit();
+            dto.requiresShipping = variantDTO.getRequiresShipping();
+            dto.images = productDTO.getImages();
+            dto.inventory = variantDTO.getInventoryQuantity();
+            macroProductDTOS.add(dto);
+        }
+        return null;
     }
 
     public String getId() {

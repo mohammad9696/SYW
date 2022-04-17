@@ -13,6 +13,6 @@ public class GoogleFunctionUpdateFeeds implements HttpFunction {
     public void service(HttpRequest request, HttpResponse response) throws Exception {
         BufferedWriter writer = response.getWriter();
         writer.write("Executing feeds!");
-        UpdateFeeds.main(null);
+        UpdateFeeds.updateFeeds();
     }
 }

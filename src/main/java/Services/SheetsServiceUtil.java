@@ -6,6 +6,7 @@ import Constants.KuantoKustaPropertiesEnum;
 import Constants.ProductPropertiesEnum;
 import DTO.ProductDTO;
 import DTO.MacroProductDTO;
+import DTO.ProductVariantDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.auth.oauth2.Credential;
@@ -44,25 +45,28 @@ public class SheetsServiceUtil {
         if (valueRange.getValues() != null){
             for (List<Object> product : valueRange.getValues()){
                 MacroProductDTO macroProductDTO = new MacroProductDTO(product);
-                productList.put(macroProductDTO.getId(), macroProductDTO);
+                productList.put(macroProductDTO.getVariantId(), macroProductDTO);
             }
         }
         return productList;
     }
 
-    public static List<List<Object>> getMainSheetValues(Map<String, MacroProductDTO> originalProductList, List<ProductDTO> toUpdateProductsList){
+    public static List<List<Object>> getMainSheetValues(Map<String, MacroProductDTO> productsFromSheets, List<ProductDTO> productsFromShopify){
         List<List<Object>> _values = new ArrayList<>();
 
         _values.add(mainSheetHeaderRow());
 
-        for (ProductDTO product : toUpdateProductsList){
-            if (originalProductList.containsKey(product.getId())){
-                Map<String, Object> properties = MacroProductDTO.updateProduct(originalProductList.get(product.getId()), new MacroProductDTO(product)).getProductMap();
-                _values.add(mainSheetProductRow(properties));
-            } else {
-                Map<String, Object> properties = new MacroProductDTO(product).getProductMap();
-                _values.add(mainSheetProductRow(properties));
+        for (ProductDTO product : productsFromShopify){
+            for(ProductVariantDTO variant : product.getVariants()){
+                if (productsFromSheets.containsKey(variant.getId())){
+                    Map<String, Object> properties = MacroProductDTO.updateProduct(productsFromSheets.get(variant.getId()), new MacroProductDTO(product, variant)).getProductMap();
+                    _values.add(mainSheetProductRow(properties));
+                } else {
+                    Map<String, Object> properties = new MacroProductDTO(product, variant).getProductMap();
+                    _values.add(mainSheetProductRow(properties));
+                }
             }
+
 
         }
         return _values;
@@ -248,7 +252,7 @@ public class SheetsServiceUtil {
         List<Object> productRow = startKuantokustaSheetRow();
 
         if (macroProductDTO.getId() != null) {
-            productRow.set(KuantoKustaPropertiesEnum.ID.getColumn_number(), macroProductDTO.getId());
+            productRow.set(KuantoKustaPropertiesEnum.ID.getColumn_number(), macroProductDTO.getVariantId());
         }
 
         if (macroProductDTO.getTitle() != null) {

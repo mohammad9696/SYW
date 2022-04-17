@@ -84,7 +84,7 @@ public class KuantoKustaMotor {
 
         for (KuantoKustaProductDTO kkProduct : kuantokustaProducts){
             for (Map.Entry<String, MacroProductDTO> product: productListDTO.entrySet()) {
-                if (kkProduct.getOfferSku().equals(product.getValue().getId())){
+                if (kkProduct.getOfferSku().equals(product.getValue().getVariantId())){
                     OrderLineDTO orderLineDTO = new OrderLineDTO();
 
                     orderLineDTO.setVariantId(product.getValue().getVariantId());
