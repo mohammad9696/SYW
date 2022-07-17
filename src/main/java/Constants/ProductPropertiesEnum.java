@@ -22,14 +22,15 @@ public enum ProductPropertiesEnum {
     REQUIRES_SHIPPING ("requiresShipping", "R", 17),
     IMAGES ("images", "S", 18),
     INVENTORY("inventory","T", 19),
-    PRICE_DOTT("priceDottVat","U",20),
-    PREVIOUS_PRICE_DOTT("previousPriceDottVat","V",21),
-    PRICE_WORTEN("priceWortenVat","W",22),
-    PREVIOUS_PRICE_WORTEN("previousPriceWortenVat","X",23),
-    PRICE_AMAZON("priceAmazonVat","Y",24),
-    PREVIOUS_PRICE_AMAZON("previousPriceAmazonVat","Z",25),
-    PRICE_FNAC("priceFnacVat","AA",26),
-    PREVIOUS_PRICE_FNAC("previousPriceFnacVat","AB",27);
+    INVENTORY_POLICY("inventoryPolicy","U", 20),
+    PRICE_DOTT("priceDottVat","V",21),
+    PREVIOUS_PRICE_DOTT("previousPriceDottVat","W",22),
+    PRICE_WORTEN("priceWortenVat","X",23),
+    PREVIOUS_PRICE_WORTEN("previousPriceWortenVat","Y",24),
+    PRICE_AMAZON("priceAmazonVat","Z",25),
+    PREVIOUS_PRICE_AMAZON("previousPriceAmazonVat","AA",26),
+    PRICE_FNAC("priceFnacVat","AB",27),
+    PREVIOUS_PRICE_FNAC("previousPriceFnacVat","AC",28);
 
     private String column_name;
     private String column_letter;

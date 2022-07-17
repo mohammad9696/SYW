@@ -59,6 +59,10 @@ public class ProductVariantDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String weightUnit;
 
+    @JsonProperty("inventory_policy")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String inventoryPolicy;
+
     @JsonProperty("inventory_item_id")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long inventoryItemId;
@@ -258,5 +262,13 @@ public class ProductVariantDTO {
 
     public void setAdminGraphqlApiId(String adminGraphqlApiId) {
         this.adminGraphqlApiId = adminGraphqlApiId;
+    }
+
+    public String getInventoryPolicy() {
+        return inventoryPolicy;
+    }
+
+    public void setInventoryPolicy(String inventoryPolicy) {
+        this.inventoryPolicy = inventoryPolicy;
     }
 }

@@ -31,6 +31,7 @@ public class MacroProductDTO {
     private Boolean requiresShipping;
     private List<ProductImageDTO> images;
     private Integer inventory;
+    private String inventoryPolicy;
     private Double priceDottVat;
     private Double previousPriceDottVat;
     private Double priceWortenVat;
@@ -71,6 +72,7 @@ public class MacroProductDTO {
         this.requiresShipping = productDTO.getVariants().get(0).getRequiresShipping();
         this.images = productDTO.getImages();
         this.inventory = productDTO.getVariants().get(0).getInventoryQuantity();
+        this.inventoryPolicy = productDTO.getVariants().get(0).getInventoryPolicy();
     }
 
     public MacroProductDTO(ProductDTO productDTO, ProductVariantDTO variantDTO){
@@ -102,6 +104,7 @@ public class MacroProductDTO {
         this.requiresShipping = variantDTO.getRequiresShipping();
         this.images = productDTO.getImages();
         this.inventory = variantDTO.getInventoryQuantity();
+        this.inventoryPolicy = variantDTO.getInventoryPolicy();
     }
 
     public List<MacroProductDTO> getProductWithVariants(ProductDTO productDTO){
@@ -127,9 +130,18 @@ public class MacroProductDTO {
             dto.requiresShipping = variantDTO.getRequiresShipping();
             dto.images = productDTO.getImages();
             dto.inventory = variantDTO.getInventoryQuantity();
+            dto.inventoryPolicy = variantDTO.getInventoryPolicy();
             macroProductDTOS.add(dto);
         }
         return null;
+    }
+
+    public String getInventoryPolicy() {
+        return inventoryPolicy;
+    }
+
+    public void setInventoryPolicy(String inventoryPolicy) {
+        this.inventoryPolicy = inventoryPolicy;
     }
 
     public String getId() {
@@ -275,6 +287,11 @@ public class MacroProductDTO {
             this.inventory = 0;
         }
 
+        if (productObject.get(ProductPropertiesEnum.INVENTORY_POLICY.getColumn_number()) != null){
+            this.inventoryPolicy = (String) productObject.get(ProductPropertiesEnum.INVENTORY_POLICY.getColumn_number());
+        } else {
+            this.inventoryPolicy = null;
+        }
         if (productObject.get(ProductPropertiesEnum.PRICE_DOTT.getColumn_number()) != null){
             try {
                 this.priceDottVat = numberFormat.parse(productObject.get(ProductPropertiesEnum.PRICE_DOTT.getColumn_number()).toString()).doubleValue();
@@ -377,6 +394,7 @@ public class MacroProductDTO {
         map.put(ProductPropertiesEnum.REQUIRES_SHIPPING.getColumn_name(), requiresShipping);
         map.put(ProductPropertiesEnum.IMAGES.getColumn_name(), images);
         map.put(ProductPropertiesEnum.INVENTORY.getColumn_name(), inventory);
+        map.put(ProductPropertiesEnum.INVENTORY_POLICY.getColumn_name(), inventoryPolicy);
         map.put(ProductPropertiesEnum.PRICE_DOTT.getColumn_name(), priceDottVat);
         map.put(ProductPropertiesEnum.PREVIOUS_PRICE_DOTT.getColumn_name(), previousPriceDottVat);
         map.put(ProductPropertiesEnum.PRICE_WORTEN.getColumn_name(), priceWortenVat);
@@ -390,7 +408,7 @@ public class MacroProductDTO {
         return map;
     }
 
-    public MacroProductDTO(String id, String variantId, String title, String bodyHtml, String brand, String productType, String createdAt, String updatedAt, String url, String status, String tags, Double price, String sku, String barcode, Double weight, String weightUnit, Boolean requiresShipping, List<ProductImageDTO> images, Integer inventory, Double priceDottVat, Double previousPriceDottVat, Double priceWortenVat, Double previousPriceWortenVat, Double priceAmazonVat, Double previousPriceAmazonVat, Double priceFnacVat, Double previousPriceFnacVat) {
+    public MacroProductDTO(String id, String variantId, String title, String bodyHtml, String brand, String productType, String createdAt, String updatedAt, String url, String status, String tags, Double price, String sku, String barcode, Double weight, String weightUnit, Boolean requiresShipping, List<ProductImageDTO> images, Integer inventory, String inventoryPolicy, Double priceDottVat, Double previousPriceDottVat, Double priceWortenVat, Double previousPriceWortenVat, Double priceAmazonVat, Double previousPriceAmazonVat, Double priceFnacVat, Double previousPriceFnacVat) {
         this.id = id;
         this.variantId = variantId;
         this.title = title;
@@ -410,6 +428,7 @@ public class MacroProductDTO {
         this.requiresShipping = requiresShipping;
         this.images = images;
         this.inventory = inventory;
+        this.inventoryPolicy = inventoryPolicy;
         this.priceDottVat = priceDottVat;
         this.previousPriceDottVat = previousPriceDottVat;
         this.priceWortenVat = priceWortenVat;
@@ -440,6 +459,7 @@ public class MacroProductDTO {
         Boolean requiresShipping = original.getRequiresShipping() == update.getRequiresShipping() ? original.getRequiresShipping() : update.getRequiresShipping();
         List<ProductImageDTO> images = original.getImages() == update.getImages() ? original.getImages() : update.getImages();
         Integer inventory = original.getInventory() == update.getInventory() ? original.getInventory() : update.getInventory();
+        String inventoryPolicy = original.getInventoryPolicy().equals(update.getInventoryPolicy())? original.getInventoryPolicy() : update.getInventoryPolicy();
         Double priceDottVat = original.getPriceDottVat();
         Double previousPriceDottVat = original.getPreviousPriceDottVat();
         Double priceWortenVat = original.getPriceWortenVat();
@@ -448,7 +468,7 @@ public class MacroProductDTO {
         Double previousPriceAmazonVat = original.getPreviousPriceAmazonVat();
         Double priceFnacVat = original.getPriceFnacVat();
         Double previousPriceFnacVat = original.getPreviousPriceFnacVat();
-        return new MacroProductDTO(id, variantId, title, bodyHtml, brand, productType, createdAt, updatedAt, handle, status, tags, price, sku, barcode,weight, weightUnit, requiresShipping, images, inventory, priceDottVat, previousPriceDottVat, priceWortenVat, previousPriceWortenVat, priceAmazonVat, previousPriceAmazonVat, priceFnacVat, previousPriceFnacVat);
+        return new MacroProductDTO(id, variantId, title, bodyHtml, brand, productType, createdAt, updatedAt, handle, status, tags, price, sku, barcode,weight, weightUnit, requiresShipping, images, inventory, inventoryPolicy, priceDottVat, previousPriceDottVat, priceWortenVat, previousPriceWortenVat, priceAmazonVat, previousPriceAmazonVat, priceFnacVat, previousPriceFnacVat);
     }
 
     public String getTitle() {

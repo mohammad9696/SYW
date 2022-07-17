@@ -325,7 +325,13 @@ public class SheetsServiceUtil {
         }
 
         if (macroProductDTO.getInventory() != null){
-            productRow.set(KuantoKustaPropertiesEnum.INVENTORY.getColumn_number(), macroProductDTO.getInventory());
+            int inventoryToSet = macroProductDTO.getInventory();
+            if (inventoryToSet <= 0){
+                if (macroProductDTO.getInventoryPolicy().equals("continue")){
+                    inventoryToSet = 3;
+                }
+            }
+            productRow.set(KuantoKustaPropertiesEnum.INVENTORY.getColumn_number(), inventoryToSet );
         }
 
         return productRow;
@@ -353,6 +359,7 @@ public class SheetsServiceUtil {
         headers.set(ProductPropertiesEnum.REQUIRES_SHIPPING.getColumn_number(),ProductPropertiesEnum.REQUIRES_SHIPPING.getColumn_name());
         headers.set(ProductPropertiesEnum.IMAGES.getColumn_number(),ProductPropertiesEnum.IMAGES.getColumn_name());
         headers.set(ProductPropertiesEnum.INVENTORY.getColumn_number(),ProductPropertiesEnum.INVENTORY.getColumn_name());
+        headers.set(ProductPropertiesEnum.INVENTORY_POLICY.getColumn_number(),ProductPropertiesEnum.INVENTORY_POLICY.getColumn_name());
         headers.set(ProductPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), ProductPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_name());
         headers.set(ProductPropertiesEnum.PRICE_DOTT.getColumn_number(), ProductPropertiesEnum.PRICE_DOTT.getColumn_name());
         headers.set(ProductPropertiesEnum.PREVIOUS_PRICE_DOTT.getColumn_number(), ProductPropertiesEnum.PREVIOUS_PRICE_DOTT.getColumn_name());
@@ -448,6 +455,10 @@ public class SheetsServiceUtil {
 
         if (productDTO.containsKey(ProductPropertiesEnum.INVENTORY.getColumn_name()) && productDTO.get(ProductPropertiesEnum.INVENTORY.getColumn_name()) != null){
             productRow.set(ProductPropertiesEnum.INVENTORY.getColumn_number(),productDTO.get(ProductPropertiesEnum.INVENTORY.getColumn_name()));
+        }
+
+        if (productDTO.containsKey(ProductPropertiesEnum.INVENTORY_POLICY.getColumn_name()) && productDTO.get(ProductPropertiesEnum.INVENTORY_POLICY.getColumn_name()) != null){
+            productRow.set(ProductPropertiesEnum.INVENTORY_POLICY.getColumn_number(),productDTO.get(ProductPropertiesEnum.INVENTORY_POLICY.getColumn_name()));
         }
 
         //calcular preço sem iva
