@@ -1,5 +1,10 @@
 package Utils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.Locale;
+
 public class Utils {
     public static String normalizeStringLenght(int spacing, String string){
         if (string == null){
@@ -38,4 +43,11 @@ public class Utils {
 
         return result;
     }
+
+    public static String dateFormat(LocalDateTime dateTime){
+        return dateTime.format(dateFormat);
+    }
+    public static final DateTimeFormatter dateFormat = new DateTimeFormatterBuilder()
+            .appendPattern("EE, d 'de' MMMM")
+            .toFormatter(new Locale("pt","PT"));
 }

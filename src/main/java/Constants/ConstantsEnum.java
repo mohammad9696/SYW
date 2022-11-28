@@ -55,7 +55,19 @@ public enum ConstantsEnum {
     PRODUCT_PRE_SALE_TITLE("product.pre.sale.title","insertValueInProperties"),
     GET_CUSTOMER_BY_EMAIL_URL("shopify.customer.get.by.email","insertValueInProperties"),
     GET_CUSTOMER_BY_PHONE_URL("shopify.customer.get.by.phone","insertValueInProperties"),
-    CREATE_CUSTOMER_URL("shopify.customer.create.costumer","insertValueInProperties");
+    CREATE_CUSTOMER_URL("shopify.customer.create.costumer","insertValueInProperties"),
+    GET_PRODUCT_METAFIELDS_PREFIX("shopify.product.getMetafields.prefix","insertValueInProperties"),
+    GET_PRODUCT_METAFIELDS_SUFIX("shopify.product.getMetafields.sufix","insertValueInProperties"),
+    ETA_DEFAULT_ETA_MESSAGE("eta.default.eta","insertValueInProperties"),
+    ETA_DEFAULT_ETA_CART_MESSAGE("eta.default.eta.cart","insertValueInProperties"),
+    ETA_DEFAULT_ETA_ALTERNATIVE_MESSAGE("eta.default.etaAlt","insertValueInProperties"),
+    ETA_DEFAULT_ETA_MIN_DAYS("eta.default.etaMinDays","insertValueInProperties"),
+    ETA_DEFAULT_ETA_MAX_DAYS("eta.default.etaMaxDays","insertValueInProperties"),
+    ETA_DEFAULT_ETA_DATE("eta.default.etaDate","insertValueInProperties"),
+    ETA_DEFAULT_ETA_RESULT("eta.default.etaResult","insertValueInProperties"),
+    ETA_DEFAULT_ETA_CART_RESULT("eta.default.cart.etaResult","insertValueInProperties"),
+    ETA_CUTOUT_TIME("eta.cutout.time","15"),
+    HOLIDAY("holidays","2023-01-01,2022-12-25");
 
 
     private String constantName;

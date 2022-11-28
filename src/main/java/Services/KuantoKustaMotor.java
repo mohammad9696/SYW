@@ -10,16 +10,23 @@ import main.UpdateFeeds;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class KuantoKustaMotor {
 
     public static void kuantokustaToShopifySync(){
         List<KuantoKustaOrderDTO> ordersToApprove = retrieveOrders();
         for (KuantoKustaOrderDTO kuantoKustaOrderDTO : ordersToApprove){
+
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Order to accept: " + kuantoKustaOrderDTO.getKuantoKustaOrderId() );
+            System.out.println("Ordered items " + kuantoKustaOrderDTO.getProducts().get(0).getName() );
+            System.out.println("1: Accept  2: Don't accept (accept later)");
+            int option = scanner.nextInt();
+
+            if (option!=1){
+                continue;
+            }
 
             OrderDTO order = null;
             try {
