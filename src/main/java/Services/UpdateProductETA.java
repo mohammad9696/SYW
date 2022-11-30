@@ -50,12 +50,13 @@ public class UpdateProductETA {
         boolean checkCutoutTime = true;
 
         while (days>0){
+            availableDate = availableDate.plusDays(1);
+            dayOfWeek = availableDate.getDayOfWeek();
             while (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY || isHoliday(availableDate)) {
                 availableDate = availableDate.plusDays(1);
                 dayOfWeek = availableDate.getDayOfWeek();
                 checkCutoutTime = false;
             }
-            availableDate = availableDate.plusDays(1);
             days--;
         }
         if(hour>=Integer.parseInt(ConstantsEnum.ETA_CUTOUT_TIME.getConstantValue().toString())
