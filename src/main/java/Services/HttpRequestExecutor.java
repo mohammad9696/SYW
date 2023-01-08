@@ -2,6 +2,8 @@ package Services;
 import Constants.HttpRequestAuthTypeEnum;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.Headers;
+import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
@@ -12,15 +14,16 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 
 public class HttpRequestExecutor {
 
-    public static <T> T getObjectRequest (TypeReference<T> objectClass, String requestUrl){
-        return getObjectRequest ( objectClass,  requestUrl,  null,  null);
+    public static <T> T getObjectRequest (TypeReference<T> objectClass, String requestUrl, Map<String, Object> params){
+        return getObjectRequest ( objectClass,  requestUrl,  null,  null, params);
     }
 
-    public static <T> T getObjectRequest (TypeReference<T> objectClass, String requestUrl, HttpRequestAuthTypeEnum httpRequestAuthTypeEnum, String authKey){
+    public static <T> T getObjectRequest (TypeReference<T> objectClass, String requestUrl, HttpRequestAuthTypeEnum httpRequestAuthTypeEnum, String authKey, Map<String, Object> params){
         try {
             URL url= new URL(requestUrl);
             CloseableHttpClient client = HttpClients.createDefault();
@@ -32,6 +35,15 @@ public class HttpRequestExecutor {
             }
 
             CloseableHttpResponse getResponse = client.execute(get);
+
+            //para a paginacao dos produtos do shopify
+            if (getResponse.containsHeader("Link") && getResponse.getHeaders("Link")[0].getValue().contains("next")){
+                String link = getResponse.getHeaders("Link")[0].getValue();
+                String newUrl =link.split("//")[1].split(">")[0];
+                String newReqUrl = requestUrl.split("@")[0]+"@"+newUrl;
+                params.put("newReqUrl", newReqUrl);
+            }
+
             ObjectMapper mapper = new ObjectMapper();
             Object object = mapper.readValue(EntityUtils.toString(getResponse.getEntity()), objectClass);
 

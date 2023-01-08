@@ -37,8 +37,17 @@ public class UpdateFeeds {
     public static List<ProductDTO> getShopifyProductList(){
 
         TypeReference<ProductListDTO> typeReference = new TypeReference<ProductListDTO>() {};
-        return HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_PRODUCTS.getConstantValue().toString()).getProducts();
-
+        Map<String, Object> params = new HashMap<>();
+        List<ProductDTO> result = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_PRODUCTS.getConstantValue().toString(), params).getProducts();
+        while (!params.isEmpty()){
+            String newReqUrl = params.get("newReqUrl").toString();
+            params.remove("newReqUrl");
+            List<ProductDTO> resultNext = HttpRequestExecutor.getObjectRequest(typeReference, newReqUrl, params).getProducts();
+            for (ProductDTO i : resultNext){
+                result.add(i);
+            }
+        }
+        return result;
     }
 
     public static void main(String[] args) {

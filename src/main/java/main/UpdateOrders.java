@@ -7,6 +7,7 @@ import Services.CourierExpeditionRequest;
 import Services.HttpRequestExecutor;
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -23,7 +24,7 @@ public class UpdateOrders {
 
     private static List<OrderDTO> getOrdersToFulfil(){
         TypeReference<OrderListDTO> typeReference = new TypeReference<OrderListDTO>() {};
-        OrderListDTO list = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS.getConstantValue().toString());
+        OrderListDTO list = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS.getConstantValue().toString(), new HashMap<>());
 
         int i = 1;
         for (OrderDTO order : list.getOrders()){

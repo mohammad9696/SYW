@@ -9,14 +9,12 @@ import DTO.MacroProductDTO;
 import DTO.ProductVariantDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
-import javax.crypto.Mac;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.text.NumberFormat;
@@ -173,10 +171,10 @@ public class SheetsServiceUtil {
         }
 
         if(macroProductDTO.getPriceDottVat() != null){
-            productRow.set(DottPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPriceDottVat()/Double.parseDouble(ConstantsEnum.VAT_EXCLUDE.getConstantValue().toString()));
+            productRow.set(DottPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPriceDottVat()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString()));
             productRow.set(DottPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), macroProductDTO.getPriceDottVat());
         } else {
-            productRow.set(DottPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPrice()/Double.parseDouble(ConstantsEnum.VAT_EXCLUDE.getConstantValue().toString()));
+            productRow.set(DottPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPrice()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString()));
             productRow.set(DottPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), macroProductDTO.getPrice());
         }
 
@@ -289,7 +287,7 @@ public class SheetsServiceUtil {
         }
 
         if(macroProductDTO.getPrice() != null){
-            productRow.set(KuantoKustaPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPrice()/Double.parseDouble(ConstantsEnum.VAT_EXCLUDE.getConstantValue().toString()));
+            productRow.set(KuantoKustaPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPrice()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString()));
             productRow.set(KuantoKustaPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), macroProductDTO.getPrice());
         }
 
@@ -465,7 +463,7 @@ public class SheetsServiceUtil {
         NumberFormat numberFormat = NumberFormat.getInstance(Locale.FRANCE);
         if(productDTO.containsKey(ProductPropertiesEnum.PRICE_WITH_VAT.getColumn_name()) && productDTO.get(ProductPropertiesEnum.PRICE_WITH_VAT.getColumn_name()) != null){
             try {
-                productRow.set(ProductPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(),numberFormat.parse(productDTO.get(ProductPropertiesEnum.PRICE_WITH_VAT.getColumn_name()).toString()).doubleValue()/ Double.parseDouble(ConstantsEnum.VAT_EXCLUDE.getConstantValue().toString()));
+                productRow.set(ProductPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(),numberFormat.parse(productDTO.get(ProductPropertiesEnum.PRICE_WITH_VAT.getColumn_name()).toString()).doubleValue()/ Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString()));
             } catch (ParseException e) {
             }
         }

@@ -213,6 +213,9 @@ public class ProductDTO {
         this.image = image;
     }
 
+    public String getSku(){
+        return this.getVariants().get(0).getSku();
+    }
     @Override
     public String toString() {
         return "ProductDTO{" +

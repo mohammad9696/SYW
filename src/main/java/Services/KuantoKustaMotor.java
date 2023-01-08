@@ -20,7 +20,6 @@ public class KuantoKustaMotor {
 
             Scanner scanner = new Scanner(System.in);
             System.out.println("Order to accept: " + kuantoKustaOrderDTO.getKuantoKustaOrderId() );
-            System.out.println("Ordered items " + kuantoKustaOrderDTO.getProducts().get(0).getName() );
             System.out.println("1: Accept  2: Don't accept (accept later)");
             int option = scanner.nextInt();
 
@@ -48,7 +47,7 @@ public class KuantoKustaMotor {
     public static List<KuantoKustaOrderDTO> retrieveOrders (){
 
         TypeReference<List<KuantoKustaOrderDTO>> typeReference = new TypeReference<List<KuantoKustaOrderDTO>>() {};
-        List<KuantoKustaOrderDTO> orders = HttpRequestExecutor.getObjectRequest(typeReference , KuantoKustaOrdersEnum.GET_ORDERS_WAITING_APPROVAL.getOrderUrl(), HttpRequestAuthTypeEnum.XXX_API_KEY, ConstantsEnum.KUANTOKUSTA_API_KEY.getConstantValue().toString());
+        List<KuantoKustaOrderDTO> orders = HttpRequestExecutor.getObjectRequest(typeReference , KuantoKustaOrdersEnum.GET_ORDERS_WAITING_APPROVAL.getOrderUrl(), HttpRequestAuthTypeEnum.XXX_API_KEY, ConstantsEnum.KUANTOKUSTA_API_KEY.getConstantValue().toString(), new HashMap<>());
 
         return orders;
     }

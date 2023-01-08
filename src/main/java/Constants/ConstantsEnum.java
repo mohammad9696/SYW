@@ -6,7 +6,7 @@ import java.util.Properties;
 
 public enum ConstantsEnum {
     PRODUCT_URL_PREFIX("store.product.url.prefix", "insertValueInProperties"),
-    VAT_EXCLUDE("vat","insertValueInProperties"),
+    VAT_PT("vat","insertValueInProperties"),
     SHEETS_CLIENT_SECRET("sheets.client.secret.file","insertValueInProperties"),
     MAIN_SPREADSHEET_ID ("sheets.main.id","insertValueInProperties"),
     MAIN_SPREADSHEET_DATA_RANGE("sheets.main.data.range","insertValueInProperties"),
@@ -67,7 +67,11 @@ public enum ConstantsEnum {
     ETA_DEFAULT_ETA_RESULT("eta.default.etaResult","insertValueInProperties"),
     ETA_DEFAULT_ETA_CART_RESULT("eta.default.cart.etaResult","insertValueInProperties"),
     ETA_CUTOUT_TIME("eta.cutout.time","15"),
-    HOLIDAY("holidays","2023-01-01,2022-12-25");
+    HOLIDAY("holidays","2023-01-01,2022-12-25"),
+    MOLONI_GET_TOKEN("moloni.get.token","insertValueInProperties"),
+    MOLONI_COMPANY_ID("moloni.company.id","insertValueInProperties"),
+    MOLONI_PRODUCT_GET_ONE("moloni.product.get.one","insertValueInProperties"),
+    MOLONI_PRODUCT_UPDATE("moloni.product.update","insertValueInProperties");
 
 
     private String constantName;
