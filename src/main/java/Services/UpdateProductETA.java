@@ -103,47 +103,13 @@ public class UpdateProductETA {
     }
 
     public void calculateETA (ProductDTO productDTO){
-
+/*
         new Thread(){
             @Override
             public void run() {
 
                 try {
-                    String resultEtaMessage ="";
-                    String resultEtaCartMessage ="";
-                    ProductMetafieldDTO etaMessage = null;
-                    Map<String, String> placeholders = new HashMap<>();
-                    int stockAvailable = productDTO.getVariants().get(0).getInventoryQuantity();
-                    boolean availableToSell = stockAvailable > 0 || (productDTO.getVariants().get(0).getInventoryPolicy().equals("continue"));
 
-                    if (availableToSell) {
-                        LocalDateTime now = java.time.LocalDateTime.now();
-                        ProductMetafieldDTO etaCartMessage = getOrCreateMetafield(productDTO, ProductMetafieldEnum.ETA_CART);
-                        if (stockAvailable > 0){
-                            etaMessage = getOrCreateMetafield(productDTO, ProductMetafieldEnum.ETA);
-                            LocalDateTime availableDate = countWorkDays(now, 1);
-                            placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(availableDate));
-                            placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(availableDate,1)));
-                        } else if (stockAvailable <= 0){
-                            etaMessage = getOrCreateMetafield(productDTO, ProductMetafieldEnum.ETA2);
-                            LocalDateTime deliveryDate = getEtaDate(productDTO);
-                            if (deliveryDate != null && now.isBefore(deliveryDate)) {
-                                placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(countWorkDays(deliveryDate,0)));
-                                placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(deliveryDate,1)));
-                            } else {
-                                int minDays = Integer.parseInt(getOrCreateMetafield(productDTO, ProductMetafieldEnum.ETA_MIN).getValue().toString());
-                                int maxDays = Integer.parseInt(getOrCreateMetafield(productDTO, ProductMetafieldEnum.ETA_MAX).getValue().toString());
-                                placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(countWorkDays(now, minDays)));
-                                placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(now, maxDays)));
-                            }
-                        }
-
-                        resultEtaMessage = replacePlaceholders(etaMessage.getValue(), placeholders);
-                        resultEtaCartMessage = replacePlaceholders(etaCartMessage.getValue().toString(), placeholders);
-                        createOrUpdateMetafield(productDTO, ProductMetafieldEnum.ETA_RESULT, resultEtaMessage);
-                        createOrUpdateMetafield(productDTO, ProductMetafieldEnum.ETA_CART_RESULT, resultEtaCartMessage);
-                        System.out.println("ETA was updated : " + productDTO.getTitle());
-                    }
                 } catch (Exception e){
                     System.out.println("ETA UPDATE ERRROR : " + productDTO.getTitle());
                     calculateETA(productDTO);
@@ -153,7 +119,42 @@ public class UpdateProductETA {
             }
 
         }.start();
+*/
+        String resultEtaMessage ="";
+        String resultEtaCartMessage ="";
+        ProductMetafieldDTO etaMessage = null;
+        Map<String, String> placeholders = new HashMap<>();
+        int stockAvailable = productDTO.getVariants().get(0).getInventoryQuantity();
+        boolean availableToSell = stockAvailable > 0 || (productDTO.getVariants().get(0).getInventoryPolicy().equals("continue"));
 
+        if (availableToSell) {
+            LocalDateTime now = java.time.LocalDateTime.now();
+            ProductMetafieldDTO etaCartMessage = getOrCreateMetafield(productDTO, ProductMetafieldEnum.ETA_CART);
+            if (stockAvailable > 0){
+                etaMessage = getOrCreateMetafield(productDTO, ProductMetafieldEnum.ETA);
+                LocalDateTime availableDate = countWorkDays(now, 1);
+                placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(availableDate));
+                placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(availableDate,1)));
+            } else if (stockAvailable <= 0){
+                etaMessage = getOrCreateMetafield(productDTO, ProductMetafieldEnum.ETA2);
+                LocalDateTime deliveryDate = getEtaDate(productDTO);
+                if (deliveryDate != null && now.isBefore(deliveryDate)) {
+                    placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(countWorkDays(deliveryDate,0)));
+                    placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(deliveryDate,1)));
+                } else {
+                    int minDays = Integer.parseInt(getOrCreateMetafield(productDTO, ProductMetafieldEnum.ETA_MIN).getValue().toString());
+                    int maxDays = Integer.parseInt(getOrCreateMetafield(productDTO, ProductMetafieldEnum.ETA_MAX).getValue().toString());
+                    placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(countWorkDays(now, minDays)));
+                    placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(now, maxDays)));
+                }
+            }
+
+            resultEtaMessage = replacePlaceholders(etaMessage.getValue(), placeholders);
+            resultEtaCartMessage = replacePlaceholders(etaCartMessage.getValue().toString(), placeholders);
+            createOrUpdateMetafield(productDTO, ProductMetafieldEnum.ETA_RESULT, resultEtaMessage);
+            createOrUpdateMetafield(productDTO, ProductMetafieldEnum.ETA_CART_RESULT, resultEtaCartMessage);
+            System.out.println("ETA was updated : " + productDTO.getTitle());
+        }
 
     }
 

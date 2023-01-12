@@ -85,7 +85,6 @@ public class MoloniService {
                 productsToSync.add(productDTO);
             }
             isToAdd = true;
-
         }
 
         for (ProductDTO productDTO : productsToSync) {

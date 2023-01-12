@@ -20,6 +20,9 @@ public class KuantoKustaMotor {
 
             Scanner scanner = new Scanner(System.in);
             System.out.println("Order to accept: " + kuantoKustaOrderDTO.getKuantoKustaOrderId() );
+            for (KuantoKustaProductDTO product : kuantoKustaOrderDTO.getProducts()){
+                System.out.println(product.getOfferSku() + "  " + product.getName() + "  quantidade: " + product.getQuantity());
+            }
             System.out.println("1: Accept  2: Don't accept (accept later)");
             int option = scanner.nextInt();
 
