@@ -75,8 +75,7 @@ public class UpdateProductETA {
             days--;
         }
 
-
-        return availableDate;
+        return availableDate.withHour(10);
 
 
     }
