@@ -11,6 +11,7 @@ public enum ConstantsEnum {
     MAIN_SPREADSHEET_ID ("sheets.main.id","insertValueInProperties"),
     MAIN_SPREADSHEET_DATA_RANGE("sheets.main.data.range","insertValueInProperties"),
     GET_REQUEST_SHOPIFY_PRODUCTS("shopify.get.products","insertValueInProperties"),
+    GET_REQUEST_TESTSHOPIFY_PRODUCTS("test.shopify.get.products","insertValueInProperties"),
     GET_REQUEST_SHOPIFY_ORDERS("shopify.get.orders","insertValueInProperties"),
     CREATE_ORDER_REQUEST_SHOPIFY("shopify.create.order","insertValueInProperties"),
     UPDATE_ORDER_REQUEST_SHOPIFY_PREFIX("shopify.update.order.prefix","insertValueInProperties"),
@@ -46,8 +47,11 @@ public enum ConstantsEnum {
     KUANTOKUSTA_GET_ORDERS("kuantokusta.get.orders","insertValueInProperties"),
     KUANTOKUSTA_API_KEY("kuantokusta.api.key","insertValueInProperties"),
     KUANTOKUSTA_MESSAGE_SHOPIFY("kuantokusta.order.message.shopify","insertValueInProperties"),
+    SHOPIFY_CREATE_PRODUCT("shopify.create.product","insertValueInProperties"),
     SHOPIFY_UPDATE_PRODUCT_PREFIX("shopify.update.product.prefix","insertValueInProperties"),
     SHOPIFY_UPDATE_PRODUCT_SUFIX("shopify.update.product.sufix","insertValueInProperties"),
+    TESTSHOPIFY_UPDATE_PRODUCT_PREFIX("test.shopify.update.product.prefix","insertValueInProperties"),
+    TESTSHOPIFY_UPDATE_PRODUCT_SUFIX("test.shopify.update.product.sufix","insertValueInProperties"),
     SHOPIFY_UPDATE_PRODUCT_VARIANT_PRE_SUFIX("shopify.update.product.variant.pre.sufix","insertValueInProperties"),
     SHOPIFY_UPDATE_PRODUCT_VARIANT_POS_PREFIX("shopify.update.product.variant.pos.sufix","insertValueInProperties"),
     SHOPIFY_UPDATE_INVENTORY_PRODUCT_URL("shopify.update.inventory.product.url","insertValueInProperties"),
@@ -58,6 +62,8 @@ public enum ConstantsEnum {
     CREATE_CUSTOMER_URL("shopify.customer.create.costumer","insertValueInProperties"),
     GET_PRODUCT_METAFIELDS_PREFIX("shopify.product.getMetafields.prefix","insertValueInProperties"),
     GET_PRODUCT_METAFIELDS_SUFIX("shopify.product.getMetafields.sufix","insertValueInProperties"),
+    GET_TEST_PRODUCT_METAFIELDS_PREFIX("test.shopify.product.getMetafields.prefix","insertValueInProperties"),
+    GET_TEST_PRODUCT_METAFIELDS_SUFIX("test.shopify.product.getMetafields.sufix","insertValueInProperties"),
     ETA_DEFAULT_ETA_MESSAGE("eta.default.eta","insertValueInProperties"),
     ETA_DEFAULT_ETA_CART_MESSAGE("eta.default.eta.cart","insertValueInProperties"),
     ETA_DEFAULT_ETA_ALTERNATIVE_MESSAGE("eta.default.etaAlt","insertValueInProperties"),
@@ -66,12 +72,17 @@ public enum ConstantsEnum {
     ETA_DEFAULT_ETA_DATE("eta.default.etaDate","insertValueInProperties"),
     ETA_DEFAULT_ETA_RESULT("eta.default.etaResult","insertValueInProperties"),
     ETA_DEFAULT_ETA_CART_RESULT("eta.default.cart.etaResult","insertValueInProperties"),
+    ETA_DEFAULT_UNAVAILABLE("eta.default.unavailable","insertValueInProperties"),
     ETA_CUTOUT_TIME("eta.cutout.time","15"),
     HOLIDAY("holidays","2023-01-01,2022-12-25"),
     MOLONI_GET_TOKEN("moloni.get.token","insertValueInProperties"),
     MOLONI_COMPANY_ID("moloni.company.id","insertValueInProperties"),
+    MOLONI_CATEGORY_ID_SHOPIFY("moloni.category.id.shopify","insertValueInProperties"),
+    MOLONI_TAX_ID_VATNORMAL("moloni.tax.id.vatnormal","insertValueInProperties"),
+    MOLONI_MEASUMENTS_UNIT_ID("moloni.measurements.unit.id","insertValueInProperties"),
     MOLONI_PRODUCT_GET_ONE("moloni.product.get.one","insertValueInProperties"),
-    MOLONI_PRODUCT_UPDATE("moloni.product.update","insertValueInProperties");
+    MOLONI_PRODUCT_UPDATE("moloni.product.update","insertValueInProperties"),
+    MOLONI_PRODUCT_CREATE("moloni.product.create","insertValueInProperties");
 
 
     private String constantName;

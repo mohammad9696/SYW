@@ -1,5 +1,6 @@
 package DTO;
 
+import Constants.ConstantsEnum;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -79,6 +80,14 @@ public class ProductDTO {
 
     public String getId() {
         return id;
+    }
+
+    public String barcode(){
+        return this.getVariants().get(0).getBarcode();
+    }
+
+    public double priceWithoutVat() {
+        return this.getVariants().get(0).getPrice()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString());
     }
 
     public void setId(String id) {
@@ -213,7 +222,7 @@ public class ProductDTO {
         this.image = image;
     }
 
-    public String getSku(){
+    public String sku(){
         return this.getVariants().get(0).getSku();
     }
     @Override

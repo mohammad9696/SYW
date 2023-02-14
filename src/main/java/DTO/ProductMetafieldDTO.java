@@ -99,13 +99,17 @@ public class ProductMetafieldDTO {
         return admin_graphql_api_id;
     }
 
-    public ProductMetafieldDTO(String key, String value) {
-        this.namespace = "custom";
+    public ProductMetafieldDTO(String key,String namespace, String value) {
+        this.namespace = namespace;
         this.key = key;
         this.value = value;
         this.owner_resource = "product";
     }
 
     public ProductMetafieldDTO() {
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

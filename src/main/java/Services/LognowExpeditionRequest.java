@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class CourierExpeditionRequest {
+public class LognowExpeditionRequest {
 
     public static void shipAndFulfill (OrderDTO order, OrderAddressDTO pickupAddress){
         shipAndFulfill (order, pickupAddress, null, null);

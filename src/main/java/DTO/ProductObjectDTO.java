@@ -5,18 +5,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductObjectDTO {
+
     @JsonProperty("product")
-    private ProductDTO order;
+    private ProductDTO product;
 
-    public ProductDTO getOrder() {
-        return order;
+    public ProductDTO getProduct() {
+        return product;
     }
 
-    public void setOrder(ProductDTO order) {
-        this.order = order;
+    public void setProduct(ProductDTO product) {
+        this.product = product;
     }
 
-    public ProductObjectDTO(ProductDTO order) {
-        this.order = order;
+    public ProductObjectDTO(ProductDTO product) {
+        this.product = product;
     }
+
 }

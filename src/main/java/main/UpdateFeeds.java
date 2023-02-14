@@ -6,14 +6,10 @@ import DTO.*;
 import Services.HttpRequestExecutor;
 import Services.SheetsServiceUtil;
 import Services.SpreadsheetSnippets;
-import Services.UpdateProductService;
+import Services.ShopifyProductService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.api.services.sheets.v4.model.ValueRange;
-import com.google.cloud.functions.HttpFunction;
-import com.google.cloud.functions.HttpRequest;
-import com.google.cloud.functions.HttpResponse;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -34,21 +30,6 @@ public class UpdateFeeds {
 
     }
 
-    public static List<ProductDTO> getShopifyProductList(){
-
-        TypeReference<ProductListDTO> typeReference = new TypeReference<ProductListDTO>() {};
-        Map<String, Object> params = new HashMap<>();
-        List<ProductDTO> result = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_PRODUCTS.getConstantValue().toString(), params).getProducts();
-        while (!params.isEmpty()){
-            String newReqUrl = params.get("newReqUrl").toString();
-            params.remove("newReqUrl");
-            List<ProductDTO> resultNext = HttpRequestExecutor.getObjectRequest(typeReference, newReqUrl, params).getProducts();
-            for (ProductDTO i : resultNext){
-                result.add(i);
-            }
-        }
-        return result;
-    }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -64,16 +45,16 @@ public class UpdateFeeds {
             updateFeeds();
             main(args);
         } else if (option == 2) {
-            UpdateProductService.preSaleProduct();
+            ShopifyProductService.preSaleProduct();
             main(args);
         } else if (option == 3) {
-            UpdateProductService.removePreSaleProduct();
+            ShopifyProductService.removePreSaleProduct();
             main(args);
         } else if (option == 4) {
-            UpdateProductService.removeProductDiscount(UpdateProductService.getProductToUpdate(ProductSellTypeEnum.DISCOUNTED_PRODUCT));
+            ShopifyProductService.removeProductDiscount(ShopifyProductService.getProductToUpdate(ProductSellTypeEnum.DISCOUNTED_PRODUCT));
             main(args);
         } else if (option == 5) {
-            UpdateProductService.removeAllDiscounts();
+            ShopifyProductService.removeAllDiscounts();
             main(args);
         } else if (option == 6) {
             main(args);
@@ -90,7 +71,7 @@ public class UpdateFeeds {
             SpreadsheetSnippets snippet = new SpreadsheetSnippets(SheetsServiceUtil.getSheetsService());
 
             Map<String, MacroProductDTO> sheetsProductList = getSheetsProductList(spreadsheetId, snippet);
-            List<ProductDTO> productsFromShopify = getShopifyProductList();
+            List<ProductDTO> productsFromShopify = ShopifyProductService.getShopifyProductList();
 
             List<List<Object>> _values = SheetsServiceUtil.getMainSheetValues(sheetsProductList, productsFromShopify);
             snippet.updateValues(spreadsheetId, "A1","RAW", _values);

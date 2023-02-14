@@ -3,7 +3,7 @@ package main;
 import Constants.ConstantsEnum;
 import Constants.CourierExpeditionEnum;
 import DTO.*;
-import Services.CourierExpeditionRequest;
+import Services.LognowExpeditionRequest;
 import Services.HttpRequestExecutor;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -16,7 +16,7 @@ public class UpdateOrders {
 
     public static void main(String[] args) throws Exception {
 
-        OrderAddressDTO pickupAddres = CourierExpeditionRequest.getPickupAddress();
+        OrderAddressDTO pickupAddres = LognowExpeditionRequest.getPickupAddress();
         List<OrderDTO> orderList = getOrdersToFulfil();
         showOrderOptions(orderList, pickupAddres);
 
@@ -37,7 +37,7 @@ public class UpdateOrders {
     }
 
     private static void fulfillOne (OrderDTO orderDTO, OrderAddressDTO pickupAddress){
-        CourierExpeditionRequest.shipAndFulfill(orderDTO, pickupAddress);
+        LognowExpeditionRequest.shipAndFulfill(orderDTO, pickupAddress);
         System.out.println(orderDTO);
     }
 
@@ -61,7 +61,7 @@ public class UpdateOrders {
             System.out.println("Please insert the weight of the order in grams");
             String weightOrder = scanner.next();
             //Main.isExit(Integer.parseInt(weightOrder));
-            CourierExpeditionRequest.shipAndFulfill(order, pickupAddress, weightOrder, CourierExpeditionEnum.getExpedition("UNAVAILABLE"));
+            LognowExpeditionRequest.shipAndFulfill(order, pickupAddress, weightOrder, CourierExpeditionEnum.getExpedition("UNAVAILABLE"));
             orderList.remove(order);
             showOrderOptions(orderList, pickupAddress);
         } else if (option == 3){

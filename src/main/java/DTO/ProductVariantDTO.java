@@ -87,6 +87,18 @@ public class ProductVariantDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String adminGraphqlApiId;
 
+    @JsonProperty("fulfillment_service")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String fulfillmentService;
+
+    @JsonProperty("inventory_management")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String inventoryManagement;
+
+    @JsonProperty("taxable")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String taxable;
+
     @Override
     public String toString() {
         return "DTO.ProductVariantDTO{" +
@@ -134,10 +146,6 @@ public class ProductVariantDTO {
 
     public Double getPrice() {
         return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
     }
 
     public String getSku() {
@@ -226,6 +234,30 @@ public class ProductVariantDTO {
 
     public void setCompareAtPrice(Double compareAtPrice) {
         this.compareAtPrice = compareAtPrice;
+    }
+
+    public String getFulfillmentService() {
+        return fulfillmentService;
+    }
+
+    public void setFulfillmentService(String fulfillmentService) {
+        this.fulfillmentService = fulfillmentService;
+    }
+
+    public String getInventoryManagement() {
+        return inventoryManagement;
+    }
+
+    public void setInventoryManagement(String inventoryManagement) {
+        this.inventoryManagement = inventoryManagement;
+    }
+
+    public String getTaxable() {
+        return taxable;
+    }
+
+    public void setTaxable(String taxable) {
+        this.taxable = taxable;
     }
 
     public String getAdminGraphqlApiId() {

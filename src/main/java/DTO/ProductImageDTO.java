@@ -1,33 +1,54 @@
 package DTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductImageDTO {
     @JsonProperty("id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String id;
 
     @JsonProperty("product_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String productId;
 
     @JsonProperty("position")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String position;
 
     @JsonProperty("created_at")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String createdAt;
 
     @JsonProperty("updated_at")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String updateddAt;
 
     @JsonProperty("width")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long width;
 
     @JsonProperty("height")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long height;
 
     @JsonProperty("src")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String src;
+
+    @JsonProperty("alt")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String altText;
+
+    public String getAltText() {
+        return altText;
+    }
+
+    public void setAltText(String altText) {
+        this.altText = altText;
+    }
 
     @Override
     public String toString() {

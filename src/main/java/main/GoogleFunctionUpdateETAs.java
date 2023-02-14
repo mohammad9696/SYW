@@ -1,6 +1,6 @@
 package main;
 
-import Services.UpdateProductETA;
+import Services.ShopifyProductMetafieldsManager;
 import com.google.cloud.functions.HttpFunction;
 import com.google.cloud.functions.HttpRequest;
 import com.google.cloud.functions.HttpResponse;
@@ -14,6 +14,6 @@ public class GoogleFunctionUpdateETAs implements HttpFunction {
     public void service(HttpRequest request, HttpResponse response) throws Exception {
         BufferedWriter writer = response.getWriter();
         writer.write("Updating ETAs!");
-        UpdateProductETA.updateAllProductsEta(null);
+        ShopifyProductMetafieldsManager.updateAllProductsEta(null);
     }
 }

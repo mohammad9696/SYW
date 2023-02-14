@@ -2,7 +2,8 @@ package main;
 
 import Services.KuantoKustaMotor;
 import Services.MoloniService;
-import Services.UpdateProductETA;
+import Services.ProductLaunchService;
+import Services.ShopifyProductMetafieldsManager;
 
 import java.util.Scanner;
 
@@ -24,6 +25,7 @@ public class Main {
             System.out.println("3. Accept Kuantokusta orders");
             System.out.println("4. Atualizar ETAs no site");
             System.out.println("5. Sincronizar dados Shopify com o Moloni");
+            System.out.println("6. Launch product from testShopify");
             System.out.println("9. Exit program");
             System.out.println("99. Restart (at any time)");
             int option = scanner.nextInt();
@@ -38,10 +40,13 @@ public class Main {
                 KuantoKustaMotor.main(null);
                 chooseProcedure();
             } else if (option == 4){
-                UpdateProductETA.main(null);
+                ShopifyProductMetafieldsManager.main(null);
                 chooseProcedure();
             } else if (option == 5){
                 MoloniService.syncAllMoloniProducts();
+                chooseProcedure();
+            } else if (option == 6){
+                ProductLaunchService.main(null);
                 chooseProcedure();
             } else if (option == 9){
                 System.out.println("Good bye!");
