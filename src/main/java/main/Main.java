@@ -1,17 +1,21 @@
 package main;
 
-import Services.KuantoKustaMotor;
-import Services.MoloniService;
-import Services.ProductLaunchService;
-import Services.ShopifyProductMetafieldsManager;
+import Services.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Scanner;
 
 public class Main {
+
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) {
 
         System.out.println("Welcome to Smartify Your Work");
+        logger.info("Application was initiated.");
         chooseProcedure();
+
 
     }
 
@@ -26,16 +30,18 @@ public class Main {
             System.out.println("4. Atualizar ETAs no site");
             System.out.println("5. Sincronizar dados Shopify com o Moloni");
             System.out.println("6. Launch product from testShopify");
+            System.out.println("7. Fulfill Orders");
             System.out.println("9. Exit program");
             System.out.println("99. Restart (at any time)");
             int option = scanner.nextInt();
-            isExit(option);
             if (option == 1){
                 UpdateFeeds.main(null);
                 chooseProcedure();
             } else if (option == 2){
-                UpdateOrders.main(null);
-                chooseProcedure();
+                System.out.println("Lognow indisponível. Opção desabilitada");
+                return;
+                //UpdateOrders.main(null);
+                //chooseProcedure();
             } else if (option == 3){
                 KuantoKustaMotor.main(null);
                 chooseProcedure();
@@ -47,6 +53,9 @@ public class Main {
                 chooseProcedure();
             } else if (option == 6){
                 ProductLaunchService.main(null);
+                chooseProcedure();
+            } else if (option == 7){
+                FulfillmentService.main(null);
                 chooseProcedure();
             } else if (option == 9){
                 System.out.println("Good bye!");
@@ -60,11 +69,5 @@ public class Main {
             chooseProcedure();
         }
 
-    }
-
-    public static void isExit(int isExit) throws Exception{
-        if (isExit == 99){
-            throw new Exception();
-        }
     }
 }

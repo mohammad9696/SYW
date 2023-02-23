@@ -267,9 +267,10 @@ public class ProductLaunchService {
         if (service.doesProductMeetRequirementsToLaunch(productToLaunch, metaTitle, metaDescription)){
             ShopifyProductService productService = new ShopifyProductService();
             productService.createShopifyProduct(productToLaunch, metaTitle != null ? metaTitle.getValue() : null, metaDescription != null ? metaDescription.getValue() : null);
+            markProductAsLaunched(productToLaunch);
         }
 
-        markProductAsLaunched(productToLaunch);
+
 
 
         main(null);

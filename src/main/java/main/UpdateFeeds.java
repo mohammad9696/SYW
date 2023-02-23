@@ -3,18 +3,19 @@ package main;
 import Constants.ConstantsEnum;
 import Constants.ProductSellTypeEnum;
 import DTO.*;
-import Services.HttpRequestExecutor;
-import Services.SheetsServiceUtil;
-import Services.SpreadsheetSnippets;
-import Services.ShopifyProductService;
+import Services.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
 public class UpdateFeeds {
+
+    private static final Logger logger = LoggerFactory.getLogger(UpdateFeeds.class);
 
     public static Map<String, MacroProductDTO> getUpdatedProductList() throws GeneralSecurityException, IOException {
         String spreadsheetId = (String) ConstantsEnum.MAIN_SPREADSHEET_ID.getConstantValue();
@@ -32,6 +33,7 @@ public class UpdateFeeds {
 
 
     public static void main(String[] args) {
+        logger.info("Initiated");
         Scanner scanner = new Scanner(System.in);
         System.out.println("1. Update product feeds");
         System.out.println("2. Pre-sale product");

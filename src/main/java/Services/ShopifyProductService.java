@@ -6,10 +6,14 @@ import Constants.ProductMetafieldEnum;
 import Constants.ProductSellTypeEnum;
 import DTO.*;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class ShopifyProductService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShopifyProductService.class);
 
     private static List<ProductDTO> getProductToUpdateList (ProductSellTypeEnum showProducts){
         List<ProductDTO> products = getShopifyProductList();
@@ -182,6 +186,7 @@ public class ShopifyProductService {
 
     public static List<ProductDTO> getShopifyProductList(){
 
+        logger.info("Getting all product details list from shopify");
         TypeReference<ProductListDTO> typeReference = new TypeReference<ProductListDTO>() {};
         Map<String, Object> params = new HashMap<>();
         List<ProductDTO> result = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_PRODUCTS.getConstantValue().toString(), params).getProducts();

@@ -7,6 +7,8 @@ import DTO.*;
 import Utils.Utils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import main.UpdateFeeds;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -14,7 +16,10 @@ import java.util.*;
 
 public class KuantoKustaMotor {
 
+    private static final Logger logger = LoggerFactory.getLogger(KuantoKustaMotor.class);
+
     public static void kuantokustaToShopifySync(){
+        logger.info("Preparing to lists order to sync from kuantokusta");
         List<KuantoKustaOrderDTO> ordersToApprove = retrieveOrders();
         for (KuantoKustaOrderDTO kuantoKustaOrderDTO : ordersToApprove){
 
@@ -27,6 +32,7 @@ public class KuantoKustaMotor {
             int option = scanner.nextInt();
 
             if (option!=1){
+                logger.info("Preparing to sync order {} from kuantokusta", kuantoKustaOrderDTO.getKuantoKustaOrderId());
                 continue;
             }
 

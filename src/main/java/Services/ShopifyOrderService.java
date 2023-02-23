@@ -1,47 +1,51 @@
-package main;
+package Services;
 
 import Constants.ConstantsEnum;
 import Constants.CourierExpeditionEnum;
 import DTO.*;
-import Services.LognowExpeditionRequest;
-import Services.HttpRequestExecutor;
 import com.fasterxml.jackson.core.type.TypeReference;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
-public class UpdateOrders {
+public class ShopifyOrderService {
 
 
-    public static void main(String[] args) throws Exception {
 
-        OrderAddressDTO pickupAddres = LognowExpeditionRequest.getPickupAddress();
-        List<OrderDTO> orderList = getOrdersToFulfil();
-        showOrderOptions(orderList, pickupAddres);
-
+    protected static OrderDTO getOrder(List<OrderDTO> orderList, Scanner scanner)  {
+        int i = 1;
+        for (OrderDTO order : orderList){
+            System.out.println(i + "  " + order);
+            i++;
+        }
+        System.out.println("Please choose the order number");
+        int order = scanner.nextInt();
+        if (orderList.size() >= order){
+            return orderList.get(order-1);
+        }
+        else {
+            System.out.println("Order not found\n");
+            return getOrder(orderList, scanner);
+        }
     }
 
-    private static List<OrderDTO> getOrdersToFulfil(){
+    protected static List<OrderDTO> getOrdersToFulfil(){
         TypeReference<OrderListDTO> typeReference = new TypeReference<OrderListDTO>() {};
         OrderListDTO list = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS.getConstantValue().toString(), new HashMap<>());
 
-        int i = 1;
         for (OrderDTO order : list.getOrders()){
-            System.out.println(i + "   "+ order.toString());
-            i++;
         }
 
         System.out.println("\n");
         return list.getOrders();
     }
 
-    private static void fulfillOne (OrderDTO orderDTO, OrderAddressDTO pickupAddress){
+    private static void lognowFulfillOne(OrderDTO orderDTO, OrderAddressDTO pickupAddress){
         LognowExpeditionRequest.shipAndFulfill(orderDTO, pickupAddress);
         System.out.println(orderDTO);
     }
 
-    private static void showOrderOptions (List<OrderDTO> orderList, OrderAddressDTO pickupAddress) throws Exception {
+    private static void lognowShowOrderOptions(List<OrderDTO> orderList, OrderAddressDTO pickupAddress) throws Exception {
         OrderDTO order = null;
         Scanner scanner = new Scanner(System.in);
         System.out.println("Do you want to:");
@@ -53,9 +57,9 @@ public class UpdateOrders {
         int option = scanner.nextInt();
         if (option == 1){
             order = getOrder(orderList, scanner);
-            fulfillOne(order, pickupAddress);
+            lognowFulfillOne(order, pickupAddress);
             orderList.remove(order);
-            showOrderOptions(orderList, pickupAddress);
+            lognowShowOrderOptions(orderList, pickupAddress);
         } else if (option == 2){
             order = getOrder(orderList, scanner);
             System.out.println("Please insert the weight of the order in grams");
@@ -63,7 +67,7 @@ public class UpdateOrders {
             //Main.isExit(Integer.parseInt(weightOrder));
             LognowExpeditionRequest.shipAndFulfill(order, pickupAddress, weightOrder, CourierExpeditionEnum.getExpedition("UNAVAILABLE"));
             orderList.remove(order);
-            showOrderOptions(orderList, pickupAddress);
+            lognowShowOrderOptions(orderList, pickupAddress);
         } else if (option == 3){
             order = getOrder(orderList, scanner);
             System.out.println("Please insert the tracking number");
@@ -76,30 +80,20 @@ public class UpdateOrders {
             Object result = HttpRequestExecutor.sendRequest(Object.class, new FulfillmentObject(fulfillmentDTO) , fulfillmentDTO.getRequestUrl());
             System.out.println(result);
             orderList.remove(order);
-            showOrderOptions(orderList, pickupAddress);
+            lognowShowOrderOptions(orderList, pickupAddress);
         }  else if (option == 9){
             System.out.println("Exiting orders menu\n");
         } else {
             System.out.println("Option not available!\n");
-            showOrderOptions(orderList, pickupAddress);
+            lognowShowOrderOptions(orderList, pickupAddress);
         }
     }
 
-    private static OrderDTO getOrder(List<OrderDTO> orderList, Scanner scanner) throws Exception {
-        int i = 1;
-        for (OrderDTO order : orderList){
-            System.out.println(i + "  " + order);
-            i++;
-        }
-        System.out.println("Please choose the order number");
-        int order = scanner.nextInt();
-        Main.isExit(order);
-        if (orderList.size() >= order){
-            return orderList.get(order-1);
-        }
-        else {
-            System.out.println("Order not found\n");
-            return getOrder(orderList, scanner);
-        }
+    public static void lognowFulfillment() throws Exception {
+
+        OrderAddressDTO pickupAddres = LognowExpeditionRequest.getPickupAddress();
+        List<OrderDTO> orderList = getOrdersToFulfil();
+        lognowShowOrderOptions(orderList, pickupAddres);
+
     }
 }
