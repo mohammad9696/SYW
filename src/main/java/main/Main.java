@@ -24,24 +24,23 @@ public class Main {
         try {
             Scanner scanner = new Scanner(System.in);
             System.out.println("Do you want to:");
-            System.out.println("1. Update products/feeds");
-            System.out.println("2. Check/update orders");
+            System.out.println("1. Update feeds");
+            System.out.println("2. Fulfill Orders");
             System.out.println("3. Accept Kuantokusta orders");
             System.out.println("4. Atualizar ETAs no site");
-            System.out.println("5. Sincronizar dados Shopify com o Moloni");
-            System.out.println("6. Launch product from testShopify");
-            System.out.println("7. Fulfill Orders");
+            System.out.println("5. Sincronizar preços Shopify com o Moloni");
+            System.out.println("6. Sincronizar stocks Moloni com o shopify");
+            System.out.println("7. Launch product from testShopify");
+            System.out.println("8. Painel de compras (available soon)");
             System.out.println("9. Exit program");
             System.out.println("99. Restart (at any time)");
             int option = scanner.nextInt();
             if (option == 1){
-                UpdateFeeds.main(null);
+                UpdateFeeds.updateFeeds();
                 chooseProcedure();
             } else if (option == 2){
-                System.out.println("Lognow indisponível. Opção desabilitada");
-                return;
-                //UpdateOrders.main(null);
-                //chooseProcedure();
+                FulfillmentService.main(null);
+                chooseProcedure();
             } else if (option == 3){
                 KuantoKustaMotor.main(null);
                 chooseProcedure();
@@ -52,11 +51,12 @@ public class Main {
                 MoloniService.syncAllMoloniProducts();
                 chooseProcedure();
             } else if (option == 6){
+                StockKeepingUnitsService.updateOnlineStocks();
+            } else if (option == 7){
                 ProductLaunchService.main(null);
                 chooseProcedure();
-            } else if (option == 7){
-                FulfillmentService.main(null);
-                chooseProcedure();
+            } else if (option == 8){
+                //"painel de compras"
             } else if (option == 9){
                 System.out.println("Good bye!");
             } else {

@@ -13,46 +13,84 @@ public class FulfillmentService {
     private static final Logger logger = LoggerFactory.getLogger(FulfillmentService.class);
     public static void main(String[] args) {
         logger.info("Initiating order fulfillment service.");
+        Scanner scanner =new Scanner(System.in);
+        System.out.println("1: Process All Orders           2: Process one by one");
+        int option = scanner.nextInt();
+        if (option == 1){
+            logger.info("Processing orders automatically");
+            autoProcessingOrders(scanner);
+        } else if (option == 2){
+            logger.info("Processing orders one by one");
+            processOrdersIndividually(scanner);
+        } else {
+            return;
+        }
 
-        processOrders();
     }
 
-    private static void processOrders(){
-        Scanner scanner =new Scanner(System.in);
+    private static void autoProcessingOrders (Scanner scanner){
         List<ProductDTO> productDTOList = ShopifyProductService.getShopifyProductList();
-        OrderDTO orderDTO = ShopifyOrderService.getOrder(ShopifyOrderService.getOrdersToFulfil(), scanner);
+        List<OrderDTO> orderDTOS = ShopifyOrderService.getOrdersToFulfil();
+        for (OrderDTO order : orderDTOS){
+            processOrder(order, scanner, productDTOList);
+        }
+    }
+
+    private static void processOrdersIndividually(Scanner scanner){
+
+        List<ProductDTO> productDTOList = ShopifyProductService.getShopifyProductList();
+        while (true){
+            OrderDTO orderDTO = ShopifyOrderService.getOrder(ShopifyOrderService.getOrdersToFulfil(), scanner);
+            processOrder(orderDTO, scanner, productDTOList);
+        }
+    }
+
+    private static void processOrder(OrderDTO orderDTO, Scanner scanner, List<ProductDTO> productDTOList){
         logger.warn("Processing order {}", orderDTO.getOrderNumber());
+
+        if (!orderDTO.getShippingLine().isEmpty()){
+            if (orderDTO.getShippingLine().get(0).getShippingCode().equals(ConstantsEnum.SHOPIFY_ORDER_SHIPPING_CODE_PICKUP.getConstantValue().toString())){
+                return;
+            }
+        }
 
         String sku = Utils.normalizeStringLenght(15,"Sku");
         String ean = Utils.normalizeStringLenght(14, "Barcode");
         String productName = Utils.normalizeStringLenght(65, "Product Name");
         String quantity = Utils.normalizeStringLenght(10, "Quantity");
-        String lineToDisplayH = sku + " " + ean + " " + productName + " " + quantity;
+        String lineToDisplayH = sku + " " + ean + " " + productName + " " + quantity + "  System Stock";
 
         logger.info("Displaying orderLines for order {})", orderDTO.getOrderNumber());
-        System.out.println(lineToDisplayH);
+
+        String[] lines = new String[orderDTO.getLineItems().size()];
+        int lineN = 0;
         for(OrderLineDTO line : orderDTO.getLineItems()){
-            System.out.println(displayOrderLine(line, getProductDetailsFromOrderLine(line, productDTOList)));
+            lines[lineN] = displayOrderLine(line, getProductDetailsFromOrderLine(line, productDTOList)) + "   "+ MoloniService.getStock(line.getSku());
+            lineN++;
+        }
+        System.out.println("Contents of order " + orderDTO.getOrderNumber());
+        System.out.println(lineToDisplayH);
+        for (String line : lines){
+            System.out.println(line);
         }
 
-        System.out.println("Is all in stock?  1: Yes     2: No");
+        System.out.println("Please check physical stocks. Is all in stock?  1: Yes     2: No");
         int option = scanner.nextInt();
         if (option != 1){
             logger.warn("No enough stock was found for order {} ", orderDTO.getOrderNumber());
-            processOrders();
             return;
         } else {
-            logger.warn(("Stock confirmado para a encomenda"));
-
+            logger.warn("Stock confirmado para a encomenda {}", orderDTO.getOrderNumber());
         }
 
+        boolean proceed;
         for(OrderLineDTO line : orderDTO.getLineItems()){
             ProductDTO productDTO = getProductDetailsFromOrderLine(line, productDTOList);
             if (!productDTO.getImages().isEmpty()){
                 ShowImage.LaunchImage(productDTO.getImages().get(0).getSrc());
             }
 
-            boolean proceed = false;
+            proceed = false;
             while (!proceed){
                 System.out.println("Type product " + line.getSku() + " barcode:");
                 String barcode = scanner.next();
@@ -84,35 +122,31 @@ public class FulfillmentService {
 
                 }
             }
-
-            proceed = false;
-            int volumes = 0;
-            while (!proceed){
-                System.out.println("How many volumes were needed?");
-                volumes = scanner.nextInt();
-                System.out.println("Are you sure " + volumes + " volume(s) were needed? 1: Yes     2: No");
-                if (scanner.nextInt() == 1){
-                    proceed = true;
-                }
+        }
+        proceed = false;
+        int volumes = 0;
+        while (!proceed){
+            System.out.println("How many volumes were needed?");
+            volumes = scanner.nextInt();
+            System.out.println("Are you sure " + volumes + " volume(s) were needed? 1: Yes     2: No");
+            if (scanner.nextInt() == 1){
+                proceed = true;
             }
-            OutvioShipDTO outvioShipDTO= new OutvioShipDTO(orderDTO.getOrderNumber(), volumes);
-            OutvioShipResponseDTO response = HttpRequestExecutor.sendRequest(OutvioShipResponseDTO.class, outvioShipDTO, ConstantsEnum.OUTVIO_SHIP_URL.getConstantValue().toString());
+        }
+        OutvioShipDTO outvioShipDTO= new OutvioShipDTO(orderDTO.getOrderNumber(), volumes);
+        OutvioShipResponseDTO response = HttpRequestExecutor.sendRequest(OutvioShipResponseDTO.class, outvioShipDTO, ConstantsEnum.OUTVIO_SHIP_URL.getConstantValue().toString());
 
-            if (response != null && response.getSuccess()){
-                logger.info("Order {} was shipped successfully", orderDTO.getOrderNumber());
-                logger.info("Printing label for order {}", orderDTO.getOrderNumber());
-                PrinterService.print(ConstantsEnum.SYSTEM_PRINTER_LABEL.getConstantValue().toString(), response.getPdfLabelUrls()[0]);
-            } else {
-                logger.error("Could not print label for order {}", orderDTO.getOrderNumber());
-                return;
-            }
-
-            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
-
-
-
+        if (response != null && response.getSuccess()){
+            logger.info("Order {} was shipped successfully", orderDTO.getOrderNumber());
+            logger.info("Printing label for order {}", orderDTO.getOrderNumber());
+            PrinterService.print(ConstantsEnum.SYSTEM_PRINTER_LABEL.getConstantValue().toString(), response.getPdfLabelUrls()[0]);
+        } else {
+            logger.error("Could not print label for order {}", orderDTO.getOrderNumber());
+            return;
         }
 
+        MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
+        return;
 
 
 

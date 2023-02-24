@@ -4,14 +4,40 @@ import Constants.ConstantsEnum;
 import Constants.CourierExpeditionEnum;
 import DTO.*;
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import com.google.api.client.util.ArrayMap;
+
+import java.util.*;
 
 public class ShopifyOrderService {
 
 
 
+
+    public static Map<String, StockDetailsDTO> getStockDetails(){
+        Map<String, StockDetailsDTO> stringStockDetailsDTOMap = new ArrayMap<>();
+        List<OrderDTO> orderList = getOrdersUnpaidAndPaid();
+        for (OrderDTO order : orderList){
+            for (OrderLineDTO line : order.getLineItems()){
+                StockDetailsDTO stockDetailsDTO = new StockDetailsDTO(line.getSku());
+                if(stringStockDetailsDTOMap.containsKey(line.getSku())) {
+                    stockDetailsDTO = stringStockDetailsDTOMap.get(line.getSku());
+                }
+                int reservedAmount = line.getQuantity();
+                int sumToAmount = 0;
+                if (order.getFinancialStatus().equals("paid")){
+                    sumToAmount = stockDetailsDTO.getShopifyPaidReservations() != null? stockDetailsDTO.getShopifyPaidReservations(): 0;
+                    reservedAmount = reservedAmount + sumToAmount;
+                    stockDetailsDTO.setShopifyPaidReservations(reservedAmount);
+                } else {
+                    sumToAmount = stockDetailsDTO.getShopifyUnpaidReservations() != null? stockDetailsDTO.getShopifyUnpaidReservations(): 0;
+                    reservedAmount = reservedAmount + sumToAmount;
+                    stockDetailsDTO.setShopifyUnpaidReservations(reservedAmount);
+                }
+                stringStockDetailsDTOMap.put(line.getSku(), stockDetailsDTO);
+            }
+        }
+        return stringStockDetailsDTOMap;
+    }
     protected static OrderDTO getOrder(List<OrderDTO> orderList, Scanner scanner)  {
         int i = 1;
         for (OrderDTO order : orderList){
@@ -32,11 +58,13 @@ public class ShopifyOrderService {
     protected static List<OrderDTO> getOrdersToFulfil(){
         TypeReference<OrderListDTO> typeReference = new TypeReference<OrderListDTO>() {};
         OrderListDTO list = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS.getConstantValue().toString(), new HashMap<>());
+        Collections.reverse(list.getOrders());
+        return list.getOrders();
+    }
 
-        for (OrderDTO order : list.getOrders()){
-        }
-
-        System.out.println("\n");
+    protected static List<OrderDTO> getOrdersUnpaidAndPaid(){
+        TypeReference<OrderListDTO> typeReference = new TypeReference<OrderListDTO>() {};
+        OrderListDTO list = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS_ALL_OPEN_UNPAID_AND_PAID.getConstantValue().toString(), new HashMap<>());
         return list.getOrders();
     }
 

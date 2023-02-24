@@ -6,7 +6,7 @@
     </appender>
 
     <appender name="fileAppender" class="ch.qos.logback.core.FileAppender">
-        <file>${user.dir}/sywLog.log</file>
+        <file>sywLog.log</file>
         <append>true</append>
         <encoder>
             <pattern>%d [%thread] %-5level  %logger{35} - %msg%n</pattern>

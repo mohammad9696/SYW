@@ -18,11 +18,26 @@ public class MoloniService {
     private static final Logger logger = LoggerFactory.getLogger(MoloniService.class);
 
     private static String getToken(){
-        logger.info("Getting token for moloni request");
-        TypeReference<MoloniTokenDTO> typeReference = new TypeReference<MoloniTokenDTO>(){};
-        MoloniTokenDTO token = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.MOLONI_GET_TOKEN.getConstantValue().toString(), new ArrayMap<>());
-        return token.getAccessToken();
+        try{
+            logger.info("Getting token for moloni request");
+            TypeReference<MoloniTokenDTO> typeReference = new TypeReference<MoloniTokenDTO>(){};
+            MoloniTokenDTO token = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.MOLONI_GET_TOKEN.getConstantValue().toString(), new ArrayMap<>());
+            return token.getAccessToken();
+        } catch (Exception e){
+            logger.error("Getting token for moloni failed. Trying again");
+            return getToken();
+        }
+
     }
+    
+    public static int getStock(String sku){
+        MoloniProductDTO productDTO = getProduct(sku);
+        if (productDTO.getSku() != null){
+            return productDTO.getInventory();
+        }
+        return 0;
+    }
+
 
     public static boolean existsProductMoloni(String sku){
         logger.info("Checkint if exists sku in moloni {}", sku);
@@ -39,14 +54,17 @@ public class MoloniService {
             MoloniProductDTO product = new MoloniProductDTO(Long.parseLong(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString()), sku);
             MoloniProductDTO[] products = HttpRequestExecutor.sendRequest(MoloniProductDTO[].class, product, ConstantsEnum.MOLONI_PRODUCT_GET_ONE.getConstantValue().toString()+getToken());
 
-            if(products != null && products.length != 0 && products[0].getSku().equals(sku)){
-                return products[0];
-            } else {
-                return null;
+            if(products != null && products.length != 0){
+                for (MoloniProductDTO i : products){
+                    if(i.getSku().equals(sku)){
+                        return products[0];
+                    }
+                }
             }
         } catch (Exception e) {
             return null;
         }
+        return null;
 
     }
 
@@ -59,7 +77,7 @@ public class MoloniService {
 
 
     }
-    private static String getPdfLink(String documentId){
+    public static String getPdfLink(String documentId){
         String result = "";
         Map<String, String> queryParams;
         logger.info("Getting pdf link for documentId {}", documentId);
@@ -96,7 +114,7 @@ public class MoloniService {
             logger.info("Waiting 15 seconds for document to be created and then retrieved for order {}", shopifyOrderNumber);
             Thread.sleep(15000);
         } catch (InterruptedException e) {
-            logger.error("Waiting 15 seconds for document unsuccesfull");
+            logger.error("Waiting 15 seconds for document unsuccessful");
         }
         MoloniDocumentDTO[] response = HttpRequestExecutor.sendRequest(MoloniDocumentDTO[].class, document, ConstantsEnum.MOLONI_DOCUMENT_GET_ALL.getConstantValue()+getToken());
         if(response.length==1){
@@ -115,13 +133,12 @@ public class MoloniService {
 
             tries++;
             if(tries<=6){
-                try {
-                    Thread.sleep(15000);
-                } catch (InterruptedException e) {
-                    logger.error("Could not wait 15 seconds to retry getting document for order {}", shopifyOrderNumber);
-                }
-                getMoloniDocumentIdsFromShopifyOrder(shopifyOrderNumber, tries);
+                documentIds = getMoloniDocumentIdsFromShopifyOrder(shopifyOrderNumber, tries);
             } else {
+                logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
+                logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
+                logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
+                logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
                 logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
             }
         }

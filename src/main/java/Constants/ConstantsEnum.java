@@ -13,6 +13,7 @@ public enum ConstantsEnum {
     GET_REQUEST_SHOPIFY_PRODUCTS("shopify.get.products","insertValueInProperties"),
     GET_REQUEST_TESTSHOPIFY_PRODUCTS("test.shopify.get.products","insertValueInProperties"),
     GET_REQUEST_SHOPIFY_ORDERS("shopify.get.orders","insertValueInProperties"),
+    GET_REQUEST_SHOPIFY_ORDERS_ALL_OPEN_UNPAID_AND_PAID("shopify.getAllOpen.orders","insertValueInProperties"),
     CREATE_ORDER_REQUEST_SHOPIFY("shopify.create.order","insertValueInProperties"),
     UPDATE_ORDER_REQUEST_SHOPIFY_PREFIX("shopify.update.order.prefix","insertValueInProperties"),
     UPDATE_ORDER_REQUEST_SHOPIFY_SUFIX("shopify.update.order.sufix","insertValueInProperties"),
@@ -89,7 +90,8 @@ public enum ConstantsEnum {
     SYSTEM_PRINTER_LABEL("system.printer.label","insertValueInProperties"),
     SYSTEM_PRINTER_PAPER("system.printer.paper","insertValueInProperties"),
     OUTVIO_SHIP_URL("outvio.ship.url","insertValueInProperties"),
-    OUTVIO_API_KEY("outvio.apikey","insertValueInProperties");
+    OUTVIO_API_KEY("outvio.apikey","insertValueInProperties"),
+    SHOPIFY_ORDER_SHIPPING_CODE_PICKUP("shopify.order.shipping.code.pickup","insertValueInProperties");
 
 
     private String constantName;

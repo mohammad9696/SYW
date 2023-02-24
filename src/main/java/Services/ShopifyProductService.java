@@ -94,14 +94,17 @@ public class ShopifyProductService {
 
         HttpRequestExecutor.updateRequest(Object.class, new ProductVariantObjectDTO(variant), getUpdateProductVariantRequestUrl(productToUpdate));
 
+        setInvetory(stock, productToUpdate);
+
+        return true;
+    }
+
+    public static void setInvetory (int stock, ProductDTO productDTO){
         ProductInventoryDTO inventoryDTO = new ProductInventoryDTO();
         inventoryDTO.setLocationId(Long.parseLong(ConstantsEnum.SHOPIFY_MAIN_LOCATION_ID.getConstantValue().toString()));
         inventoryDTO.setAvailable(stock);
-        inventoryDTO.setInventoryItemId(productToUpdate.getVariants().get(0).getInventoryItemId());
-
-        HttpRequestExecutor.sendRequest(Object.class, inventoryDTO, getUpdateProductInventoryRequestUrl(productToUpdate));
-
-        return true;
+        inventoryDTO.setInventoryItemId(productDTO.getVariants().get(0).getInventoryItemId());
+        HttpRequestExecutor.sendRequest(Object.class, inventoryDTO, getUpdateProductInventoryRequestUrl(productDTO));
     }
 
     public static boolean removePreSaleProduct (){
