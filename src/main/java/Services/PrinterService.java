@@ -23,12 +23,12 @@ public class PrinterService {
     private static void print (String printerName, String printUrl, int tries) {
         logger.info("Preparing to print from {} the file in {}", printerName, printUrl);
         PrintService[] printServices = PrintServiceLookup.lookupPrintServices(null, null);
-        System.out.println("Number of print services: " + printServices.length);
+        logger.info("Number of print services: " + printServices.length);
         for (PrintService printer : printServices) {
-            System.out.println("Printer: " + printer.getName());
+            logger.info("Checking if the Printer: " + printer.getName() + "matches " + printerName);
             if (printer.getName().equals(printerName) && tries<2) {
                 try {
-                    logger.info("Printing from {} the file in {}", printerName, printUrl);
+                    logger.info("Printer {} matches. Printing from {} the file in {}", printerName, printerName, printUrl);
                     InputStream is = new URL(printUrl).openStream();
                     DocAttributeSet das = new HashDocAttributeSet();
                     das.add(PrintQuality.HIGH);
@@ -37,7 +37,7 @@ public class PrinterService {
                     //das.add(MediaSizeName.ISO_A4);
                     das.add(MediaSizeName.NA_10X15_ENVELOPE);
 
-                    Doc pdfDoc = new SimpleDoc(is, DocFlavor.INPUT_STREAM.PDF, das);
+                    Doc pdfDoc = new SimpleDoc(is, DocFlavor.INPUT_STREAM.AUTOSENSE, das);
                     DocPrintJob docPrintJob = printer.createPrintJob();
 
                     HashPrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
@@ -50,7 +50,7 @@ public class PrinterService {
                     break;
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
-                    logger.error("File not found Printing from {} the file in {}", printerName, printUrl);
+                    logger.error("File not found Printing from {} the file in {}. Error: {}", printerName, printUrl);
 
                 } catch (MalformedURLException e) {
                     e.printStackTrace();

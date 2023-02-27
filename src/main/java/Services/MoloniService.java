@@ -70,9 +70,14 @@ public class MoloniService {
 
     public static void printShopifyDocumentsInMoloni(String shopifyOrderNumber ){
         String[] documentIds = getMoloniDocumentIdsFromShopifyOrder(shopifyOrderNumber);
-        for(int i = 0; i<documentIds.length; i++){
-            String printUrl = getPdfLink(documentIds[i]);
-            PrinterService.print(ConstantsEnum.SYSTEM_PRINTER_PAPER.getConstantValue().toString(), printUrl);
+        if (documentIds == null ){
+            logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
+            logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
+        } else {
+            for(int i = 0; i<documentIds.length; i++){
+                String printUrl = getPdfLink(documentIds[i]);
+                PrinterService.print(ConstantsEnum.SYSTEM_PRINTER_PAPER.getConstantValue().toString(), printUrl);
+            }
         }
 
 
@@ -135,8 +140,6 @@ public class MoloniService {
             if(tries<=6){
                 documentIds = getMoloniDocumentIdsFromShopifyOrder(shopifyOrderNumber, tries);
             } else {
-                logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
-                logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
                 logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
                 logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
                 logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
