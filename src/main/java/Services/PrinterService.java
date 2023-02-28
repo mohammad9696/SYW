@@ -41,9 +41,6 @@ public class PrinterService {
                     DocPrintJob docPrintJob = printer.createPrintJob();
 
                     HashPrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
-                    pras.add(PrintQuality.HIGH);
-                    pras.add(new PrinterResolution(300, 300, ResolutionSyntax.DPI));
-                    pras.add(OrientationRequested.PORTRAIT);
 
                     docPrintJob.print(pdfDoc, pras);
 
