@@ -6,7 +6,9 @@ import Utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class FulfillmentService {
@@ -15,6 +17,7 @@ public class FulfillmentService {
         logger.info("Initiating order fulfillment service.");
         Scanner scanner =new Scanner(System.in);
         System.out.println("1: Process All Orders           2: Process one by one");
+        System.out.println("3: Print invoice by order number");
         int option = scanner.nextInt();
         if (option == 1){
             logger.info("Processing orders automatically");
@@ -22,6 +25,11 @@ public class FulfillmentService {
         } else if (option == 2){
             logger.info("Processing orders one by one");
             processOrdersIndividually(scanner);
+        } else if (option == 3){
+            System.out.println("Please insert shopify order number");
+            String orderNumber = scanner.next();
+            logger.info("Printing invoices for orders {}", orderNumber);
+            MoloniService.printShopifyDocumentsInMoloni(orderNumber);
         } else {
             return;
         }
@@ -30,8 +38,53 @@ public class FulfillmentService {
 
     private static void autoProcessingOrders (Scanner scanner){
         List<ProductDTO> productDTOList = ShopifyProductService.getShopifyProductList();
+        List<StockDetailsDTO> stocks = new ArrayList<>();
         List<OrderDTO> orderDTOS = ShopifyOrderService.getOrdersToFulfil();
+        List<OrderDTO> ordersWithSystemStockPriority = new ArrayList<>();
+        List<OrderDTO> ordersWithSystemStock = new ArrayList<>();
+        List<OrderDTO> ordersWithoutSystemStock = new ArrayList<>();
+
         for (OrderDTO order : orderDTOS){
+            boolean allInSystemStock = true;
+            for (OrderLineDTO line : order.getLineItems()){
+
+                for (StockDetailsDTO s : stocks){
+                    if (line.getSku().equals(s.getSku())){
+                        line.setMoloniStock(s.getMoloniStock());
+                        break;
+                    }
+                }
+                if (line.getMoloniStock() == null) {
+                    StockDetailsDTO stockDetailsDTO = new StockDetailsDTO(line.getSku());
+                    stockDetailsDTO.setMoloniStock(MoloniService.getStock(line.getSku()));
+                    stocks.add(stockDetailsDTO);
+                    line.setMoloniStock(stockDetailsDTO.getMoloniStock());
+                }
+
+                if(line.getQuantity() > line.getMoloniStock()){
+                    allInSystemStock = false;
+                    break;
+                }
+            }
+
+            if (allInSystemStock) {
+                if (!order.getShippingLine().isEmpty() && order.getShippingLine().get(0).getShippingCode().toLowerCase(Locale.ROOT).contains("express")){
+                    ordersWithSystemStockPriority.add(order);
+                } else {
+                    ordersWithSystemStock.add(order);
+                }
+
+            } else {
+                ordersWithoutSystemStock.add(order);
+            }
+        }
+        for (OrderDTO order : ordersWithSystemStockPriority){
+            processOrder(order, scanner, productDTOList);
+        }
+        for (OrderDTO order : ordersWithSystemStock){
+            processOrder(order, scanner, productDTOList);
+        }
+        for (OrderDTO order : ordersWithoutSystemStock){
             processOrder(order, scanner, productDTOList);
         }
     }
@@ -65,7 +118,10 @@ public class FulfillmentService {
         String[] lines = new String[orderDTO.getLineItems().size()];
         int lineN = 0;
         for(OrderLineDTO line : orderDTO.getLineItems()){
-            lines[lineN] = displayOrderLine(line, getProductDetailsFromOrderLine(line, productDTOList)) + "   "+ MoloniService.getStock(line.getSku());
+            if(line.getMoloniStock() == null){
+                line.setMoloniStock(MoloniService.getStock(line.getSku()));
+            }
+            lines[lineN] = displayOrderLine(line, getProductDetailsFromOrderLine(line, productDTOList)) + "   "+ line.getMoloniStock();
             lineN++;
         }
         System.out.println("Contents of order " + orderDTO.getOrderNumber());

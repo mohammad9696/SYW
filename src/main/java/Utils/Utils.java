@@ -1,6 +1,5 @@
 package Utils;
 
-import Services.MoloniService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +62,12 @@ public class Utils {
     public static final DateTimeFormatter dateFormat = new DateTimeFormatterBuilder()
             .appendPattern("EE, d 'de' MMMM")
             .toFormatter(new Locale("pt","PT"));
+
+    public static LocalDateTime StringMoloniDateTime (String dateTime){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+        return LocalDateTime.parse(dateTime.split("\\+")[0], dtf);
+    }
 
     public static Map<String, String> getQueryParamsFromUrl(String urlString){
         URL url = null;

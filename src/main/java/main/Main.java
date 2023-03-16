@@ -31,8 +31,8 @@ public class Main {
             System.out.println("5. Sincronizar preços Shopify com o Moloni");
             System.out.println("6. Sincronizar stocks Moloni com o shopify");
             System.out.println("7. Launch product from testShopify");
-            System.out.println("8. Painel de compras (available soon)");
-            System.out.println("9. Exit program");
+            System.out.println("8. Painel de compras");
+            System.out.println("9. TESTES! NÃO EXECUTAR");
             System.out.println("99. Restart (at any time)");
             int option = scanner.nextInt();
             if (option == 1){
@@ -56,9 +56,10 @@ public class Main {
                 ProductLaunchService.main(null);
                 chooseProcedure();
             } else if (option == 8){
-                //"painel de compras"
+                StockKeepingUnitsService.main(null);
+                chooseProcedure();
             } else if (option == 9){
-                System.out.println("Good bye!");
+                Testes.main(null);
             } else {
                 System.out.println("Option not available!");
                 chooseProcedure();

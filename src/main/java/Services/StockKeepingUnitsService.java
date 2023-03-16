@@ -1,16 +1,84 @@
 package Services;
 
+import DTO.MoloniProductStocksDTO;
 import DTO.ProductDTO;
+import DTO.SalesTimePeriodDTO;
 import DTO.StockDetailsDTO;
+import Utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class StockKeepingUnitsService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockKeepingUnitsService.class);
+
+    public static void main(String[] args) {
+
+        logger.info("Starting stock keeping service");
+        logger.info("How would you like to check?");
+        logger.info("1. Check all needs     2. Check Needs for SKU      3. Product name contains");
+        Scanner scanner = new Scanner(System.in);
+        int option = scanner.nextInt();
+        switch (option){
+            case 1:
+                logger.info("Checking all product needs");
+                StockKeepingUnitsService.purchasingNeeds(null, null);
+                main(null);
+            case 2:
+                logger.info("Checking specific product needs. Please insert sku");
+                String sku  = scanner.next();
+                StockKeepingUnitsService.purchasingNeeds(sku, null);
+                main(null);
+            case 3:
+                logger.info("What string should the products contain?");
+                String str  = scanner.next();
+                logger.info("Checking all products containing {} ", str);
+                StockKeepingUnitsService.purchasingNeeds(null, str);
+                main(null);
+        }
+    }
+    public static String displayServiceHeader(){
+        return Utils.normalizeStringLenght(15, "sku") + " " + Utils.normalizeStringLenght(50, "product name") + " " +
+                Utils.normalizeStringLenght(5, "stock") + " " + Utils.normalizeStringLenght(9,"stockDays") + " " +
+                Utils.normalizeStringLenght(11, "avgSalesDay") + " " +
+                Utils.normalizeStringLenght(11, "7daySalesT1") + " " +Utils.normalizeStringLenght(7, "Returns") + " " +Utils.normalizeStringLenght(6, "Buyers") + " " +
+                Utils.normalizeStringLenght(12, "30daySalesT2") + " " +Utils.normalizeStringLenght(7, "Returns") + " " +Utils.normalizeStringLenght(6, "Buyers") + " " +
+                Utils.normalizeStringLenght(12, "90daySalesT2") + " " +Utils.normalizeStringLenght(7, "Returns") + " " +Utils.normalizeStringLenght(6, "Buyers");
+    }
+
+    public static String displayServiceLine(StockDetailsDTO s){
+        return Utils.normalizeStringLenght(15, s.getSku()) + " " + Utils.normalizeStringLenght(50, s.getProductName()) + " " +
+                Utils.normalizeStringLenght(5, s.getMoloniStock().toString()) + " " + Utils.normalizeStringLenght(9, s.getStockDays().toString()) + " " +
+                Utils.normalizeStringLenght(11,s.getAvgSalesDays().toString()) + " " +
+                Utils.normalizeStringLenght(11, s.getSevenDaysOrFirstPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getSevenDaysOrFirstPeriod().getUnitsReturned().toString()) + " " +Utils.normalizeStringLenght(6, s.getSevenDaysOrFirstPeriod().getCustomers().toString()) + " " +
+                Utils.normalizeStringLenght(12, s.getThirtyDaysOrSecondPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getThirtyDaysOrSecondPeriod().getUnitsReturned().toString())+ " " +Utils.normalizeStringLenght(6, s.getThirtyDaysOrSecondPeriod().getCustomers().toString()) + " " +
+                Utils.normalizeStringLenght(12, s.getNinetyDaysOrThirdPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getNinetyDaysOrThirdPeriod().getUnitsReturned().toString())+ " " +Utils.normalizeStringLenght(6, s.getNinetyDaysOrThirdPeriod().getCustomers().toString());
+    }
+    public static void skuNeeds(String sku){
+        getPurchasingNeeds(sku, null);
+
+    }
+    public static void purchasingNeeds(String sku, String productNameContains) {
+        List<StockDetailsDTO> detailsDTOS = StockKeepingUnitsService.calculatePurchasingNeeds(sku, productNameContains);
+
+        int i=10;
+        for (StockDetailsDTO s : detailsDTOS){
+
+            try {
+                if (i%10 ==0){
+                    logger.info(displayServiceHeader());
+                }
+                i++;
+                logger.info(displayServiceLine(s));
+            } catch (NullPointerException e){
+                logger.error("Could not print line for {} {}", s.getSku(), s.toString());
+            }
+        }
+    }
 
     public static void updateOnlineStocks(){
         logger.info("Starting to update all online stocks");
@@ -49,4 +117,81 @@ public class StockKeepingUnitsService {
             }
         }
     }
+
+    public static StockDetailsDTO getPurchasingNeeds(String sku, StockDetailsDTO reservations){
+        MoloniProductStocksDTO[] stockMovements = MoloniService.getStockMovements(sku);
+        for (MoloniProductStocksDTO mps :stockMovements){
+            mps.setMovementDate(Utils.StringMoloniDateTime(mps.getMovementDateString()));
+        }
+
+        StockDetailsDTO stockDetails;
+        if (reservations == null){
+            stockDetails = new StockDetailsDTO(sku);
+        } else {
+            stockDetails = reservations;
+        }
+
+
+        if (stockMovements.length > 0) {
+            stockDetails.setProductName(stockMovements[0].getMoloniProductDTO().getProductName());
+
+            int firstPeriodDays ;
+            int secondPeriodDays;
+            int thirdPeriodDays;
+            Long days = Duration.between(stockMovements[stockMovements.length-1].getMovementDate(), LocalDateTime.now()).toDays();
+            int daysInt = Integer.parseInt(days.toString());
+            stockDetails.setProductActiveForDays(daysInt);
+            if (daysInt < 90) {
+                firstPeriodDays = daysInt/12;
+                secondPeriodDays = daysInt/3;
+                thirdPeriodDays = daysInt;
+            } else {
+                firstPeriodDays = 7;
+                secondPeriodDays = 30;
+                thirdPeriodDays =90;
+            }
+
+            Integer paidReservations = stockDetails.getShopifyPaidReservations() != null ? stockDetails.getShopifyPaidReservations() : 0;
+            stockDetails.setSevenDaysOrFirstPeriod(new SalesTimePeriodDTO(sku, firstPeriodDays, stockMovements));
+            stockDetails.setThirtyDaysOrSecondPeriod(new SalesTimePeriodDTO(sku, secondPeriodDays, stockMovements));
+            stockDetails.setNinetyDaysOrThirdPeriod(new SalesTimePeriodDTO(sku, thirdPeriodDays, stockMovements));
+            stockDetails.setMoloniStock(stockMovements[0].getQuantityAfterMovement() - paidReservations);
+            stockDetails.setAvgSalesDays((stockDetails.getSevenDaysOrFirstPeriod().getSalesPerDay() +stockDetails.getThirtyDaysOrSecondPeriod().getSalesPerDay() +stockDetails.getNinetyDaysOrThirdPeriod().getSalesPerDay())/ 3);
+            if (stockDetails.getAvgSalesDays() == 0){
+                stockDetails.setAvgSalesDays(0.001);
+            }
+            stockDetails.setStockDays(stockDetails.getMoloniStock()/stockDetails.getAvgSalesDays());
+        } else {
+            stockDetails.setProductName("");
+            stockDetails.setMoloniStock(0);
+            stockDetails.setAvgSalesDays(0.0);
+            stockDetails.setStockDays(1000.0);
+
+        }
+
+        return stockDetails;
+
+    }
+
+    public static List<StockDetailsDTO> calculatePurchasingNeeds(String sku, String productNameContains){
+        List<ProductDTO> products = ShopifyProductService.getShopifyProductList();
+        List<StockDetailsDTO> purchasingNeeds = new ArrayList<>();
+        Map<String, StockDetailsDTO> stockReservations = ShopifyOrderService.getStockDetails();
+
+        for (ProductDTO productDTO : products){
+            if((sku != null && productNameContains == null && productDTO.sku().equals(sku)) ||
+                    (sku == null && productNameContains != null && productDTO.getTitle().toLowerCase(Locale.ROOT).contains(productNameContains.toLowerCase(Locale.ROOT))) ||
+                        (sku == null && productNameContains == null) ||
+                            (sku != null && productNameContains != null)){
+                if(!stockReservations.containsKey(productDTO.sku())){
+                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), new StockDetailsDTO(productDTO.sku())));
+                } else {
+                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), stockReservations.get(productDTO.sku())));
+                }
+            }
+        }
+        purchasingNeeds.sort(StockDetailsDTO::compareTo);
+        return purchasingNeeds;
+    }
+
 }

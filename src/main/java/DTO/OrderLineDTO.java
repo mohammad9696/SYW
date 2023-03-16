@@ -36,6 +36,17 @@ public class OrderLineDTO {
     @JsonProperty("quantity")
     private int quantity;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("moloniStock")
+    private Integer moloniStock;
+
+    public Integer getMoloniStock() {
+        return moloniStock;
+    }
+
+    public void setMoloniStock(int moloniStock) {
+        this.moloniStock = moloniStock;
+    }
 
     public int getQuantity() {
         return quantity;

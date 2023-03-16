@@ -2,8 +2,6 @@ package Services;
 import Constants.HttpRequestAuthTypeEnum;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.net.httpserver.Headers;
-import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;

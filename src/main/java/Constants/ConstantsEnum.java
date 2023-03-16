@@ -87,6 +87,8 @@ public enum ConstantsEnum {
     MOLONI_DOCUMENT_GET_ALL("moloni.document.get.all","insertValueInProperties"),
     MOLONI_DOCUMENT_PDF_LINK("moloni.document.get.pdfLink","insertValueInProperties"),
     MOLONI_DOCUMENT_PDF_LINK_DOWNLOAD("moloni.document.get.pdfLink.download","insertValueInProperties"),
+    MOLONI_STOCKS_GET_ALL("moloni.stocks.get.all","insertValueInProperties"),
+    MOLONI_DOCUMENT_GET_TYPES("moloni.document.get.types","insertValueInProperties"),
     SYSTEM_PRINTER_LABEL("system.printer.label","insertValueInProperties"),
     SYSTEM_PRINTER_PAPER("system.printer.paper","insertValueInProperties"),
     OUTVIO_SHIP_URL("outvio.ship.url","insertValueInProperties"),

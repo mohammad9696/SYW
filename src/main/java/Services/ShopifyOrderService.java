@@ -58,8 +58,23 @@ public class ShopifyOrderService {
     protected static List<OrderDTO> getOrdersToFulfil(){
         TypeReference<OrderListDTO> typeReference = new TypeReference<OrderListDTO>() {};
         OrderListDTO list = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS.getConstantValue().toString(), new HashMap<>());
+        List<OrderDTO> ordersToFulfill = new ArrayList<>();
+
         Collections.reverse(list.getOrders());
-        return list.getOrders();
+        for (OrderDTO order : list.getOrders()){
+            List<OrderLineDTO> orderLineDTOS = new ArrayList<>();
+            if(order.getFulfillmentStatus() == null || !order.getFulfillmentStatus().equals("partial")){
+                ordersToFulfill.add(order);
+                for(OrderLineDTO line : order.getLineItems()){
+                    if (line.getFulfillableQuantity() > 0){
+                        line.setQuantity(line.getFulfillableQuantity());
+                        orderLineDTOS.add(line);
+                    }
+                }
+                order.setLineItems(orderLineDTOS);
+            }
+        }
+        return ordersToFulfill;
     }
 
     protected static List<OrderDTO> getOrdersUnpaidAndPaid(){

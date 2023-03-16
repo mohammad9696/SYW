@@ -9,13 +9,58 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MoloniService {
 
+    private MoloniDocumentTypeDTO[] types;
+
+    public MoloniService() {
+        this.types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(MoloniService.class);
+
+    public static MoloniProductStocksDTO[] getStockMovements(String sku){
+        logger.info("Getting stock movements for SKU {}", sku);
+        MoloniProductDTO productDTO = getProduct(sku);
+        MoloniProductStocksDTO[] stockMovements;
+        try {
+            MoloniProductStocksDTO productStocks = new MoloniProductStocksDTO(productDTO.getProductId());
+            stockMovements = HttpRequestExecutor.sendRequest(MoloniProductStocksDTO[].class, productStocks, ConstantsEnum.MOLONI_STOCKS_GET_ALL.getConstantValue().toString()+getToken());
+        } catch (Exception e){
+            logger.error("Could not get stock movements for {}", sku);
+            stockMovements = new MoloniProductStocksDTO[0];
+        }
+        logger.info("Got {} stock movements for {}", stockMovements.length,sku);
+        return stockMovements;
+    }
+
+    public static boolean isSupplierDocumentTypeIdStatic(String documentTypeId){
+        MoloniDocumentTypeDTO[] types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
+        for (MoloniDocumentTypeDTO type : types){
+            if(type.getDocumentTypeId().equals(documentTypeId)){
+                if(type.getTitle().toLowerCase(Locale.ROOT).contains("fornecedor")){
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+    public boolean isSupplierDocumentTypeId(String documentTypeId){
+        for (MoloniDocumentTypeDTO type : this.types){
+            if(type.getDocumentTypeId().equals(documentTypeId)){
+                if(type.getTitle().toLowerCase(Locale.ROOT).contains("fornecedor")){
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
 
     private static String getToken(){
         try{
@@ -49,7 +94,7 @@ public class MoloniService {
         }
     }
     private static MoloniProductDTO getProduct(String sku){
-        logger.info("Getting sku from moloni {}", sku);
+        logger.info("Getting MoloniProductDTO sku from moloni {}", sku);
         try {
             MoloniProductDTO product = new MoloniProductDTO(Long.parseLong(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString()), sku);
             MoloniProductDTO[] products = HttpRequestExecutor.sendRequest(MoloniProductDTO[].class, product, ConstantsEnum.MOLONI_PRODUCT_GET_ONE.getConstantValue().toString()+getToken());
