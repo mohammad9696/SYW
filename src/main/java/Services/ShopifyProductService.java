@@ -194,6 +194,7 @@ public class ShopifyProductService {
         Map<String, Object> params = new HashMap<>();
         List<ProductDTO> result = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_PRODUCTS.getConstantValue().toString(), params).getProducts();
         while (!params.isEmpty()){
+            logger.info("Getting shopify product list is paginated. Getting next page.");
             String newReqUrl = params.get("newReqUrl").toString();
             params.remove("newReqUrl");
             List<ProductDTO> resultNext = HttpRequestExecutor.getObjectRequest(typeReference, newReqUrl, params).getProducts();
@@ -201,6 +202,7 @@ public class ShopifyProductService {
                 result.add(i);
             }
         }
+        logger.info("Got product details for {} products", result.size());
         return result;
     }
 
@@ -222,6 +224,7 @@ public class ShopifyProductService {
 
     protected ProductDTO createShopifyProduct (ProductDTO toLaunch, String metaTitle, String metaDescription){
 
+        logger.info("Creating shopify product");
         ProductVariantDTO productVariantDTO = new ProductVariantDTO();
         productVariantDTO.setTitle(toLaunch.getVariants().get(0).getTitle());
         productVariantDTO.setPrice(toLaunch.getVariants().get(0).getPrice());
@@ -265,6 +268,7 @@ public class ShopifyProductService {
         productToLaunch.setVariants(productVariantList);
         productToLaunch.setImages(images);
 
+        logger.debug("Post request create shopify product");
         HttpRequestExecutor.sendRequest(Object.class, new ProductObjectDTO(productToLaunch), ConstantsEnum.SHOPIFY_CREATE_PRODUCT.getConstantValue().toString());
         ProductDTO result = null;
         List<ProductDTO> productList = getShopifyProductList();

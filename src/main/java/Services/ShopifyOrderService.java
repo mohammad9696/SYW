@@ -22,7 +22,7 @@ public class ShopifyOrderService {
                 if(stringStockDetailsDTOMap.containsKey(line.getSku())) {
                     stockDetailsDTO = stringStockDetailsDTOMap.get(line.getSku());
                 }
-                int reservedAmount = line.getQuantity();
+                int reservedAmount = line.getFulfillableQuantity();
                 int sumToAmount = 0;
                 if (order.getFinancialStatus().equals("paid")){
                     sumToAmount = stockDetailsDTO.getShopifyPaidReservations() != null? stockDetailsDTO.getShopifyPaidReservations(): 0;

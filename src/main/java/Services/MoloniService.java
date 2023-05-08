@@ -3,31 +3,76 @@ package Services;
 import Constants.ConstantsEnum;
 import DTO.*;
 import Utils.Utils;
+import com.ctc.wstx.shaded.msv_core.verifier.jarv.Const;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.api.client.util.ArrayMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.InvalidParameterException;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class MoloniService {
+    private static final Logger logger = LoggerFactory.getLogger(MoloniService.class);
 
     private MoloniDocumentTypeDTO[] types;
 
     public MoloniService() {
-        this.types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
+        try {
+            logger.info("Initiating moloni service and getting document types");
+            this.types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
+        } catch (Exception e){
+            logger.error("Error Initiating moloni service and getting document types. Trying again...");
+            this.types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
+        }
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(MoloniService.class);
+    public static MoloniProductStocksDTO[] getStockMovements(String sku, LocalDateTime beforeDate, LocalDateTime untilDate){
+        // beforeDate format yyyy-MM-dd
+        logger.debug("Getting stock movements for {} and beforeDate '{}' with results until '{}'", sku, beforeDate, untilDate);
 
-    public static MoloniProductStocksDTO[] getStockMovements(String sku){
-        logger.info("Getting stock movements for SKU {}", sku);
         MoloniProductDTO productDTO = getProduct(sku);
         MoloniProductStocksDTO[] stockMovements;
         try {
             MoloniProductStocksDTO productStocks = new MoloniProductStocksDTO(productDTO.getProductId());
             stockMovements = HttpRequestExecutor.sendRequest(MoloniProductStocksDTO[].class, productStocks, ConstantsEnum.MOLONI_STOCKS_GET_ALL.getConstantValue().toString()+getToken());
+            MoloniProductStocksDTO lastMovement = stockMovements[stockMovements.length-1];
+            lastMovement.setMovementDate(Utils.StringMoloniDateTime(lastMovement.getMovementDateString()));
+
+            if (beforeDate != null && stockMovements.length>=50 && lastMovement.getMovementDate().isAfter(beforeDate)){
+                String day = beforeDate.getDayOfMonth() > 9? beforeDate.getDayOfMonth() + "" : "0"+beforeDate.getDayOfMonth();
+                String month = beforeDate.getMonthValue() > 9 ? beforeDate.getMonth() + "": "0"+beforeDate.getMonth();
+                String bDate = beforeDate.getYear() + "-" + month + "-" + day;
+                productStocks.setMovementDateBefore(bDate);
+
+                logger.info("Getting stock movements for {} before {}", sku, beforeDate);
+                stockMovements = HttpRequestExecutor.sendRequest(MoloniProductStocksDTO[].class, productStocks, ConstantsEnum.MOLONI_STOCKS_GET_ALL.getConstantValue().toString()+getToken());
+            }
+            lastMovement = stockMovements[stockMovements.length-1];
+            lastMovement.setMovementDate(Utils.StringMoloniDateTime(lastMovement.getMovementDateString()));
+            int skipResults = 50;
+            while (untilDate != null && stockMovements.length>= 50 && lastMovement.getMovementDate().isAfter(untilDate)){
+                logger.info("Results might be paginated for stockMovements of {}, skipping the first {} results", sku, skipResults);
+                MoloniProductStocksDTO[] mvm;
+                productStocks.setSkipFirstResults(skipResults);
+                mvm = HttpRequestExecutor.sendRequest(MoloniProductStocksDTO[].class, productStocks, ConstantsEnum.MOLONI_STOCKS_GET_ALL.getConstantValue().toString()+getToken());
+                skipResults = skipResults + 50;
+                MoloniProductStocksDTO[] newArrayMovements = new MoloniProductStocksDTO[stockMovements.length+mvm.length];
+                int i = 0;
+                for (MoloniProductStocksDTO j : stockMovements){
+                    newArrayMovements[i] = j;
+                    i++;
+                }
+                for (MoloniProductStocksDTO j : mvm){
+                    newArrayMovements[i] = j;
+                    i++;
+                }
+                stockMovements = newArrayMovements;
+                lastMovement = stockMovements[stockMovements.length-1];
+                lastMovement.setMovementDate(Utils.StringMoloniDateTime(lastMovement.getMovementDateString()));
+            }
         } catch (Exception e){
             logger.error("Could not get stock movements for {}", sku);
             stockMovements = new MoloniProductStocksDTO[0];
@@ -49,6 +94,68 @@ public class MoloniService {
         }
         return false;
     }
+
+    public static MoloniDocumentDTO getMoloniDocumentDTObyId(String documentId){
+
+        MoloniDocumentDTO docFetchedById = new MoloniDocumentDTO();
+        docFetchedById.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        docFetchedById.setDocumentId(documentId);
+        return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, docFetchedById, ConstantsEnum.MOLONI_DOCUMENT_GET_ONE.getConstantValue().toString()+getToken());
+
+    }
+    public static void getProfit(Scanner scanner) {
+        logger.info("Starting getProfit method");
+        logger.info("Please choose the document type:");
+        MoloniService moloniService = new MoloniService();
+        for (int i =0; i<moloniService.types.length; i++){
+            logger.info(i + "    " + moloniService.types[i].getTitle());
+        }
+        MoloniDocumentTypeDTO type = moloniService.types[scanner.nextInt()];
+
+        MoloniDocumentDTO doc = new MoloniDocumentDTO();
+        doc.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        doc.setDocumentTypeId(type.getDocumentTypeId());
+
+        MoloniDocumentDTO[] moloniDocumentDTOS = HttpRequestExecutor.sendRequest(MoloniDocumentDTO[].class, doc, ConstantsEnum.MOLONI_DOCUMENT_GET_ALL.getConstantValue().toString()+getToken());
+        for (int i = 0; i< moloniDocumentDTOS.length;i++){
+            logger.info("{} {}  {}  {}   {}   {} ", i,moloniDocumentDTOS[i].getDate(), moloniDocumentDTOS[i].getDocumentSetName(), moloniDocumentDTOS[i].getDocumentNumber(),
+                    moloniDocumentDTOS[i].getDocumentValueEuros() ,moloniDocumentDTOS[i].getEntityName());
+        }
+
+        MoloniDocumentDTO finalDocument = getMoloniDocumentDTObyId(moloniDocumentDTOS[scanner.nextInt()].getDocumentId());
+        logger.info("Document contains:");
+        double documentProfit = 0.0;
+        List<MoloniDocumentLineDTO> lines = new ArrayList<>();
+        for (int i = 0; i< finalDocument.getProductDTOS().length; i++){
+            logger.info("SKU:{} Preço:{} Qty:{} Nome:{}", finalDocument.getProductDTOS()[i].getSku(), finalDocument.getProductDTOS()[i].getPriceWithoutVat(), finalDocument.getProductDTOS()[i].getLineQuantity()
+                , finalDocument.getProductDTOS()[i].getProductName());
+            double costPrice = StockKeepingUnitsService.getCostPrice(finalDocument.getDate(), finalDocument.getProductDTOS()[i].getSku());
+            logger.info("Cost price: {}", costPrice);
+            double profitUnit = finalDocument.getProductDTOS()[i].getPriceWithoutVat()-costPrice;
+            double profit = profitUnit * finalDocument.getProductDTOS()[i].getLineQuantity();
+            documentProfit = documentProfit + profit;
+
+            MoloniDocumentLineDTO line = new MoloniDocumentLineDTO();
+            line.setSku(finalDocument.getProductDTOS()[i].getSku());
+            line.setProductName(finalDocument.getProductDTOS()[i].getProductName());
+            line.setSellPrice(finalDocument.getProductDTOS()[i].getPriceWithoutVat());
+            line.setQuantity(finalDocument.getProductDTOS()[i].getLineQuantity());
+            line.setCostPrice(costPrice);
+            line.setMarginPerUnit(profitUnit);
+            line.setProfit(profit);
+            lines.add(line);
+            logger.info("Sale price of {}  is {} with cost price {}, and margin per unit is {}, total line profit is {}", finalDocument.getProductDTOS()[i].getSku(),
+                    finalDocument.getProductDTOS()[i].getPriceWithoutVat(), costPrice, finalDocument.getProductDTOS()[i].getPriceWithoutVat()-costPrice, profit);
+        }
+        for (MoloniDocumentLineDTO i : lines){
+            logger.info("SKU:{} SellPrice:{} CostPrice:{} SellQuantity:{} Margin:{} Profit:{} {}", Utils.normalizeStringLenght(15,i.getSku()), Utils.normalizeStringLenght(5,i.getSellPrice()+""), Utils.normalizeStringLenght(5,""+i.getCostPrice()),
+                    Utils.normalizeStringLenght(3,""+i.getQuantity()), Utils.normalizeStringLenght(5,""+i.getMarginPerUnit()), Utils.normalizeStringLenght(7,""+i.getProfit()), Utils.normalizeStringLenght(50,i.getProductName()));
+        }
+        logger.info("This document had profit of {}", documentProfit);
+        scanner.next();
+        getProfit(scanner);
+    }
+
     public boolean isSupplierDocumentTypeId(String documentTypeId){
         for (MoloniDocumentTypeDTO type : this.types){
             if(type.getDocumentTypeId().equals(documentTypeId)){
@@ -85,7 +192,7 @@ public class MoloniService {
 
 
     public static boolean existsProductMoloni(String sku){
-        logger.info("Checkint if exists sku in moloni {}", sku);
+        logger.info("Checking if exists sku in moloni {}", sku);
         MoloniProductDTO product = getProduct(sku);
         if (product == null){
             return false;
@@ -102,7 +209,7 @@ public class MoloniService {
             if(products != null && products.length != 0){
                 for (MoloniProductDTO i : products){
                     if(i.getSku().equals(sku)){
-                        return products[0];
+                        return i;
                     }
                 }
             }
@@ -110,6 +217,11 @@ public class MoloniService {
             return null;
         }
         return null;
+
+    }
+
+    public static void getOneDocument(String documentId){
+        //MoloniDocumentDTO response = HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, document, ConstantsEnum.MOLONI_DOCUMENT_GET_ONE.getConstantValue()+getToken());
 
     }
 
@@ -242,7 +354,7 @@ public class MoloniService {
             double shopifyProductPrice = Double.parseDouble(decimalFormat.format(productDTO.getVariants().get(0).getPrice()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString())));
             double moloniProductPrice = Double.parseDouble(decimalFormat.format(moloniProductDTO.getPriceWithoutVat()));
             if (productDTO.getTitle().equals(moloniProductDTO.getProductName()) &&
-                    shopifyProductPrice == moloniProductPrice &&
+                    shopifyProductPrice - moloniProductPrice == 0.0 &&
                     productDTO.getVariants().get(0).getBarcode().equals(moloniProductDTO.getEan())){
                 isNeededToSync = false;
                 logger.info("Not syncing because already up to date: " + productDTO.sku()+ " " + productDTO.getTitle());

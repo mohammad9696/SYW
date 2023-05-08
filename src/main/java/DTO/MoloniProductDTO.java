@@ -34,10 +34,6 @@ public class MoloniProductDTO {
     private Long hasStock;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("stock")
-    private Integer stock;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("at_product_category")
     private String productCategory;
 
@@ -48,6 +44,22 @@ public class MoloniProductDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("stock")
     private Integer inventory;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("qty")
+    private Integer lineQuantity;
+
+    public Integer getLineQuantity() {
+        return this.lineQuantity;
+    }
+
+    public void setLineQuantity(final Integer lineQuantity) {
+        this.lineQuantity = lineQuantity;
+    }
+
+    public void setPriceWithoutVat(final Double priceWithoutVat) {
+        this.priceWithoutVat = priceWithoutVat;
+    }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("name")

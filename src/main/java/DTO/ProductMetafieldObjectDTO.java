@@ -24,4 +24,11 @@ public class ProductMetafieldObjectDTO {
     public void setProductMetafieldDTO(ProductMetafieldDTO productMetafieldDTO) {
         this.productMetafieldDTO = productMetafieldDTO;
     }
+
+    @Override
+    public String toString() {
+        return "ProductMetafieldObjectDTO{" +
+                "productMetafieldDTO=" + (productMetafieldDTO != null ? productMetafieldDTO.toString() : productMetafieldDTO) +
+                '}';
+    }
 }

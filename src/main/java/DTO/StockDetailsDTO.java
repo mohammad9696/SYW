@@ -61,6 +61,9 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
 
     public StockDetailsDTO(String sku) {
         this.sku = sku;
+        this.sevenDaysOrFirstPeriod = new SalesTimePeriodDTO();
+        this.thirtyDaysOrSecondPeriod = new SalesTimePeriodDTO();
+        this.ninetyDaysOrThirdPeriod = new SalesTimePeriodDTO();
     }
 
     public String getSku() {

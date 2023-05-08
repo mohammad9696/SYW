@@ -32,7 +32,8 @@ public class Main {
             System.out.println("6. Sincronizar stocks Moloni com o shopify");
             System.out.println("7. Launch product from testShopify");
             System.out.println("8. Painel de compras");
-            System.out.println("9. TESTES! NÃO EXECUTAR");
+            System.out.println("9. Executa 5-6-1-4");
+            System.out.println("10. Margem de Lucro por documento");
             System.out.println("99. Restart (at any time)");
             int option = scanner.nextInt();
             if (option == 1){
@@ -60,6 +61,8 @@ public class Main {
                 chooseProcedure();
             } else if (option == 9){
                 Testes.main(null);
+            } else if (option == 10){
+                MoloniService.getProfit(scanner);
             } else {
                 System.out.println("Option not available!");
                 chooseProcedure();

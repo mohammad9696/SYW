@@ -112,4 +112,21 @@ public class ProductMetafieldDTO {
     public void setType(String type) {
         this.type = type;
     }
+
+    @Override
+    public String toString() {
+        return "ProductMetafieldDTO{" +
+                "id='" + id + '\'' +
+                ", namespace='" + namespace + '\'' +
+                ", key='" + key + '\'' +
+                ", value='" + value + '\'' +
+                ", description='" + description + '\'' +
+                ", owner_id='" + owner_id + '\'' +
+                ", created_at='" + created_at + '\'' +
+                ", updated_at='" + updated_at + '\'' +
+                ", owner_resource='" + owner_resource + '\'' +
+                ", type='" + type + '\'' +
+                ", admin_graphql_api_id='" + admin_graphql_api_id + '\'' +
+                '}';
+    }
 }

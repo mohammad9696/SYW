@@ -8,6 +8,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -16,6 +18,8 @@ import java.util.Map;
 
 
 public class HttpRequestExecutor {
+
+    private static final Logger logger = LoggerFactory.getLogger(HttpRequestExecutor.class);
 
     public static <T> T getObjectRequest (TypeReference<T> objectClass, String requestUrl, Map<String, Object> params){
         return getObjectRequest ( objectClass,  requestUrl,  null,  null, params);
@@ -33,6 +37,13 @@ public class HttpRequestExecutor {
             }
 
             CloseableHttpResponse getResponse = client.execute(get);
+
+
+            if (getResponse.getStatusLine().getStatusCode() >= 200 || getResponse.getStatusLine().getStatusCode() < 300 ){
+                logger.info("Got success response for request with HTTP Status code {}", getResponse.getStatusLine().getStatusCode());
+            } else {
+                logger.error("Got error response for request with HTTP Status code {}", getResponse.getStatusLine().getStatusCode());
+            }
 
             //para a paginacao dos produtos do shopify
             if (getResponse.containsHeader("Link") && getResponse.getHeaders("Link")[0].getValue().contains("next")){

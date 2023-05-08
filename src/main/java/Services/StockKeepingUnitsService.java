@@ -1,9 +1,7 @@
 package Services;
 
-import DTO.MoloniProductStocksDTO;
-import DTO.ProductDTO;
-import DTO.SalesTimePeriodDTO;
-import DTO.StockDetailsDTO;
+import Constants.ConstantsEnum;
+import DTO.*;
 import Utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,11 +56,9 @@ public class StockKeepingUnitsService {
                 Utils.normalizeStringLenght(12, s.getThirtyDaysOrSecondPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getThirtyDaysOrSecondPeriod().getUnitsReturned().toString())+ " " +Utils.normalizeStringLenght(6, s.getThirtyDaysOrSecondPeriod().getCustomers().toString()) + " " +
                 Utils.normalizeStringLenght(12, s.getNinetyDaysOrThirdPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getNinetyDaysOrThirdPeriod().getUnitsReturned().toString())+ " " +Utils.normalizeStringLenght(6, s.getNinetyDaysOrThirdPeriod().getCustomers().toString());
     }
-    public static void skuNeeds(String sku){
-        getPurchasingNeeds(sku, null);
 
-    }
     public static void purchasingNeeds(String sku, String productNameContains) {
+        logger.debug("Purchasing needs initiating for sku '{}' and productNameContains '{}' ",sku, productNameContains);
         List<StockDetailsDTO> detailsDTOS = StockKeepingUnitsService.calculatePurchasingNeeds(sku, productNameContains);
 
         int i=10;
@@ -118,8 +114,52 @@ public class StockKeepingUnitsService {
         }
     }
 
+    public static Double getCostPrice (String date, String sku) {
+
+        LocalDateTime dateTime = Utils.StringMoloniDateTime(date);
+        dateTime = dateTime.minusDays(7);
+        MoloniProductStocksDTO[] stockMovements = MoloniService.getStockMovements(sku, dateTime, null);
+        MoloniService moloniService = new MoloniService();
+        for (MoloniProductStocksDTO mps : stockMovements) {
+            mps.setMovementDate(Utils.StringMoloniDateTime(mps.getMovementDateString()));
+        }
+        for (MoloniProductStocksDTO mps : stockMovements) {
+            if (mps.getQuantityMoved() > 0 && mps.getDocumentDTO() != null && mps.getDocumentId() != 0
+                    && moloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())) {
+                if (mps.getQuantityAfterMovement()>= 0){
+                    logger.info("Looking for stock purchase before this document");
+                    if (mps.getMovementDate().isBefore(Utils.StringMoloniDateTime(date))) {
+                        logger.info("Found stock movement for {} that is before {} in document {}{}", sku, date, mps.getDocumentDTO().getDocumentSetName(),mps.getDocumentDTO().getDocumentNumber());
+                        MoloniDocumentDTO documentDTO = MoloniService.getMoloniDocumentDTObyId(mps.getDocumentId().toString());
+                        for (MoloniProductDTO dto : documentDTO.getProductDTOS()){
+                            if (dto.getSku().equals(sku)){
+                                return dto.getPriceWithoutVat();
+                            }
+                        }
+                    }
+                } else {
+                    logger.info("Looking for stock purchase after this document");
+                    if (mps.getMovementDate().isBefore(Utils.StringMoloniDateTime(date))) {
+                        logger.info("Found stock movement for {} that is before {} in document {}{}", sku, date, mps.getDocumentDTO().getDocumentSetName(),mps.getDocumentDTO().getDocumentNumber());
+                        MoloniDocumentDTO documentDTO = MoloniService.getMoloniDocumentDTObyId(mps.getDocumentId().toString());
+                        for (MoloniProductDTO dto : documentDTO.getProductDTOS()){
+                            if (dto.getSku().equals(sku)){
+                                return dto.getPriceWithoutVat();
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return 0.0;
+    }
     public static StockDetailsDTO getPurchasingNeeds(String sku, StockDetailsDTO reservations){
-        MoloniProductStocksDTO[] stockMovements = MoloniService.getStockMovements(sku);
+        //try para refazer inseri
+        logger.debug("Getting purchasing needs for sku '{}'  ",sku);
+        MoloniProductStocksDTO[] stockMovements = MoloniService.getStockMovements(sku, null, null);
+        logger.debug("Got {} stock movements for sku {}", stockMovements.length, sku);
         for (MoloniProductStocksDTO mps :stockMovements){
             mps.setMovementDate(Utils.StringMoloniDateTime(mps.getMovementDateString()));
         }
@@ -139,6 +179,11 @@ public class StockKeepingUnitsService {
             int secondPeriodDays;
             int thirdPeriodDays;
             Long days = Duration.between(stockMovements[stockMovements.length-1].getMovementDate(), LocalDateTime.now()).toDays();
+            if (stockMovements.length >= 50 && days< 90){
+                LocalDateTime dateAfter90Days = LocalDateTime.now().minusDays(90);
+                stockMovements = MoloniService.getStockMovements(sku, null, dateAfter90Days);
+                days = Duration.between(stockMovements[stockMovements.length-1].getMovementDate(), LocalDateTime.now()).toDays();
+            }
             int daysInt = Integer.parseInt(days.toString());
             stockDetails.setProductActiveForDays(daysInt);
             if (daysInt < 90) {
@@ -174,12 +219,13 @@ public class StockKeepingUnitsService {
     }
 
     public static List<StockDetailsDTO> calculatePurchasingNeeds(String sku, String productNameContains){
+        logger.debug("Calculating Purchasing needs for sku '{}' and productNameContains '{}' ",sku, productNameContains);
         List<ProductDTO> products = ShopifyProductService.getShopifyProductList();
         List<StockDetailsDTO> purchasingNeeds = new ArrayList<>();
         Map<String, StockDetailsDTO> stockReservations = ShopifyOrderService.getStockDetails();
 
         for (ProductDTO productDTO : products){
-            if((sku != null && productNameContains == null && productDTO.sku().equals(sku)) ||
+            if((sku != null && productNameContains == null && productDTO.sku().toLowerCase(Locale.ROOT).equals(sku.toLowerCase(Locale.ROOT))) ||
                     (sku == null && productNameContains != null && productDTO.getTitle().toLowerCase(Locale.ROOT).contains(productNameContains.toLowerCase(Locale.ROOT))) ||
                         (sku == null && productNameContains == null) ||
                             (sku != null && productNameContains != null)){

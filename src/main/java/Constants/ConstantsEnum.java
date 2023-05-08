@@ -85,6 +85,7 @@ public enum ConstantsEnum {
     MOLONI_PRODUCT_UPDATE("moloni.product.update","insertValueInProperties"),
     MOLONI_PRODUCT_CREATE("moloni.product.create","insertValueInProperties"),
     MOLONI_DOCUMENT_GET_ALL("moloni.document.get.all","insertValueInProperties"),
+    MOLONI_DOCUMENT_GET_ONE("moloni.document.get.one","insertValueInProperties"),
     MOLONI_DOCUMENT_PDF_LINK("moloni.document.get.pdfLink","insertValueInProperties"),
     MOLONI_DOCUMENT_PDF_LINK_DOWNLOAD("moloni.document.get.pdfLink.download","insertValueInProperties"),
     MOLONI_STOCKS_GET_ALL("moloni.stocks.get.all","insertValueInProperties"),

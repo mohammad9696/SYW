@@ -5,10 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.api.client.util.DateTime;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MoloniProductStocksDTO {
@@ -48,6 +46,14 @@ public class MoloniProductStocksDTO {
     @JsonProperty("document")
     private MoloniDocumentDTO documentDTO;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("offset")
+    private Integer skipFirstResults;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("movement_date_under") //yyyy-MM-dd
+    private String movementDateBefore;
+
     public MoloniProductStocksDTO(Long productId) {
         this.companyId = Long.parseLong(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
         this.productId = productId;
@@ -57,6 +63,13 @@ public class MoloniProductStocksDTO {
 
     }
 
+    public String getMovementDateBefore() {
+        return this.movementDateBefore;
+    }
+
+    public void setMovementDateBefore(final String movementDateBefore) {
+        this.movementDateBefore = movementDateBefore;
+    }
 
     public Long getCompanyId() {
         return companyId;
@@ -100,6 +113,14 @@ public class MoloniProductStocksDTO {
 
     public void setMovementDate(LocalDateTime movementDate) {
         this.movementDate = movementDate;
+    }
+
+    public Integer getSkipFirstResults() {
+        return this.skipFirstResults;
+    }
+
+    public void setSkipFirstResults(final Integer skipFirstResults) {
+        this.skipFirstResults = skipFirstResults;
     }
 
     public void setQuantityMoved(Integer quantityMoved) {

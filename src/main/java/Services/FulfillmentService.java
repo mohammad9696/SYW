@@ -124,7 +124,7 @@ public class FulfillmentService {
             lines[lineN] = displayOrderLine(line, getProductDetailsFromOrderLine(line, productDTOList)) + "   "+ line.getMoloniStock();
             lineN++;
         }
-        System.out.println("Contents of order " + orderDTO.getOrderNumber());
+        System.out.println("Contents of order " + orderDTO.getOrderNumber() + "     ORDER NOTES    " + orderDTO.getNote());
         System.out.println(lineToDisplayH);
         for (String line : lines){
             System.out.println(line);
