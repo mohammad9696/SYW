@@ -2,6 +2,7 @@ package DTO;
 
 public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
     private String sku;
+    private String ean;
     private String productName;
     private Integer moloniStock;
     private Integer shopifyStock;
@@ -72,6 +73,14 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
 
     public void setSku(String sku) {
         this.sku = sku;
+    }
+
+    public String getEan() {
+        return this.ean;
+    }
+
+    public void setEan(final String ean) {
+        this.ean = ean;
     }
 
     public Integer getMoloniStock() {

@@ -1,9 +1,11 @@
 package main;
 
+import DTO.ProductDTO;
 import Services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -34,6 +36,8 @@ public class Main {
             System.out.println("8. Painel de compras");
             System.out.println("9. Executa 5-6-1-4");
             System.out.println("10. Margem de Lucro por documento");
+            System.out.println("11. Get cost price for SKU");
+            System.out.println("12. Set price for SKU");
             System.out.println("99. Restart (at any time)");
             int option = scanner.nextInt();
             if (option == 1){
@@ -63,6 +67,15 @@ public class Main {
                 Testes.main(null);
             } else if (option == 10){
                 MoloniService.getProfit(scanner);
+            } else if (option == 11){
+                while (true) {
+                    logger.info("Please insert SKU (case sensitive) to check cost price:");
+                    String sku = scanner.next();
+                    logger.info("Cost price for {} is {}", sku, StockKeepingUnitsService.getCostPrice(null, sku));
+                    scanner.next();
+                }
+            } else if (option == 12){
+                ShopifyProductService.updateProductPrices(scanner);
             } else {
                 System.out.println("Option not available!");
                 chooseProcedure();

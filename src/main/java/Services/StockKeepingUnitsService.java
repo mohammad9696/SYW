@@ -82,14 +82,15 @@ public class StockKeepingUnitsService {
         Map<String, StockDetailsDTO> stockDetails = ShopifyOrderService.getStockDetails();
         for (ProductDTO product : productList){
             StockDetailsDTO stockDetailsDTO = new StockDetailsDTO(product.sku());
-            if(stockDetails.containsKey(product.sku())){
+            if(stockDetails.containsKey(product.sku())) {
                 stockDetailsDTO = stockDetails.get(product.sku());
-                int moloniStock = MoloniService.getStock(product.sku());
-                int shopifyStock = product.getVariants().get(0).getInventoryQuantity();
-                stockDetailsDTO.setMoloniStock(moloniStock);
-                stockDetailsDTO.setShopifyStock(shopifyStock);
-                stockDetails.put(product.sku(), stockDetailsDTO);
             }
+            int moloniStock = MoloniService.getStock(product.sku());
+            int shopifyStock = product.getVariants().get(0).getInventoryQuantity();
+            stockDetailsDTO.setMoloniStock(moloniStock);
+            stockDetailsDTO.setShopifyStock(shopifyStock);
+            stockDetails.put(product.sku(), stockDetailsDTO);
+
         }
 
         for (String key : stockDetails.keySet()){
@@ -115,9 +116,14 @@ public class StockKeepingUnitsService {
     }
 
     public static Double getCostPrice (String date, String sku) {
+        LocalDateTime dateTime;
+        if (date!= null){
+            dateTime = Utils.StringMoloniDateTime(date);
+            dateTime = dateTime.minusDays(7);
+        } else {
+            dateTime = LocalDateTime.now();
+        }
 
-        LocalDateTime dateTime = Utils.StringMoloniDateTime(date);
-        dateTime = dateTime.minusDays(7);
         MoloniProductStocksDTO[] stockMovements = MoloniService.getStockMovements(sku, dateTime, null);
         MoloniService moloniService = new MoloniService();
         for (MoloniProductStocksDTO mps : stockMovements) {
@@ -128,7 +134,7 @@ public class StockKeepingUnitsService {
                     && moloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())) {
                 if (mps.getQuantityAfterMovement()>= 0){
                     logger.info("Looking for stock purchase before this document");
-                    if (mps.getMovementDate().isBefore(Utils.StringMoloniDateTime(date))) {
+                    if (mps.getMovementDate().isBefore(dateTime)) {
                         logger.info("Found stock movement for {} that is before {} in document {}{}", sku, date, mps.getDocumentDTO().getDocumentSetName(),mps.getDocumentDTO().getDocumentNumber());
                         MoloniDocumentDTO documentDTO = MoloniService.getMoloniDocumentDTObyId(mps.getDocumentId().toString());
                         for (MoloniProductDTO dto : documentDTO.getProductDTOS()){
@@ -155,7 +161,7 @@ public class StockKeepingUnitsService {
 
         return 0.0;
     }
-    public static StockDetailsDTO getPurchasingNeeds(String sku, StockDetailsDTO reservations){
+    public static StockDetailsDTO getPurchasingNeeds(String sku, StockDetailsDTO reservations, MoloniService moloniService){
         //try para refazer inseri
         logger.debug("Getting purchasing needs for sku '{}'  ",sku);
         MoloniProductStocksDTO[] stockMovements = MoloniService.getStockMovements(sku, null, null);
@@ -197,9 +203,9 @@ public class StockKeepingUnitsService {
             }
 
             Integer paidReservations = stockDetails.getShopifyPaidReservations() != null ? stockDetails.getShopifyPaidReservations() : 0;
-            stockDetails.setSevenDaysOrFirstPeriod(new SalesTimePeriodDTO(sku, firstPeriodDays, stockMovements));
-            stockDetails.setThirtyDaysOrSecondPeriod(new SalesTimePeriodDTO(sku, secondPeriodDays, stockMovements));
-            stockDetails.setNinetyDaysOrThirdPeriod(new SalesTimePeriodDTO(sku, thirdPeriodDays, stockMovements));
+            stockDetails.setSevenDaysOrFirstPeriod(new SalesTimePeriodDTO(sku, firstPeriodDays, stockMovements, moloniService));
+            stockDetails.setThirtyDaysOrSecondPeriod(new SalesTimePeriodDTO(sku, secondPeriodDays, stockMovements, moloniService));
+            stockDetails.setNinetyDaysOrThirdPeriod(new SalesTimePeriodDTO(sku, thirdPeriodDays, stockMovements, moloniService));
             stockDetails.setMoloniStock(stockMovements[0].getQuantityAfterMovement() - paidReservations);
             stockDetails.setAvgSalesDays((stockDetails.getSevenDaysOrFirstPeriod().getSalesPerDay() +stockDetails.getThirtyDaysOrSecondPeriod().getSalesPerDay() +stockDetails.getNinetyDaysOrThirdPeriod().getSalesPerDay())/ 3);
             if (stockDetails.getAvgSalesDays() == 0){
@@ -224,15 +230,16 @@ public class StockKeepingUnitsService {
         List<StockDetailsDTO> purchasingNeeds = new ArrayList<>();
         Map<String, StockDetailsDTO> stockReservations = ShopifyOrderService.getStockDetails();
 
+        MoloniService moloniService = new MoloniService();
         for (ProductDTO productDTO : products){
             if((sku != null && productNameContains == null && productDTO.sku().toLowerCase(Locale.ROOT).equals(sku.toLowerCase(Locale.ROOT))) ||
                     (sku == null && productNameContains != null && productDTO.getTitle().toLowerCase(Locale.ROOT).contains(productNameContains.toLowerCase(Locale.ROOT))) ||
                         (sku == null && productNameContains == null) ||
                             (sku != null && productNameContains != null)){
                 if(!stockReservations.containsKey(productDTO.sku())){
-                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), new StockDetailsDTO(productDTO.sku())));
+                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), new StockDetailsDTO(productDTO.sku()), moloniService));
                 } else {
-                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), stockReservations.get(productDTO.sku())));
+                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), stockReservations.get(productDTO.sku()), moloniService));
                 }
             }
         }

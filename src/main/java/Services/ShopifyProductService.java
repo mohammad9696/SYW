@@ -149,12 +149,7 @@ public class ShopifyProductService {
     }
 
     public static boolean removeProductDiscount(ProductDTO productToUpdate){
-        ProductVariantDTO variant = new ProductVariantDTO();
-        variant.setId(productToUpdate.getVariants().get(0).getId());
-        variant.setPrice(productToUpdate.getVariants().get(0).getCompareAtPrice());
-
-        HttpRequestExecutor.updateRequest(Object.class, new ProductVariantObjectDTO(variant), getUpdateProductVariantRequestUrl(productToUpdate));
-
+        updateProductPrice(productToUpdate, productToUpdate.getVariants().get(0).getCompareAtPrice() );
         return true;
     }
 
@@ -307,5 +302,62 @@ public class ShopifyProductService {
         }
 
         return result;
+    }
+
+
+    public static void updateProductPrices (Scanner scanner){
+        List<ProductDTO> productsFromShopify = ShopifyProductService.getShopifyProductList();
+        while (true) {
+            logger.info("Please insert sku to update price");
+            String sku = scanner.next();
+            logger.info("Updating price for sku {}", sku);
+            Integer indexFound = null;
+            int index = 0;
+            for (ProductDTO p : productsFromShopify){
+                if (p.sku().equals(sku)){
+                    if (indexFound == null){
+                        indexFound = index;
+                    } else {
+                        logger.error("SKU {} is not unique, will not update", sku);
+                        indexFound = null; break;
+                    }
+
+                }
+                index++;
+            }
+            if (indexFound != null){
+                ProductDTO p = productsFromShopify.get(indexFound);
+                logger.info("Please insert new price for {}", sku);
+                updateProductPrice(p, scanner.nextDouble());
+            } else {
+                logger.error("Could not find sku {}", sku);
+            }
+        }
+
+    }
+
+    private static void updateProductPrice (ProductDTO productDTO, Double price){
+
+        ProductVariantDTO variant = new ProductVariantDTO();
+        variant.setId(productDTO.getVariants().get(0).getId());
+        variant.setPrice(price);
+        Scanner scanner = new Scanner(System.in);
+        boolean process =true;
+        double costPrice =StockKeepingUnitsService.getCostPrice(null, productDTO.sku());
+        if (costPrice> price){
+            process = false;
+            logger.error("Can't update price for {} because cost is {} and trying to set price {}. Insert override password to override", productDTO.sku(), costPrice, price);
+            if (scanner.next().equals("OVERRIDE")){
+                process = true;
+            }
+        }
+        if (process) {
+            logger.info("Updating price for {}  cost is {} and trying to set price {}",  productDTO.sku(), costPrice, price);
+            HttpRequestExecutor.updateRequest(Object.class, new ProductVariantObjectDTO(variant), getUpdateProductVariantRequestUrl(productDTO));
+
+        } else {
+            logger.warn("Password was wrong. try again later");
+        }
+
     }
 }

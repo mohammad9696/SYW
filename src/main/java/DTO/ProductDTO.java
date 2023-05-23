@@ -223,7 +223,12 @@ public class ProductDTO {
     }
 
     public String sku(){
-        return this.getVariants().get(0).getSku();
+        try {
+            return this.getVariants().get(0).getSku();
+        } catch (Exception e){
+            return null;
+        }
+
     }
     @Override
     public String toString() {

@@ -31,7 +31,7 @@ public class SalesTimePeriodDTO {
     }
 
 
-    public SalesTimePeriodDTO(String sku, Integer days, MoloniProductStocksDTO[] stockMovements) {
+    public SalesTimePeriodDTO(String sku, Integer days, MoloniProductStocksDTO[] stockMovements, MoloniService moloniService) {
         logger.info("Getting {} sales for last {} days", sku, days);
         this.sku = sku;
         this.days = days;
@@ -44,7 +44,6 @@ public class SalesTimePeriodDTO {
             this.unitsReturned = 0;
         }
 
-        MoloniService moloniService = new MoloniService();
         for (MoloniProductStocksDTO mps :stockMovements){
             mps.setMovementDate(Utils.StringMoloniDateTime(mps.getMovementDateString()));
         }

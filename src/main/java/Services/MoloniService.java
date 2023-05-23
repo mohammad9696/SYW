@@ -23,6 +23,7 @@ public class MoloniService {
         try {
             logger.info("Initiating moloni service and getting document types");
             this.types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
+            logger.debug("Initiated moloni service and got document types successfully");
         } catch (Exception e){
             logger.error("Error Initiating moloni service and getting document types. Trying again...");
             this.types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
@@ -174,6 +175,7 @@ public class MoloniService {
             logger.info("Getting token for moloni request");
             TypeReference<MoloniTokenDTO> typeReference = new TypeReference<MoloniTokenDTO>(){};
             MoloniTokenDTO token = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.MOLONI_GET_TOKEN.getConstantValue().toString(), new ArrayMap<>());
+            logger.debug("Got moloni token {}",token.getAccessToken());
             return token.getAccessToken();
         } catch (Exception e){
             logger.error("Getting token for moloni failed. Trying again");
@@ -183,12 +185,42 @@ public class MoloniService {
     }
     
     public static int getStock(String sku){
-        MoloniProductDTO productDTO = getProduct(sku);
-        if (productDTO.getSku() != null){
-            return productDTO.getInventory();
+        logger.info("Getting stock for {}", sku);
+        try {
+            MoloniProductDTO productDTO = getProduct(sku);
+            if (productDTO.getSku() != null){
+                if (!isBundle(productDTO)){
+                    return productDTO.getInventory();
+                } else {
+                    Integer stock = null;
+                    for (MoloniChildProductDTO i : productDTO.getChildProducts()){
+                        int childProductStock = i.getProductDTO().getInventory()/ i.getQuantity();
+                        if (stock == null ){
+                            stock = childProductStock;
+                        } else {
+                            if (childProductStock < stock){
+                                stock = childProductStock;
+                            }
+                        }
+                    }
+                    return stock;
+                }
+            }
+            return 0;
+        } catch (Exception e){
+            logger.error("There was an error getting product {}", sku);
+            return 0;
         }
-        return 0;
     }
+
+    public static boolean isBundle (MoloniProductDTO productDTO){
+        if (productDTO.getChildProducts()!= null && productDTO.getChildProducts().length>0){
+            return true;
+        }
+        return false;
+    }
+
+
 
 
     public static boolean existsProductMoloni(String sku){
@@ -344,7 +376,7 @@ public class MoloniService {
 
     }
 
-    private static void syncMoloniProduct(ProductDTO productDTO){
+    public static void syncMoloniProduct(ProductDTO productDTO){
         logger.info("Syncing product {} data to Moloni", productDTO.sku());
         MoloniProductDTO moloniProductDTO = getProduct(productDTO.sku());
         boolean isNeededToSync = true;

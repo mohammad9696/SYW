@@ -49,6 +49,10 @@ public class MoloniProductDTO {
     @JsonProperty("qty")
     private Integer lineQuantity;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("child_products")
+    private MoloniChildProductDTO[] childProducts;
+
     public Integer getLineQuantity() {
         return this.lineQuantity;
     }
@@ -80,7 +84,6 @@ public class MoloniProductDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("taxes")
     private List<MoloniProductTaxesDTO> taxes;
-
 
     public MoloniProductDTO(Long companyId, String sku) {
         this.companyId = companyId;
@@ -211,5 +214,11 @@ public class MoloniProductDTO {
         this.taxes = taxes;
     }
 
+    public MoloniChildProductDTO[] getChildProducts() {
+        return this.childProducts;
+    }
 
+    public void setChildProducts(final MoloniChildProductDTO[] childProducts) {
+        this.childProducts = childProducts;
+    }
 }

@@ -37,6 +37,7 @@ public class FulfillmentService {
     }
 
     private static void autoProcessingOrders (Scanner scanner){
+        logger.info("Processing all orders");
         List<ProductDTO> productDTOList = ShopifyProductService.getShopifyProductList();
         List<StockDetailsDTO> stocks = new ArrayList<>();
         List<OrderDTO> orderDTOS = ShopifyOrderService.getOrdersToFulfil();
@@ -45,9 +46,10 @@ public class FulfillmentService {
         List<OrderDTO> ordersWithoutSystemStock = new ArrayList<>();
 
         for (OrderDTO order : orderDTOS){
+            logger.info("Getting lines for order {}", order.getOrderNumber());
             boolean allInSystemStock = true;
             for (OrderLineDTO line : order.getLineItems()){
-
+                logger.info("Getting line {} details for order {} ",line.getSku(), order.getOrderNumber());
                 for (StockDetailsDTO s : stocks){
                     if (line.getSku().equals(s.getSku())){
                         line.setMoloniStock(s.getMoloniStock());
@@ -55,6 +57,7 @@ public class FulfillmentService {
                     }
                 }
                 if (line.getMoloniStock() == null) {
+                    logger.info("Getting stock details for line {} of order {}", line.getSku(), order.getOrderNumber());
                     StockDetailsDTO stockDetailsDTO = new StockDetailsDTO(line.getSku());
                     stockDetailsDTO.setMoloniStock(MoloniService.getStock(line.getSku()));
                     stocks.add(stockDetailsDTO);
@@ -66,7 +69,6 @@ public class FulfillmentService {
                     break;
                 }
             }
-
             if (allInSystemStock) {
                 if (!order.getShippingLine().isEmpty() && order.getShippingLine().get(0).getShippingCode().toLowerCase(Locale.ROOT).contains("express")){
                     ordersWithSystemStockPriority.add(order);
@@ -77,7 +79,12 @@ public class FulfillmentService {
             } else {
                 ordersWithoutSystemStock.add(order);
             }
+
         }
+
+        logger.info("{} orders in priority line", ordersWithSystemStockPriority.size());
+        logger.info("{} orders in system stock", ordersWithSystemStock.size());
+        logger.info("{} orders in without system stock", ordersWithoutSystemStock.size());
         for (OrderDTO order : ordersWithSystemStockPriority){
             processOrder(order, scanner, productDTOList);
         }
@@ -113,7 +120,7 @@ public class FulfillmentService {
         String quantity = Utils.normalizeStringLenght(10, "Quantity");
         String lineToDisplayH = sku + " " + ean + " " + productName + " " + quantity + "  System Stock";
 
-        logger.info("Displaying orderLines for order {})", orderDTO.getOrderNumber());
+        logger.info("Displaying orderLines for order {}", orderDTO.getOrderNumber());
 
         String[] lines = new String[orderDTO.getLineItems().size()];
         int lineN = 0;
@@ -218,7 +225,8 @@ public class FulfillmentService {
 
     private static ProductDTO getProductDetailsFromOrderLine (OrderLineDTO line, List<ProductDTO> productDTOList){
         for (ProductDTO productDTO : productDTOList){
-            if (productDTO.getVariants().get(0).getSku().equals(line.getSku())){
+            logger.debug("getProductDetailsFromOrderLine iterating product {}", productDTO.getTitle());
+            if (line.getSku().equals(productDTO.sku())){
                 return productDTO;
             }
         }

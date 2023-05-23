@@ -27,6 +27,7 @@ public class HttpRequestExecutor {
 
     public static <T> T getObjectRequest (TypeReference<T> objectClass, String requestUrl, HttpRequestAuthTypeEnum httpRequestAuthTypeEnum, String authKey, Map<String, Object> params){
         try {
+            Thread.sleep(500);
             URL url= new URL(requestUrl);
             CloseableHttpClient client = HttpClients.createDefault();
 
@@ -39,8 +40,13 @@ public class HttpRequestExecutor {
             CloseableHttpResponse getResponse = client.execute(get);
 
 
-            if (getResponse.getStatusLine().getStatusCode() >= 200 || getResponse.getStatusLine().getStatusCode() < 300 ){
+            if (getResponse.getStatusLine().getStatusCode() >= 200 && getResponse.getStatusLine().getStatusCode() < 300 ){
                 logger.info("Got success response for request with HTTP Status code {}", getResponse.getStatusLine().getStatusCode());
+            } else if (getResponse.getStatusLine().getStatusCode()==429) {
+                logger.error("Got error response for request with HTTP Status code 429. Too many requests. Retrying in 1 second");
+                Thread.sleep(1000);
+                getObjectRequest(objectClass, requestUrl, httpRequestAuthTypeEnum, authKey, params);
+
             } else {
                 logger.error("Got error response for request with HTTP Status code {}", getResponse.getStatusLine().getStatusCode());
             }
@@ -61,6 +67,8 @@ public class HttpRequestExecutor {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
