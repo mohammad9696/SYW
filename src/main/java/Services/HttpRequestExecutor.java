@@ -27,7 +27,9 @@ public class HttpRequestExecutor {
 
     public static <T> T getObjectRequest (TypeReference<T> objectClass, String requestUrl, HttpRequestAuthTypeEnum httpRequestAuthTypeEnum, String authKey, Map<String, Object> params){
         try {
-            Thread.sleep(500);
+            if (requestUrl.contains("shopify")){// shopify often exceed with error 429
+                Thread.sleep(500);
+            }
             URL url= new URL(requestUrl);
             CloseableHttpClient client = HttpClients.createDefault();
 

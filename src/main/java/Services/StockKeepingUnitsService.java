@@ -59,7 +59,8 @@ public class StockKeepingUnitsService {
 
     public static void purchasingNeeds(String sku, String productNameContains) {
         logger.debug("Purchasing needs initiating for sku '{}' and productNameContains '{}' ",sku, productNameContains);
-        List<StockDetailsDTO> detailsDTOS = StockKeepingUnitsService.calculatePurchasingNeeds(sku, productNameContains);
+        Map<String, StockDetailsDTO> stockReservations = ShopifyOrderService.getStockDetails();
+        List<StockDetailsDTO> detailsDTOS = StockKeepingUnitsService.calculatePurchasingNeeds(sku, productNameContains, stockReservations);
 
         int i=10;
         for (StockDetailsDTO s : detailsDTOS){
@@ -224,11 +225,10 @@ public class StockKeepingUnitsService {
 
     }
 
-    public static List<StockDetailsDTO> calculatePurchasingNeeds(String sku, String productNameContains){
+    public static List<StockDetailsDTO> calculatePurchasingNeeds(String sku, String productNameContains, Map<String, StockDetailsDTO> stockReservations){
         logger.debug("Calculating Purchasing needs for sku '{}' and productNameContains '{}' ",sku, productNameContains);
         List<ProductDTO> products = ShopifyProductService.getShopifyProductList();
         List<StockDetailsDTO> purchasingNeeds = new ArrayList<>();
-        Map<String, StockDetailsDTO> stockReservations = ShopifyOrderService.getStockDetails();
 
         MoloniService moloniService = new MoloniService();
         for (ProductDTO productDTO : products){

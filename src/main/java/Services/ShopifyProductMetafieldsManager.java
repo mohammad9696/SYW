@@ -38,15 +38,17 @@ public class ShopifyProductMetafieldsManager {
         return null;
     }
 
-    private ProductMetafieldDTO getOrCreateMetafield(boolean liveMetafield, ProductDTO productDTO, ProductMetafieldEnum productMetafieldEnum){
-        return getOrCreateMetafield(liveMetafield, productDTO,productMetafieldEnum, 0);
+    private ProductMetafieldDTO getOrSimulateMetafield(boolean liveMetafield, ProductDTO productDTO, ProductMetafieldEnum productMetafieldEnum){
+        return getOrSimulateMetafield(liveMetafield, productDTO,productMetafieldEnum, 0);
     }
 
-    private ProductMetafieldDTO getOrCreateMetafield(boolean liveMetafield, ProductDTO productDTO, ProductMetafieldEnum productMetafieldEnum, int tries){
+    private ProductMetafieldDTO getOrSimulateMetafield(boolean liveMetafield, ProductDTO productDTO, ProductMetafieldEnum productMetafieldEnum, int tries){
         ProductMetafieldDTO result = getMetafield(liveMetafield, productDTO,productMetafieldEnum);
         if (result == null){
-            result = createOrUpdateMetafield(liveMetafield, productDTO, productMetafieldEnum, productMetafieldEnum.getDefaultMessage());
+            // deixar de criar metafields sem necessidade
+            result = new ProductMetafieldDTO(productMetafieldEnum.getKey(),productMetafieldEnum.getNamespace(), productMetafieldEnum.getDefaultMessage());
         }
+        /*
         if (result == null){
             logger.error("Could not getOrCreateMetafied {} for product {}", productMetafieldEnum, productDTO.sku());
             if (tries >= 3){
@@ -56,7 +58,7 @@ public class ShopifyProductMetafieldsManager {
                 logger.error("Try no. {} getOrCreateMetafied {} for product {}",tries, productMetafieldEnum, productDTO.sku());
                 return getOrCreateMetafield(liveMetafield, productDTO,productMetafieldEnum, tries);
             }
-        }
+        } */
         return result;
     }
 
@@ -173,21 +175,21 @@ public class ShopifyProductMetafieldsManager {
 
         if (availableToSell) {
             LocalDateTime now = java.time.LocalDateTime.now();
-            ProductMetafieldDTO etaCartMessage = getOrCreateMetafield(true, productDTO, ProductMetafieldEnum.ETA_CART);
+            ProductMetafieldDTO etaCartMessage = getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA_CART);
             if (stockAvailable > 0){
-                etaMessage = getOrCreateMetafield(true, productDTO, ProductMetafieldEnum.ETA);
+                etaMessage = getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA);
                 LocalDateTime availableDate = countWorkDays(now, 1);
                 placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(availableDate));
                 placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(availableDate,1)));
             } else if (stockAvailable <= 0){
-                etaMessage = getOrCreateMetafield(true, productDTO, ProductMetafieldEnum.ETA2);
+                etaMessage = getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA2);
                 LocalDateTime deliveryDate = getEtaDate(productDTO);
                 if (deliveryDate != null && now.isBefore(deliveryDate)) {
                     placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(countWorkDays(deliveryDate,0)));
                     placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(deliveryDate,1)));
                 } else {
-                    int minDays = Integer.parseInt(getOrCreateMetafield(true, productDTO, ProductMetafieldEnum.ETA_MIN).getValue().toString());
-                    int maxDays = Integer.parseInt(getOrCreateMetafield(true, productDTO, ProductMetafieldEnum.ETA_MAX).getValue().toString());
+                    int minDays = Integer.parseInt(getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA_MIN).getValue().toString());
+                    int maxDays = Integer.parseInt(getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA_MAX).getValue().toString());
                     placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(countWorkDays(now, minDays)));
                     placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(now, maxDays)));
                 }

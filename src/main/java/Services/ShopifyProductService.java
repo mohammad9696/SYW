@@ -295,7 +295,9 @@ public class ShopifyProductService {
             if (scanner.hasNextInt()){
                 maxDays = scanner.nextInt();
             }
-
+            metafieldsService.createOrUpdateMetafield(true, result, ProductMetafieldEnum.ETA, ProductMetafieldEnum.ETA.getDefaultMessage());
+            metafieldsService.createOrUpdateMetafield(true, result, ProductMetafieldEnum.ETA2, ProductMetafieldEnum.ETA2.getDefaultMessage());
+            metafieldsService.createOrUpdateMetafield(true, result, ProductMetafieldEnum.ETA_CART, ProductMetafieldEnum.ETA_CART.getDefaultMessage());
             metafieldsService.createOrUpdateMetafield(true, result, ProductMetafieldEnum.ETA_MIN, minDays);
             metafieldsService.createOrUpdateMetafield(true, result, ProductMetafieldEnum.ETA_MAX, maxDays);
 

@@ -79,6 +79,42 @@ public class ProductMetafieldDTO {
         return created_at;
     }
 
+    public void setId(final String id) {
+        this.id = id;
+    }
+
+    public void setNamespace(final String namespace) {
+        this.namespace = namespace;
+    }
+
+    public void setKey(final String key) {
+        this.key = key;
+    }
+
+    public void setDescription(final String description) {
+        this.description = description;
+    }
+
+    public void setOwner_id(final String owner_id) {
+        this.owner_id = owner_id;
+    }
+
+    public void setCreated_at(final String created_at) {
+        this.created_at = created_at;
+    }
+
+    public void setUpdated_at(final String updated_at) {
+        this.updated_at = updated_at;
+    }
+
+    public void setOwner_resource(final String owner_resource) {
+        this.owner_resource = owner_resource;
+    }
+
+    public void setAdmin_graphql_api_id(final String admin_graphql_api_id) {
+        this.admin_graphql_api_id = admin_graphql_api_id;
+    }
+
     public String getUpdated_at() {
         return updated_at;
     }
