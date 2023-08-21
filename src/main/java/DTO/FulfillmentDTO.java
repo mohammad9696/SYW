@@ -11,6 +11,30 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FulfillmentDTO {
 
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private class FulfillmentOrderId {
+        @JsonProperty("fulfillment_order_id")
+        private Long fulfillmentOrderId;
+
+        public FulfillmentOrderId(final Long fulfillmentOrderId) {
+            this.fulfillmentOrderId = fulfillmentOrderId;
+        }
+    }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private class FulfillmentTrackingInfo {
+        @JsonProperty("number")
+        private String number;
+        @JsonProperty("url")
+        private String url;
+    }
+
+    @JsonProperty("line_items_by_fulfillment_order")
+    private FulfillmentOrderId[] lineItemsByFulfillmentOrder;
+
+    @JsonProperty("tracking_info")
+    private FulfillmentTrackingInfo trackingInfo;
+
     @JsonProperty("location_id")
     private final String locationId = ConstantsEnum.SHOPIFY_MAIN_LOCATION_ID.getConstantValue().toString();
 
@@ -62,17 +86,5 @@ public class FulfillmentDTO {
         this.lineItems = lineItems;
     }
 
-    public FulfillmentDTO(String trackingNumber, String trackingUrl, OrderDTO order) {
-        lineItems = new ArrayList<FulfillmentLineItemDTO>();
-        for (OrderLineDTO dto :order.getLineItems()){
-            if (dto.getFulfillableQuantity()>0){
-                lineItems.add(new FulfillmentLineItemDTO(dto.getId()));
-            }
-        }
-        this.trackingNumber = trackingNumber;
-        this.trackingUrl = trackingUrl;
-        requestUrl = ConstantsEnum.FULFILLMENT_REQUEST_URL_PREFIX.getConstantValue()+
-                order.getId()+
-                ConstantsEnum.FULFILLMENT_REQUEST_URL_SUFIX.getConstantValue();
-    }
 }
+

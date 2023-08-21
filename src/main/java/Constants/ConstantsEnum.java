@@ -25,6 +25,8 @@ public enum ConstantsEnum {
     SHOPIFY_MAIN_LOCATION_ID("shopify.location.main.id","insertValueInProperties"),
     FULFILLMENT_REQUEST_URL_PREFIX("shopify.fulfillment.url.prefix","insertValueInProperties"),
     FULFILLMENT_REQUEST_URL_SUFIX("shopify.fulfillment.url.sufix","insertValueInProperties"),
+    SHOPIFY_GET_FULFILLMENT_ORDER_ID_URL_PREFIX("shopify.fulfillment.order.get.order.id.prefix","insertValueInProperties"),
+    SHOPIFY_GET_FULFILLMENT_ORDER_ID_URL_SUFIX("shopify.fulfillment.order.get.order.id.sufix","insertValueInProperties"),
     TRACKING_URL_PREFIX("shopify.fulfillment.tracking.url.prefix","insertValueInProperties"),
     COURIER_REQUEST_LAST_HOUR("courier.request.last.hour.pm", "insertValueInProperties"),
     COURIER_SERVICE_CODE_NORMAL("courier.request.service.code.normal", "insertValueInProperties"),

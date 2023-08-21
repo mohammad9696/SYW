@@ -265,7 +265,7 @@ public class FulfillmentService {
         FulfillmentOrderDTO or = new FulfillmentOrderDTO(fulfillmentOrderId, trackingNumber, trackingUrl);
         orders.setFulfillmentOrderDTO(or);
 
-        String reqUrl = ConstantsEnum.FULFILLMENT_REQUEST_URL_PREFIX.getConstantValue().toString()+fulfillmentOrderId+ConstantsEnum.FULFILLMENT_REQUEST_URL_SUFIX.getConstantValue().toString();
+        String reqUrl = ConstantsEnum.FULFILLMENT_REQUEST_URL_PREFIX.getConstantValue().toString();
         Object result = HttpRequestExecutor.sendRequest(Object.class, orders , reqUrl);
         System.out.println(result);
     }
