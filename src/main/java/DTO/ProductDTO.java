@@ -78,6 +78,17 @@ public class ProductDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private ProductImageDTO image;
 
+    public Integer getDeliveryMaxDays() {
+        return this.deliveryMaxDays;
+    }
+
+    public void setDeliveryMaxDays(final Integer deliveryMaxDays) {
+        this.deliveryMaxDays = deliveryMaxDays;
+    }
+
+    private Integer deliveryMinDays;
+    private Integer deliveryMaxDays;
+
     public String getId() {
         return id;
     }
@@ -235,5 +246,21 @@ public class ProductDTO {
         return "ProductDTO{" +
                 "title='" + title + '\'' +
                 '}';
+    }
+
+    public Integer getDeliveryMinDays() {
+        return this.deliveryMinDays;
+    }
+
+    public void setDeliveryMinDays(final Integer deliveryMinDays) {
+        this.deliveryMinDays = deliveryMinDays;
+    }
+
+    public Integer getMaxDays() {
+        return this.deliveryMaxDays;
+    }
+
+    public void setMaxDays(final Integer maxDays) {
+        this.deliveryMaxDays = maxDays;
     }
 }

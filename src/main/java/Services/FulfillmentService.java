@@ -3,6 +3,7 @@ package Services;
 import Constants.ConstantsEnum;
 import DTO.*;
 import Utils.Utils;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,12 +109,6 @@ public class FulfillmentService {
     private static void processOrder(OrderDTO orderDTO, Scanner scanner, List<ProductDTO> productDTOList){
         logger.warn("Processing order {}", orderDTO.getOrderNumber());
 
-        if (!orderDTO.getShippingLine().isEmpty()){
-            if (orderDTO.getShippingLine().get(0).getShippingCode().equals(ConstantsEnum.SHOPIFY_ORDER_SHIPPING_CODE_PICKUP.getConstantValue().toString())){
-                return;
-            }
-        }
-
         String sku = Utils.normalizeStringLenght(15,"Sku");
         String ean = Utils.normalizeStringLenght(14, "Barcode");
         String productName = Utils.normalizeStringLenght(65, "Product Name");
@@ -196,22 +191,50 @@ public class FulfillmentService {
                 proceed = true;
             }
         }
-        OutvioShipDTO outvioShipDTO= new OutvioShipDTO(orderDTO.getOrderNumber(), volumes);
-        OutvioShipResponseDTO response = HttpRequestExecutor.sendRequest(OutvioShipResponseDTO.class, outvioShipDTO, ConstantsEnum.OUTVIO_SHIP_URL.getConstantValue().toString());
-
-        if (response != null && response.getSuccess()){
-            logger.info("Order {} was shipped successfully", orderDTO.getOrderNumber());
-            logger.info("Printing label for order {}", orderDTO.getOrderNumber());
-            PrinterService.print(ConstantsEnum.SYSTEM_PRINTER_LABEL.getConstantValue().toString(), response.getPdfLabelUrls()[0]);
-        } else {
-            logger.error("Could not print label for order {}", orderDTO.getOrderNumber());
-            return;
+        boolean ship = true;
+        boolean pickup = false;
+        boolean manualShipping = false;
+        if (!orderDTO.getShippingLine().isEmpty()){
+            if (orderDTO.getShippingLine().get(0).getShippingCode().equals(ConstantsEnum.SHOPIFY_ORDER_SHIPPING_CODE_PICKUP.getConstantValue().toString())){
+                ship = false;
+                pickup = true;
+            }
+        }
+        if (!pickup && orderDTO.getShippingAddress()!= null && orderDTO.getShippingAddress().getPostalCode().startsWith("9") && orderDTO.getShippingAddress().getCountryCode().equals("PT")){
+            manualShipping = true;
+            ship = false;
         }
 
+        if (ship){
+            OutvioShipDTO outvioShipDTO= new OutvioShipDTO(orderDTO.getOrderNumber(), volumes);
+            OutvioShipResponseDTO response = HttpRequestExecutor.sendRequest(OutvioShipResponseDTO.class, outvioShipDTO, ConstantsEnum.OUTVIO_SHIP_URL.getConstantValue().toString());
+
+            if (response != null && response.getSuccess()){
+                logger.info("Order {} was shipped successfully", orderDTO.getOrderNumber());
+                logger.info("Printing label for order {}", orderDTO.getOrderNumber());
+                PrinterService.print(ConstantsEnum.SYSTEM_PRINTER_LABEL.getConstantValue().toString(), response.getPdfLabelUrls()[0]);
+            } else {
+                logger.error("Could not print label for order {}", orderDTO.getOrderNumber());
+                return;
+            }
+            return;
+        } else if (pickup) {
+            fulfillOrderDirectly(orderDTO, "store-pickup", "store-pickup");
+            logger.warn("This is a store pickup print two copies of invoice");
+            logger.warn("This is a store pickup print two copies of invoice");
+            logger.warn("This is a store pickup print two copies of invoice");
+            logger.warn("This is a store pickup print two copies of invoice");
+            logger.warn("This is a store pickup print two copies of invoice");
+        } else if (manualShipping){
+            fulfillOrderDirectly(orderDTO, "expedido","expedido");
+            logger.warn("This is a CTT order, prepare and take to CTT");
+            logger.warn("This is a CTT order, prepare and take to CTT");
+            logger.warn("This is a CTT order, prepare and take to CTT");
+            logger.warn("This is a CTT order, prepare and take to CTT");
+            logger.warn("This is a CTT order, prepare and take to CTT");
+        }
         MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
-        return;
-
-
+        if (pickup) MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
 
     }
     private static String displayOrderLine(OrderLineDTO line, ProductDTO product){
@@ -225,12 +248,25 @@ public class FulfillmentService {
 
     private static ProductDTO getProductDetailsFromOrderLine (OrderLineDTO line, List<ProductDTO> productDTOList){
         for (ProductDTO productDTO : productDTOList){
-            logger.debug("getProductDetailsFromOrderLine iterating product {}", productDTO.getTitle());
+            //logger.debug("getProductDetailsFromOrderLine iterating product {}", productDTO.getTitle());
             if (line.getSku().equals(productDTO.sku())){
                 return productDTO;
             }
         }
         logger.error("Could not find product in store with sku {}", line.getSku());
         return null;
+    }
+
+    private static void fulfillOrderDirectly(OrderDTO order, String trackingNumber, String trackingUrl){
+
+        FulfillmentOrdersDTO ordersDTO = new FulfillmentOrdersDTO();
+        Long fulfillmentOrderId = ordersDTO.getFulfillmentOrderId(order);
+        FulfillmentOrdersDTO orders = new FulfillmentOrdersDTO();
+        FulfillmentOrderDTO or = new FulfillmentOrderDTO(fulfillmentOrderId, trackingNumber, trackingUrl);
+        orders.setFulfillmentOrderDTO(or);
+
+        String reqUrl = ConstantsEnum.FULFILLMENT_REQUEST_URL_PREFIX.getConstantValue().toString()+fulfillmentOrderId+ConstantsEnum.FULFILLMENT_REQUEST_URL_SUFIX.getConstantValue().toString();
+        Object result = HttpRequestExecutor.sendRequest(Object.class, orders , reqUrl);
+        System.out.println(result);
     }
 }

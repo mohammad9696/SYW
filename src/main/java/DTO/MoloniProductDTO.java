@@ -34,6 +34,10 @@ public class MoloniProductDTO {
     private Long hasStock;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("discount")
+    private Double discount;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("at_product_category")
     private String productCategory;
 
@@ -220,5 +224,13 @@ public class MoloniProductDTO {
 
     public void setChildProducts(final MoloniChildProductDTO[] childProducts) {
         this.childProducts = childProducts;
+    }
+
+    public Double getDiscount() {
+        return this.discount;
+    }
+
+    public void setDiscount(final Double discount) {
+        this.discount = discount;
     }
 }

@@ -132,7 +132,8 @@ public class MoloniService {
                 , finalDocument.getProductDTOS()[i].getProductName());
             double costPrice = StockKeepingUnitsService.getCostPrice(finalDocument.getDate(), finalDocument.getProductDTOS()[i].getSku());
             logger.info("Cost price: {}", costPrice);
-            double profitUnit = finalDocument.getProductDTOS()[i].getPriceWithoutVat()-costPrice;
+            double discount = finalDocument.getProductDTOS()[i].getDiscount()!= null ? finalDocument.getProductDTOS()[i].getDiscount() : 0;
+            double profitUnit = finalDocument.getProductDTOS()[i].getPriceWithoutVat()-discount-costPrice;
             double profit = profitUnit * finalDocument.getProductDTOS()[i].getLineQuantity();
             documentProfit = documentProfit + profit;
 

@@ -64,8 +64,6 @@ public class SheetsServiceUtil {
                     _values.add(mainSheetProductRow(properties));
                 }
             }
-
-
         }
         return _values;
     }
@@ -223,6 +221,10 @@ public class SheetsServiceUtil {
     private static List<Object> kuantokustaSheetHeaderRow(){
         List<Object> headers = startKuantokustaSheetRow();
 
+        for (KuantoKustaPropertiesEnum i : KuantoKustaPropertiesEnum.values()){
+            headers.set(i.getColumn_number(), i.getColumn_name());
+        }
+    /*
         headers.set(KuantoKustaPropertiesEnum.ID.getColumn_number(), KuantoKustaPropertiesEnum.ID.getColumn_name());
         headers.set(KuantoKustaPropertiesEnum.TITLE.getColumn_number(), KuantoKustaPropertiesEnum.TITLE.getColumn_name());
         headers.set(KuantoKustaPropertiesEnum.BODY_HTML.getColumn_number(), KuantoKustaPropertiesEnum.BODY_HTML.getColumn_name());
@@ -243,6 +245,8 @@ public class SheetsServiceUtil {
         headers.set(KuantoKustaPropertiesEnum.IMAGE_2_URL.getColumn_number(), KuantoKustaPropertiesEnum.IMAGE_2_URL.getColumn_name());
         headers.set(KuantoKustaPropertiesEnum.IMAGE_3_URL.getColumn_number(), KuantoKustaPropertiesEnum.IMAGE_3_URL.getColumn_name());
         headers.set(KuantoKustaPropertiesEnum.INVENTORY.getColumn_number(), KuantoKustaPropertiesEnum.INVENTORY.getColumn_name());
+
+     */
         return headers;
     }
 
@@ -255,11 +259,6 @@ public class SheetsServiceUtil {
 
         if (macroProductDTO.getTitle() != null) {
             productRow.set(KuantoKustaPropertiesEnum.TITLE.getColumn_number(), macroProductDTO.getTitle());
-        }
-
-        if (macroProductDTO.getBodyHtml() != null) {
-            productRow.set(KuantoKustaPropertiesEnum.BODY_HTML.getColumn_number(), macroProductDTO.getBodyHtml());
-
         }
 
         if(macroProductDTO.getBrand() != null){
@@ -279,16 +278,15 @@ public class SheetsServiceUtil {
         }
 
         if(macroProductDTO.getUrl() != null){
-            productRow.set(KuantoKustaPropertiesEnum.URL.getColumn_number(), macroProductDTO.getUrl());
+            productRow.set(KuantoKustaPropertiesEnum.URL_PT.getColumn_number(), macroProductDTO.getUrl());
+        }
+
+        if(macroProductDTO.getUrl() != null){
+            productRow.set(KuantoKustaPropertiesEnum.URL_ES.getColumn_number(), macroProductDTO.getUrl().replace(".pt",".pt/es"));
         }
 
         if(macroProductDTO.getTags() != null){
             productRow.set(KuantoKustaPropertiesEnum.TAGS.getColumn_number(), macroProductDTO.getTags());
-        }
-
-        if(macroProductDTO.getPrice() != null){
-            productRow.set(KuantoKustaPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPrice()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString()));
-            productRow.set(KuantoKustaPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), macroProductDTO.getPrice());
         }
 
         if(macroProductDTO.getSku() != null){
@@ -307,8 +305,22 @@ public class SheetsServiceUtil {
             productRow.set(KuantoKustaPropertiesEnum.WEIGHT_UNIT.getColumn_number(), macroProductDTO.getWeightUnit());
         }
 
+        if (macroProductDTO.getDeliveryMinDays() != null){
+            productRow.set(KuantoKustaPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_number(), macroProductDTO.getDeliveryMinDays());
+        }
+
+        if (macroProductDTO.getDeliveryMaxDays() != null){
+            productRow.set(KuantoKustaPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_number(), macroProductDTO.getDeliveryMaxDays());
+        }
+
         if (macroProductDTO.getRequiresShipping() != null){
             productRow.set(KuantoKustaPropertiesEnum.REQUIRES_SHIPPING.getColumn_number(), macroProductDTO.getRequiresShipping());
+        }
+
+
+        if(macroProductDTO.getPrice() != null){
+            productRow.set(KuantoKustaPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPrice()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString()));
+            productRow.set(KuantoKustaPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), macroProductDTO.getPrice());
         }
 
         if (macroProductDTO.getImages().size() >= 3){
@@ -337,7 +349,10 @@ public class SheetsServiceUtil {
 
     private static List<Object> mainSheetHeaderRow(){
         List<Object> headers = startMainSheetRow();
-
+        for (ProductPropertiesEnum i : ProductPropertiesEnum.values()){
+            headers.set(i.getColumn_number(), i.getColumn_name());
+        }
+    /*
         headers.set(ProductPropertiesEnum.ID.getColumn_number(),ProductPropertiesEnum.ID.getColumn_name());
         headers.set(ProductPropertiesEnum.VARIANT_ID.getColumn_number(), ProductPropertiesEnum.VARIANT_ID.getColumn_name());
         headers.set(ProductPropertiesEnum.TITLE.getColumn_number(),ProductPropertiesEnum.TITLE.getColumn_name());
@@ -350,6 +365,8 @@ public class SheetsServiceUtil {
         headers.set(ProductPropertiesEnum.STATUS.getColumn_number(),ProductPropertiesEnum.STATUS.getColumn_name());
         headers.set(ProductPropertiesEnum.TAGS.getColumn_number(),ProductPropertiesEnum.TAGS.getColumn_name());
         headers.set(ProductPropertiesEnum.PRICE_WITH_VAT.getColumn_number(),ProductPropertiesEnum.PRICE_WITH_VAT.getColumn_name());
+        headers.set(ProductPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_number(),ProductPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_name());
+        headers.set(ProductPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_number(),ProductPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_name());
         headers.set(ProductPropertiesEnum.SKU.getColumn_number(),ProductPropertiesEnum.SKU.getColumn_name());
         headers.set(ProductPropertiesEnum.BARCODE.getColumn_number(),ProductPropertiesEnum.BARCODE.getColumn_name());
         headers.set(ProductPropertiesEnum.WEIGHT.getColumn_number(),ProductPropertiesEnum.WEIGHT.getColumn_name());
@@ -367,7 +384,7 @@ public class SheetsServiceUtil {
         headers.set(ProductPropertiesEnum.PREVIOUS_PRICE_AMAZON.getColumn_number(), ProductPropertiesEnum.PREVIOUS_PRICE_AMAZON.getColumn_name());
         headers.set(ProductPropertiesEnum.PRICE_FNAC.getColumn_number(), ProductPropertiesEnum.PRICE_FNAC.getColumn_name());
         headers.set(ProductPropertiesEnum.PREVIOUS_PRICE_FNAC.getColumn_number(), ProductPropertiesEnum.PREVIOUS_PRICE_FNAC.getColumn_name());
-
+*/
         return headers;
     }
 
@@ -459,7 +476,15 @@ public class SheetsServiceUtil {
             productRow.set(ProductPropertiesEnum.INVENTORY_POLICY.getColumn_number(),productDTO.get(ProductPropertiesEnum.INVENTORY_POLICY.getColumn_name()));
         }
 
-        //calcular preço sem iva
+        if (productDTO.containsKey(ProductPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_name()) && productDTO.get(ProductPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_name()) != null){
+            productRow.set(ProductPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_number(),productDTO.get(ProductPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_name()));
+        }
+        if (productDTO.containsKey(ProductPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_name()) && productDTO.get(ProductPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_name()) != null){
+            productRow.set(ProductPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_number(),productDTO.get(ProductPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_name()));
+        }
+
+
+        //calcular preço sem iva estático a 23%
         NumberFormat numberFormat = NumberFormat.getInstance(Locale.FRANCE);
         if(productDTO.containsKey(ProductPropertiesEnum.PRICE_WITH_VAT.getColumn_name()) && productDTO.get(ProductPropertiesEnum.PRICE_WITH_VAT.getColumn_name()) != null){
             try {

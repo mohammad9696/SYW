@@ -7,6 +7,8 @@ public enum ProductMetafieldEnum {
     ETA_CART("etaCart","custom","?namespace=custom&key=etaCart",ConstantsEnum.ETA_DEFAULT_ETA_CART_MESSAGE.getConstantValue().toString()),
     ETA_MIN("etaMinDays","custom","?namespace=custom&key=etaMinDays",ConstantsEnum.ETA_DEFAULT_ETA_MIN_DAYS.getConstantValue().toString()),
     ETA_MAX("etaMaxDays","custom","?namespace=custom&key=etaMaxDays",ConstantsEnum.ETA_DEFAULT_ETA_MAX_DAYS.getConstantValue().toString()),
+    ETA_MIN_DAYS("etaMinDaysResult","custom","?namespace=custom&key=etaMinDaysResult",ConstantsEnum.ETA_DEFAULT_ETA_MIN_DAYS.getConstantValue().toString()),
+    ETA_MAX_DAYS("etaMaxDaysResult","custom","?namespace=custom&key=etaMaxDaysResult",ConstantsEnum.ETA_DEFAULT_ETA_MAX_DAYS.getConstantValue().toString()),
     ETA_DATE("etaDate","custom","?namespace=custom&key=etaDate",ConstantsEnum.ETA_DEFAULT_ETA_DATE.getConstantValue().toString()),
     ETA_RESULT("etaResult","custom","?namespace=custom&key=etaResult",ConstantsEnum.ETA_DEFAULT_ETA_RESULT.getConstantValue().toString()),
     ETA_CART_RESULT("etaCartResult","custom","?namespace=custom&key=etaCartResult",ConstantsEnum.ETA_DEFAULT_ETA_CART_RESULT.getConstantValue().toString()),

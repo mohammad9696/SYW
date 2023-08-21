@@ -24,7 +24,7 @@ public class LognowExpeditionRequest {
         if (trackingCode == null){
             throw new NullPointerException("Tracking Code is null");
         }
-        fulfillOrder(order, trackingCode);
+        //fulfillOrder(order, trackingCode);
     }
 
     private static String createShipmentWithCourier(CourierExpeditionDTO courierExpeditionDTO, String accessToken) {
@@ -100,13 +100,13 @@ public class LognowExpeditionRequest {
 
         return courierExpeditionDTO;
     }
-
+/*
     private static void fulfillOrder(OrderDTO order, String trackingNumber){
         String tracking = ConstantsEnum.TRACKING_URL_PREFIX.getConstantValue().toString()+trackingNumber;
-        FulfillmentDTO fulfillmentDTO = new FulfillmentDTO(tracking, tracking, order);
+       FulfillmentDTO fulfillmentDTO = new FulfillmentDTO(tracking, tracking, order);
         Object result = HttpRequestExecutor.sendRequest(Object.class, new FulfillmentObject(fulfillmentDTO) , fulfillmentDTO.getRequestUrl());
         System.out.println(result);
     }
 
-
+*/
 }

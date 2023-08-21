@@ -1,6 +1,7 @@
 package main;
 
 import Constants.ConstantsEnum;
+import Constants.ProductMetafieldEnum;
 import Constants.ProductSellTypeEnum;
 import DTO.*;
 import Services.*;
@@ -66,6 +67,21 @@ public class UpdateFeeds {
         }
     }
 
+    private static void updateMetafieldsForProducts(List<ProductDTO> productDTOS){
+        ShopifyProductMetafieldsManager shopifyProductMetafieldsManager = new ShopifyProductMetafieldsManager();
+        for (ProductDTO p : productDTOS){
+            ProductMetafieldDTO minDays = shopifyProductMetafieldsManager.getMetafield(true, p,ProductMetafieldEnum.ETA_MIN_DAYS);
+            ProductMetafieldDTO maxDays = shopifyProductMetafieldsManager.getMetafield(true, p,ProductMetafieldEnum.ETA_MAX_DAYS);
+            if (minDays != null && maxDays != null){
+                p.setDeliveryMinDays(Integer.parseInt(minDays.getValue()));
+                p.setMaxDays(Integer.parseInt(maxDays.getValue()));
+            } else {
+                p.setDeliveryMinDays(Integer.parseInt(ProductMetafieldEnum.ETA_MIN_DAYS.getDefaultMessage()));
+                p.setMaxDays(Integer.parseInt(ProductMetafieldEnum.ETA_MAX_DAYS.getDefaultMessage()));
+            }
+        }
+    }
+
     public static void updateFeeds(){
         try {
             String spreadsheetId = (String) ConstantsEnum.MAIN_SPREADSHEET_ID.getConstantValue();
@@ -73,6 +89,7 @@ public class UpdateFeeds {
 
             Map<String, MacroProductDTO> sheetsProductList = getSheetsProductList(spreadsheetId, snippet);
             List<ProductDTO> productsFromShopify = ShopifyProductService.getShopifyProductList();
+            updateMetafieldsForProducts(productsFromShopify);
 
             List<List<Object>> _values = SheetsServiceUtil.getMainSheetValues(sheetsProductList, productsFromShopify);
             snippet.updateValues(spreadsheetId, "A1","RAW", _values);

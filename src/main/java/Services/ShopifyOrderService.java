@@ -119,9 +119,9 @@ public class ShopifyOrderService {
             System.out.println("Please insert the tracking url");
             String trackingUrl = scanner.next();
             //Main.isExit(Integer.parseInt(trackingUrl));
-            FulfillmentDTO fulfillmentDTO = new FulfillmentDTO(trackingNumber, trackingUrl, order);
-            Object result = HttpRequestExecutor.sendRequest(Object.class, new FulfillmentObject(fulfillmentDTO) , fulfillmentDTO.getRequestUrl());
-            System.out.println(result);
+           // FulfillmentDTO fulfillmentDTO = new FulfillmentDTO(trackingNumber, trackingUrl, order);
+            //Object result = HttpRequestExecutor.sendRequest(Object.class, new FulfillmentObject(fulfillmentDTO) , fulfillmentDTO.getRequestUrl());
+            //System.out.println(result);
             orderList.remove(order);
             lognowShowOrderOptions(orderList, pickupAddress);
         }  else if (option == 9){

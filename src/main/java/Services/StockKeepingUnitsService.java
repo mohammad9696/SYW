@@ -135,7 +135,7 @@ public class StockKeepingUnitsService {
                     && moloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())) {
                 if (mps.getQuantityAfterMovement()>= 0){
                     logger.info("Looking for stock purchase before this document");
-                    if (mps.getMovementDate().isBefore(dateTime)) {
+                    if (mps.getMovementDate().isAfter(dateTime)) {
                         logger.info("Found stock movement for {} that is before {} in document {}{}", sku, date, mps.getDocumentDTO().getDocumentSetName(),mps.getDocumentDTO().getDocumentNumber());
                         MoloniDocumentDTO documentDTO = MoloniService.getMoloniDocumentDTObyId(mps.getDocumentId().toString());
                         for (MoloniProductDTO dto : documentDTO.getProductDTOS()){

@@ -13,6 +13,8 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
 
 public class ShopifyProductMetafieldsManager {
@@ -21,7 +23,7 @@ public class ShopifyProductMetafieldsManager {
     private String etaToUpdate;
 
 
-    protected ProductMetafieldDTO getMetafield(boolean liveMetafield, ProductDTO productDTO, ProductMetafieldEnum productMetafieldEnum){
+    public ProductMetafieldDTO getMetafield(boolean liveMetafield, ProductDTO productDTO, ProductMetafieldEnum productMetafieldEnum){
         logger.debug("Getting metafield {} for product {}", productMetafieldEnum.getKey(), productDTO.sku());
         String requestUrl = null;
         if (liveMetafield) {
@@ -175,21 +177,31 @@ public class ShopifyProductMetafieldsManager {
 
         if (availableToSell) {
             LocalDateTime now = java.time.LocalDateTime.now();
+            int minDaysToDeliver = 0;
+            int maxDaysToDeliver = 0;
             ProductMetafieldDTO etaCartMessage = getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA_CART);
             if (stockAvailable > 0){
+                minDaysToDeliver = 1;
+                maxDaysToDeliver = minDaysToDeliver + 2;
                 etaMessage = getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA);
-                LocalDateTime availableDate = countWorkDays(now, 1);
+                LocalDateTime availableDate = countWorkDays(now, minDaysToDeliver);
                 placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(availableDate));
-                placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(availableDate,1)));
+                placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(now, maxDaysToDeliver)));
             } else if (stockAvailable <= 0){
                 etaMessage = getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA2);
                 LocalDateTime deliveryDate = getEtaDate(productDTO);
                 if (deliveryDate != null && now.isBefore(deliveryDate)) {
+                    Long minDays = ChronoUnit.DAYS.between(deliveryDate, now);
+                    minDaysToDeliver = minDays.intValue();
+                    maxDaysToDeliver = minDaysToDeliver +2;
                     placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(countWorkDays(deliveryDate,0)));
                     placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(deliveryDate,1)));
                 } else {
+
                     int minDays = Integer.parseInt(getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA_MIN).getValue().toString());
                     int maxDays = Integer.parseInt(getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA_MAX).getValue().toString());
+                    minDaysToDeliver = minDays;
+                    maxDaysToDeliver = maxDays;
                     placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(countWorkDays(now, minDays)));
                     placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MAX.getKey(), Utils.Utils.dateFormat(countWorkDays(now, maxDays)));
                 }
@@ -199,6 +211,8 @@ public class ShopifyProductMetafieldsManager {
             resultEtaCartMessage = replacePlaceholders(etaCartMessage.getValue().toString(), placeholders);
             createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_RESULT, resultEtaMessage);
             createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_CART_RESULT, resultEtaCartMessage);
+            createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_MIN_DAYS, minDaysToDeliver);
+            createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_MAX_DAYS, maxDaysToDeliver+"");
             logger.info("ETA was updated : " + productDTO.getTitle());
         } else {
             createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_RESULT, ConstantsEnum.ETA_DEFAULT_UNAVAILABLE.getConstantValue());
