@@ -3,6 +3,7 @@ package Services;
 import Constants.ConstantsEnum;
 import DTO.*;
 import Utils.Utils;
+import com.google.api.client.util.ArrayMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,6 +127,18 @@ public class StockKeepingUnitsService {
         }
 
         MoloniProductStocksDTO[] stockMovements = MoloniService.getStockMovements(sku, dateTime, null);
+
+        if (stockMovements.length == 0){
+            Double price = 0.0;
+            MoloniProductDTO mp = MoloniService.getProduct(sku);
+            if (mp.getChildProducts().length!=0){
+
+                for (MoloniChildProductDTO p : mp.getChildProducts()){
+                    price = price + getCostPrice(null, p.getProductDTO().getSku()) * p.getQuantity();
+                }
+            }
+            return price;
+        }
         MoloniService moloniService = new MoloniService();
         for (MoloniProductStocksDTO mps : stockMovements) {
             mps.setMovementDate(Utils.StringMoloniDateTime(mps.getMovementDateString()));
@@ -135,23 +148,25 @@ public class StockKeepingUnitsService {
                     && moloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())) {
                 if (mps.getQuantityAfterMovement()>= 0){
                     logger.info("Looking for stock purchase before this document");
-                    if (mps.getMovementDate().isAfter(dateTime)) {
+                    if (mps.getMovementDate().isBefore(dateTime)) {
                         logger.info("Found stock movement for {} that is before {} in document {}{}", sku, date, mps.getDocumentDTO().getDocumentSetName(),mps.getDocumentDTO().getDocumentNumber());
                         MoloniDocumentDTO documentDTO = MoloniService.getMoloniDocumentDTObyId(mps.getDocumentId().toString());
                         for (MoloniProductDTO dto : documentDTO.getProductDTOS()){
                             if (dto.getSku().equals(sku)){
-                                return dto.getPriceWithoutVat();
+                                if (dto.getDiscount() == null) dto.setDiscount(0.0);
+                                return dto.getPriceWithoutVat()*((1-dto.getDiscount()/100));
                             }
                         }
                     }
                 } else {
                     logger.info("Looking for stock purchase after this document");
-                    if (mps.getMovementDate().isBefore(Utils.StringMoloniDateTime(date))) {
+                    if (mps.getMovementDate().isBefore(dateTime)) {
                         logger.info("Found stock movement for {} that is before {} in document {}{}", sku, date, mps.getDocumentDTO().getDocumentSetName(),mps.getDocumentDTO().getDocumentNumber());
                         MoloniDocumentDTO documentDTO = MoloniService.getMoloniDocumentDTObyId(mps.getDocumentId().toString());
                         for (MoloniProductDTO dto : documentDTO.getProductDTOS()){
                             if (dto.getSku().equals(sku)){
-                                return dto.getPriceWithoutVat();
+                                if (dto.getDiscount() == null) dto.setDiscount(0.0);
+                                return dto.getPriceWithoutVat()*((1-dto.getDiscount()/100));
                             }
                         }
                     }
@@ -162,11 +177,33 @@ public class StockKeepingUnitsService {
 
         return 0.0;
     }
-    public static StockDetailsDTO getPurchasingNeeds(String sku, StockDetailsDTO reservations, MoloniService moloniService){
-        //try para refazer inseri
+    public static StockDetailsDTO getPurchasingNeeds(String sku, StockDetailsDTO reservations, MoloniService moloniService, Map<String, StockDetailsDTO> mustDoThese){
+
+        //
         logger.debug("Getting purchasing needs for sku '{}'  ",sku);
         MoloniProductStocksDTO[] stockMovements = MoloniService.getStockMovements(sku, null, null);
         logger.debug("Got {} stock movements for sku {}", stockMovements.length, sku);
+
+
+        if (stockMovements.length == 0) {
+            MoloniProductDTO productDTO = MoloniService.getProduct(sku);
+            if (productDTO != null && productDTO.getChildProducts().length != 0) {
+                for (MoloniChildProductDTO childProductDTO : productDTO.getChildProducts()) {
+                    StockDetailsDTO updating = new StockDetailsDTO(childProductDTO.getProductDTO().getSku());
+                    updating.setShopifyUnpaidReservations(0);
+                    updating.setShopifyPaidReservations(0);
+                    if (mustDoThese.containsKey(childProductDTO.getProductDTO().getSku())) {
+                        updating = mustDoThese.get(childProductDTO.getProductDTO().getSku());
+                    }
+                    Integer paidReservations = reservations.getShopifyPaidReservations() != null ? reservations.getShopifyPaidReservations() : 0;
+                    Integer unpaidReservations = reservations.getShopifyUnpaidReservations() != null ? reservations.getShopifyUnpaidReservations() : 0;
+                    updating.setShopifyPaidReservations(updating.getShopifyPaidReservations() + paidReservations * childProductDTO.getQuantity());
+                    updating.setShopifyUnpaidReservations(updating.getShopifyUnpaidReservations() + unpaidReservations * childProductDTO.getQuantity());
+                    mustDoThese.put(childProductDTO.getProductDTO().getSku(), updating);
+                }
+            }
+        }
+
         for (MoloniProductStocksDTO mps :stockMovements){
             mps.setMovementDate(Utils.StringMoloniDateTime(mps.getMovementDateString()));
         }
@@ -229,20 +266,31 @@ public class StockKeepingUnitsService {
         logger.debug("Calculating Purchasing needs for sku '{}' and productNameContains '{}' ",sku, productNameContains);
         List<ProductDTO> products = ShopifyProductService.getShopifyProductList();
         List<StockDetailsDTO> purchasingNeeds = new ArrayList<>();
+        Map<String, StockDetailsDTO> mustDoThese = new ArrayMap<>();
 
         MoloniService moloniService = new MoloniService();
+
         for (ProductDTO productDTO : products){
             if((sku != null && productNameContains == null && productDTO.sku().toLowerCase(Locale.ROOT).equals(sku.toLowerCase(Locale.ROOT))) ||
                     (sku == null && productNameContains != null && productDTO.getTitle().toLowerCase(Locale.ROOT).contains(productNameContains.toLowerCase(Locale.ROOT))) ||
                         (sku == null && productNameContains == null) ||
                             (sku != null && productNameContains != null)){
                 if(!stockReservations.containsKey(productDTO.sku())){
-                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), new StockDetailsDTO(productDTO.sku()), moloniService));
+                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), new StockDetailsDTO(productDTO.sku()), moloniService, mustDoThese));
                 } else {
-                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), stockReservations.get(productDTO.sku()), moloniService));
+                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), stockReservations.get(productDTO.sku()), moloniService, mustDoThese));
                 }
             }
         }
+        for (Map.Entry<String, StockDetailsDTO> i : mustDoThese.entrySet()){
+            StockDetailsDTO stockDetailsDTO = i.getValue();
+            if (stockReservations.containsKey(i.getKey())){
+                stockDetailsDTO.setShopifyPaidReservations(stockDetailsDTO.getShopifyPaidReservations() + stockReservations.get(i.getKey()).getShopifyPaidReservations());
+                stockDetailsDTO.setShopifyUnpaidReservations(stockDetailsDTO.getShopifyUnpaidReservations() + stockReservations.get(i.getKey()).getShopifyUnpaidReservations());
+            }
+            purchasingNeeds.add((getPurchasingNeeds(i.getKey(),stockDetailsDTO, moloniService, mustDoThese)));
+        }
+
         purchasingNeeds.sort(StockDetailsDTO::compareTo);
         return purchasingNeeds;
     }

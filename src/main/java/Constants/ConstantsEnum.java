@@ -8,6 +8,7 @@ public enum ConstantsEnum {
     PRODUCT_URL_PREFIX("store.product.url.prefix", "insertValueInProperties"),
     VAT_PT("vat","insertValueInProperties"),
     SHEETS_CLIENT_SECRET("sheets.client.secret.file","insertValueInProperties"),
+    SHEETS_PARTNER_MARGIN_MAX("sheets.partner.margin.max","insertValueInProperties"),
     MAIN_SPREADSHEET_ID ("sheets.main.id","insertValueInProperties"),
     MAIN_SPREADSHEET_DATA_RANGE("sheets.main.data.range","insertValueInProperties"),
     GET_REQUEST_SHOPIFY_PRODUCTS("shopify.get.products","insertValueInProperties"),

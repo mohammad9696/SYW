@@ -1,7 +1,7 @@
 package Services;
 
 import Constants.ConstantsEnum;
-import Constants.DottPropertiesEnum;
+import Constants.PartnerFeedPropertiesEnum;
 import Constants.KuantoKustaPropertiesEnum;
 import Constants.ProductPropertiesEnum;
 import DTO.ProductDTO;
@@ -82,10 +82,10 @@ public class SheetsServiceUtil {
 
     public static List<List<Object>> getDottSheetValues(Map<String, MacroProductDTO> originalProductList){
         List<List<Object>> _values = new ArrayList<>();
-        _values.add(dottSheetHeaderRow());
+        _values.add(partnerFeedSheetHeaderRow());
         for (Map.Entry<String, MacroProductDTO> obj : originalProductList.entrySet()){
             if(obj.getValue().getStatus().equals("active") && isProductSellable(obj)){
-                _values.add(dottSheetProductRow(obj.getValue()));
+                _values.add(partnerFeedSheetProductRow(obj.getValue()));
             }
         }
 
@@ -106,114 +106,130 @@ public class SheetsServiceUtil {
         return true;
     }
 
-    private static List<Object> dottSheetHeaderRow(){
+    private static List<Object> partnerFeedSheetHeaderRow(){
         List<Object> headers = startDottSheetRow();
-
-        headers.set(DottPropertiesEnum.ID.getColumn_number(), DottPropertiesEnum.ID.getColumn_name());
-        headers.set(DottPropertiesEnum.TITLE.getColumn_number(), DottPropertiesEnum.TITLE.getColumn_name());
-        headers.set(DottPropertiesEnum.BODY_HTML.getColumn_number(), DottPropertiesEnum.BODY_HTML.getColumn_name());
-        headers.set(DottPropertiesEnum.BRAND.getColumn_number(), DottPropertiesEnum.BRAND.getColumn_name());
-        headers.set(DottPropertiesEnum.PRODUCT_TYPE.getColumn_number(), DottPropertiesEnum.PRODUCT_TYPE.getColumn_name());
-        headers.set(DottPropertiesEnum.CREATED_AT.getColumn_number(), DottPropertiesEnum.CREATED_AT.getColumn_name());
-        headers.set(DottPropertiesEnum.UPDATED_AT.getColumn_number(), DottPropertiesEnum.UPDATED_AT.getColumn_name());
-        headers.set(DottPropertiesEnum.TAGS.getColumn_number(), DottPropertiesEnum.TAGS.getColumn_name());
-        headers.set(DottPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), DottPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_name());
-        headers.set(DottPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), DottPropertiesEnum.PRICE_WITH_VAT.getColumn_name());
-        headers.set(DottPropertiesEnum.PREVIOUS_PRICE.getColumn_number(), DottPropertiesEnum.PREVIOUS_PRICE.getColumn_name());
-        headers.set(DottPropertiesEnum.SKU.getColumn_number(), DottPropertiesEnum.SKU.getColumn_name());
-        headers.set(DottPropertiesEnum.BARCODE.getColumn_number(), DottPropertiesEnum.BARCODE.getColumn_name());
-        headers.set(DottPropertiesEnum.WEIGHT.getColumn_number(), DottPropertiesEnum.WEIGHT.getColumn_name());
-        headers.set(DottPropertiesEnum.WEIGHT_UNIT.getColumn_number(), DottPropertiesEnum.WEIGHT_UNIT.getColumn_name());
-        headers.set(DottPropertiesEnum.REQUIRES_SHIPPING.getColumn_number(), DottPropertiesEnum.REQUIRES_SHIPPING.getColumn_name());
-        headers.set(DottPropertiesEnum.IMAGE_1_URL.getColumn_number(), DottPropertiesEnum.IMAGE_1_URL.getColumn_name());
-        headers.set(DottPropertiesEnum.IMAGE_2_URL.getColumn_number(), DottPropertiesEnum.IMAGE_2_URL.getColumn_name());
-        headers.set(DottPropertiesEnum.IMAGE_3_URL.getColumn_number(), DottPropertiesEnum.IMAGE_3_URL.getColumn_name());
-        headers.set(DottPropertiesEnum.INVENTORY.getColumn_number(), DottPropertiesEnum.INVENTORY.getColumn_name());
+        for (PartnerFeedPropertiesEnum p : PartnerFeedPropertiesEnum.values()){
+            headers.set(p.getColumn_number(), p.getColumn_name());
+        }
         return headers;
     }
 
-    private static List<Object> dottSheetProductRow(MacroProductDTO macroProductDTO){
+    private static List<Object> partnerFeedSheetProductRow(MacroProductDTO macroProductDTO){
         List<Object> productRow = startDottSheetRow();
 
         if (macroProductDTO.getId() != null) {
-            productRow.set(DottPropertiesEnum.ID.getColumn_number(), macroProductDTO.getId());
+            productRow.set(PartnerFeedPropertiesEnum.ID.getColumn_number(), macroProductDTO.getVariantId());
         }
 
         if (macroProductDTO.getTitle() != null) {
-            productRow.set(DottPropertiesEnum.TITLE.getColumn_number(), macroProductDTO.getTitle());
-        }
-
-        if (macroProductDTO.getBodyHtml() != null) {
-            productRow.set(DottPropertiesEnum.BODY_HTML.getColumn_number(), macroProductDTO.getBodyHtml());
-
+            productRow.set(PartnerFeedPropertiesEnum.TITLE.getColumn_number(), macroProductDTO.getTitle());
         }
 
         if(macroProductDTO.getBrand() != null){
-            productRow.set(DottPropertiesEnum.BRAND.getColumn_number(), macroProductDTO.getBrand());
+            productRow.set(PartnerFeedPropertiesEnum.BRAND.getColumn_number(), macroProductDTO.getBrand());
         }
 
         if(macroProductDTO.getProductType() != null){
-            productRow.set(DottPropertiesEnum.PRODUCT_TYPE.getColumn_number(), macroProductDTO.getProductType());
+            productRow.set(PartnerFeedPropertiesEnum.PRODUCT_TYPE.getColumn_number(), macroProductDTO.getProductType());
         }
 
         if(macroProductDTO.getCreatedAt() != null){
-            productRow.set(DottPropertiesEnum.CREATED_AT.getColumn_number(), macroProductDTO.getCreatedAt());
+            productRow.set(PartnerFeedPropertiesEnum.CREATED_AT.getColumn_number(), macroProductDTO.getCreatedAt());
         }
 
         if(macroProductDTO.getUpdatedAt() != null){
-            productRow.set(DottPropertiesEnum.UPDATED_AT.getColumn_number(), macroProductDTO.getUpdatedAt());
+            productRow.set(PartnerFeedPropertiesEnum.UPDATED_AT.getColumn_number(), macroProductDTO.getUpdatedAt());
+        }
+
+        if(macroProductDTO.getUrl() != null){
+            productRow.set(PartnerFeedPropertiesEnum.URL_PT.getColumn_number(), macroProductDTO.getUrl());
+        }
+
+        if(macroProductDTO.getUrl() != null){
+            productRow.set(PartnerFeedPropertiesEnum.URL_ES.getColumn_number(), macroProductDTO.getUrl().replace(".pt",".pt/es"));
         }
 
         if(macroProductDTO.getTags() != null){
-            productRow.set(DottPropertiesEnum.TAGS.getColumn_number(), macroProductDTO.getTags());
-        }
-
-        if(macroProductDTO.getPriceDottVat() != null){
-            productRow.set(DottPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPriceDottVat()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString()));
-            productRow.set(DottPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), macroProductDTO.getPriceDottVat());
-        } else {
-            productRow.set(DottPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPrice()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString()));
-            productRow.set(DottPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), macroProductDTO.getPrice());
-        }
-
-        if(macroProductDTO.getPreviousPriceDottVat() != null){
-            productRow.set(DottPropertiesEnum.PREVIOUS_PRICE.getColumn_number(), macroProductDTO.getPreviousPriceDottVat());
+            productRow.set(PartnerFeedPropertiesEnum.TAGS.getColumn_number(), macroProductDTO.getTags());
         }
 
         if(macroProductDTO.getSku() != null){
-            productRow.set(DottPropertiesEnum.SKU.getColumn_number(), macroProductDTO.getSku());
+            productRow.set(PartnerFeedPropertiesEnum.SKU.getColumn_number(), macroProductDTO.getSku());
         }
 
         if(macroProductDTO.getBarcode() != null) {
-            productRow.set(DottPropertiesEnum.BARCODE.getColumn_number(), macroProductDTO.getBarcode());
+            productRow.set(PartnerFeedPropertiesEnum.BARCODE.getColumn_number(), macroProductDTO.getBarcode());
         }
 
         if (macroProductDTO.getWeight() != null){
-            productRow.set(DottPropertiesEnum.WEIGHT.getColumn_number(), macroProductDTO.getWeight());
+            productRow.set(PartnerFeedPropertiesEnum.WEIGHT.getColumn_number(), macroProductDTO.getWeight());
         }
 
         if (macroProductDTO.getWeightUnit() != null){
-            productRow.set(DottPropertiesEnum.WEIGHT_UNIT.getColumn_number(), macroProductDTO.getWeightUnit());
+            productRow.set(PartnerFeedPropertiesEnum.WEIGHT_UNIT.getColumn_number(), macroProductDTO.getWeightUnit());
+        }
+
+        if (macroProductDTO.getDeliveryMinDays() != null){
+            productRow.set(PartnerFeedPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_number(), macroProductDTO.getDeliveryMinDays());
+        }
+
+        if (macroProductDTO.getDeliveryMaxDays() != null){
+            productRow.set(PartnerFeedPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_number(), macroProductDTO.getDeliveryMaxDays());
         }
 
         if (macroProductDTO.getRequiresShipping() != null){
-            productRow.set(DottPropertiesEnum.REQUIRES_SHIPPING.getColumn_number(), macroProductDTO.getRequiresShipping());
+            productRow.set(PartnerFeedPropertiesEnum.REQUIRES_SHIPPING.getColumn_number(), macroProductDTO.getRequiresShipping());
+        }
+
+
+        if(macroProductDTO.getPrice() != null){
+            productRow.set(PartnerFeedPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPrice()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString()));
+            productRow.set(PartnerFeedPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), macroProductDTO.getPrice());
         }
 
         if (macroProductDTO.getImages().size() >= 3){
-            productRow.set(DottPropertiesEnum.IMAGE_1_URL.getColumn_number(), macroProductDTO.getImages().get(0).getSrc());
-            productRow.set(DottPropertiesEnum.IMAGE_2_URL.getColumn_number(), macroProductDTO.getImages().get(1).getSrc());
-            productRow.set(DottPropertiesEnum.IMAGE_3_URL.getColumn_number(), macroProductDTO.getImages().get(2).getSrc());
+            productRow.set(PartnerFeedPropertiesEnum.IMAGE_1_URL.getColumn_number(), macroProductDTO.getImages().get(0).getSrc());
+            productRow.set(PartnerFeedPropertiesEnum.IMAGE_2_URL.getColumn_number(), macroProductDTO.getImages().get(1).getSrc());
+            productRow.set(PartnerFeedPropertiesEnum.IMAGE_3_URL.getColumn_number(), macroProductDTO.getImages().get(2).getSrc());
         } else if (macroProductDTO.getImages().size() == 2) {
-            productRow.set(DottPropertiesEnum.IMAGE_1_URL.getColumn_number(), macroProductDTO.getImages().get(0).getSrc());
-            productRow.set(DottPropertiesEnum.IMAGE_2_URL.getColumn_number(), macroProductDTO.getImages().get(1).getSrc());
+            productRow.set(PartnerFeedPropertiesEnum.IMAGE_1_URL.getColumn_number(), macroProductDTO.getImages().get(0).getSrc());
+            productRow.set(PartnerFeedPropertiesEnum.IMAGE_2_URL.getColumn_number(), macroProductDTO.getImages().get(1).getSrc());
         } else if (macroProductDTO.getImages().size() == 1) {
-            productRow.set(DottPropertiesEnum.IMAGE_1_URL.getColumn_number(), macroProductDTO.getImages().get(0).getSrc());
+            productRow.set(PartnerFeedPropertiesEnum.IMAGE_1_URL.getColumn_number(), macroProductDTO.getImages().get(0).getSrc());
         }
 
         if (macroProductDTO.getInventory() != null){
-            productRow.set(DottPropertiesEnum.INVENTORY.getColumn_number(), macroProductDTO.getInventory());
+            int inventoryToSet = macroProductDTO.getInventory();
+            if (inventoryToSet <= 0){
+                if (macroProductDTO.getInventoryPolicy().equals("continue")){
+                    inventoryToSet = 1;
+                }
+            } else if (inventoryToSet > 25){
+                inventoryToSet = 25;
+            }
+            productRow.set(PartnerFeedPropertiesEnum.INVENTORY.getColumn_number(), inventoryToSet );
         }
+
+        Double costPrice = StockKeepingUnitsService.getCostPrice(null, macroProductDTO.getSku())*Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString());
+        Double pvp = macroProductDTO.getPrice();
+        Double margin ;
+        Double marginPercentage;
+        Double sellPrice;
+        Double partnerMargin;
+        if (costPrice != null && costPrice > 0.0) {
+            margin = pvp-costPrice;
+            marginPercentage = margin/pvp;
+            if (marginPercentage/2 > Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100 ){
+                sellPrice = pvp * (1.0- Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100);
+                partnerMargin = Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100;
+            } else {
+                sellPrice = pvp * (1.0 - marginPercentage/2);
+                partnerMargin = marginPercentage/2;
+            }
+            productRow.set(PartnerFeedPropertiesEnum.MARGEM_COM_PVP_SMARTIFY.getColumn_number(), partnerMargin);
+            productRow.set(PartnerFeedPropertiesEnum.PRECO_TABELA.getColumn_number(), sellPrice);
+        }
+
 
         return productRow;
     }
@@ -224,29 +240,6 @@ public class SheetsServiceUtil {
         for (KuantoKustaPropertiesEnum i : KuantoKustaPropertiesEnum.values()){
             headers.set(i.getColumn_number(), i.getColumn_name());
         }
-    /*
-        headers.set(KuantoKustaPropertiesEnum.ID.getColumn_number(), KuantoKustaPropertiesEnum.ID.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.TITLE.getColumn_number(), KuantoKustaPropertiesEnum.TITLE.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.BODY_HTML.getColumn_number(), KuantoKustaPropertiesEnum.BODY_HTML.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.BRAND.getColumn_number(), KuantoKustaPropertiesEnum.BRAND.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.PRODUCT_TYPE.getColumn_number(), KuantoKustaPropertiesEnum.PRODUCT_TYPE.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.CREATED_AT.getColumn_number(), KuantoKustaPropertiesEnum.CREATED_AT.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.UPDATED_AT.getColumn_number(), KuantoKustaPropertiesEnum.UPDATED_AT.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.URL.getColumn_number(), KuantoKustaPropertiesEnum.URL.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.TAGS.getColumn_number(), KuantoKustaPropertiesEnum.TAGS.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), KuantoKustaPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), KuantoKustaPropertiesEnum.PRICE_WITH_VAT.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.SKU.getColumn_number(), KuantoKustaPropertiesEnum.SKU.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.BARCODE.getColumn_number(), KuantoKustaPropertiesEnum.BARCODE.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.WEIGHT.getColumn_number(), KuantoKustaPropertiesEnum.WEIGHT.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.WEIGHT_UNIT.getColumn_number(), KuantoKustaPropertiesEnum.WEIGHT_UNIT.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.REQUIRES_SHIPPING.getColumn_number(), KuantoKustaPropertiesEnum.REQUIRES_SHIPPING.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.IMAGE_1_URL.getColumn_number(), KuantoKustaPropertiesEnum.IMAGE_1_URL.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.IMAGE_2_URL.getColumn_number(), KuantoKustaPropertiesEnum.IMAGE_2_URL.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.IMAGE_3_URL.getColumn_number(), KuantoKustaPropertiesEnum.IMAGE_3_URL.getColumn_name());
-        headers.set(KuantoKustaPropertiesEnum.INVENTORY.getColumn_number(), KuantoKustaPropertiesEnum.INVENTORY.getColumn_name());
-
-     */
         return headers;
     }
 
@@ -352,39 +345,6 @@ public class SheetsServiceUtil {
         for (ProductPropertiesEnum i : ProductPropertiesEnum.values()){
             headers.set(i.getColumn_number(), i.getColumn_name());
         }
-    /*
-        headers.set(ProductPropertiesEnum.ID.getColumn_number(),ProductPropertiesEnum.ID.getColumn_name());
-        headers.set(ProductPropertiesEnum.VARIANT_ID.getColumn_number(), ProductPropertiesEnum.VARIANT_ID.getColumn_name());
-        headers.set(ProductPropertiesEnum.TITLE.getColumn_number(),ProductPropertiesEnum.TITLE.getColumn_name());
-        headers.set(ProductPropertiesEnum.BODY_HTML.getColumn_number(),ProductPropertiesEnum.BODY_HTML.getColumn_name());
-        headers.set(ProductPropertiesEnum.BRAND.getColumn_number(),ProductPropertiesEnum.BRAND.getColumn_name());
-        headers.set(ProductPropertiesEnum.PRODUCT_TYPE.getColumn_number(),ProductPropertiesEnum.PRODUCT_TYPE.getColumn_name());
-        headers.set(ProductPropertiesEnum.CREATED_AT.getColumn_number(),ProductPropertiesEnum.CREATED_AT.getColumn_name());
-        headers.set(ProductPropertiesEnum.UPDATED_AT.getColumn_number(),ProductPropertiesEnum.UPDATED_AT.getColumn_name());
-        headers.set(ProductPropertiesEnum.URL.getColumn_number(),ProductPropertiesEnum.URL.getColumn_name());
-        headers.set(ProductPropertiesEnum.STATUS.getColumn_number(),ProductPropertiesEnum.STATUS.getColumn_name());
-        headers.set(ProductPropertiesEnum.TAGS.getColumn_number(),ProductPropertiesEnum.TAGS.getColumn_name());
-        headers.set(ProductPropertiesEnum.PRICE_WITH_VAT.getColumn_number(),ProductPropertiesEnum.PRICE_WITH_VAT.getColumn_name());
-        headers.set(ProductPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_number(),ProductPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_name());
-        headers.set(ProductPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_number(),ProductPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_name());
-        headers.set(ProductPropertiesEnum.SKU.getColumn_number(),ProductPropertiesEnum.SKU.getColumn_name());
-        headers.set(ProductPropertiesEnum.BARCODE.getColumn_number(),ProductPropertiesEnum.BARCODE.getColumn_name());
-        headers.set(ProductPropertiesEnum.WEIGHT.getColumn_number(),ProductPropertiesEnum.WEIGHT.getColumn_name());
-        headers.set(ProductPropertiesEnum.WEIGHT_UNIT.getColumn_number(),ProductPropertiesEnum.WEIGHT_UNIT.getColumn_name());
-        headers.set(ProductPropertiesEnum.REQUIRES_SHIPPING.getColumn_number(),ProductPropertiesEnum.REQUIRES_SHIPPING.getColumn_name());
-        headers.set(ProductPropertiesEnum.IMAGES.getColumn_number(),ProductPropertiesEnum.IMAGES.getColumn_name());
-        headers.set(ProductPropertiesEnum.INVENTORY.getColumn_number(),ProductPropertiesEnum.INVENTORY.getColumn_name());
-        headers.set(ProductPropertiesEnum.INVENTORY_POLICY.getColumn_number(),ProductPropertiesEnum.INVENTORY_POLICY.getColumn_name());
-        headers.set(ProductPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), ProductPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_name());
-        headers.set(ProductPropertiesEnum.PRICE_DOTT.getColumn_number(), ProductPropertiesEnum.PRICE_DOTT.getColumn_name());
-        headers.set(ProductPropertiesEnum.PREVIOUS_PRICE_DOTT.getColumn_number(), ProductPropertiesEnum.PREVIOUS_PRICE_DOTT.getColumn_name());
-        headers.set(ProductPropertiesEnum.PRICE_WORTEN.getColumn_number(), ProductPropertiesEnum.PRICE_WORTEN.getColumn_name());
-        headers.set(ProductPropertiesEnum.PREVIOUS_PRICE_WORTEN.getColumn_number(), ProductPropertiesEnum.PREVIOUS_PRICE_WORTEN.getColumn_name());
-        headers.set(ProductPropertiesEnum.PRICE_AMAZON.getColumn_number(), ProductPropertiesEnum.PRICE_AMAZON.getColumn_name());
-        headers.set(ProductPropertiesEnum.PREVIOUS_PRICE_AMAZON.getColumn_number(), ProductPropertiesEnum.PREVIOUS_PRICE_AMAZON.getColumn_name());
-        headers.set(ProductPropertiesEnum.PRICE_FNAC.getColumn_number(), ProductPropertiesEnum.PRICE_FNAC.getColumn_name());
-        headers.set(ProductPropertiesEnum.PREVIOUS_PRICE_FNAC.getColumn_number(), ProductPropertiesEnum.PREVIOUS_PRICE_FNAC.getColumn_name());
-*/
         return headers;
     }
 
@@ -543,7 +503,7 @@ public class SheetsServiceUtil {
 
     private static List<Object> startDottSheetRow() {
         List<Object> row = new ArrayList<>();
-        for(int i = 0; i< DottPropertiesEnum.values().length; i++){
+        for(int i = 0; i< PartnerFeedPropertiesEnum.values().length; i++){
             row.add("");
         }
         return row;

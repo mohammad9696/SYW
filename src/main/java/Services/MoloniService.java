@@ -233,7 +233,7 @@ public class MoloniService {
             return true;
         }
     }
-    private static MoloniProductDTO getProduct(String sku){
+    public static MoloniProductDTO getProduct(String sku){
         logger.info("Getting MoloniProductDTO sku from moloni {}", sku);
         try {
             MoloniProductDTO product = new MoloniProductDTO(Long.parseLong(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString()), sku);

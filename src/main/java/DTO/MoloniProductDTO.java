@@ -233,4 +233,5 @@ public class MoloniProductDTO {
     public void setDiscount(final Double discount) {
         this.discount = discount;
     }
+
 }

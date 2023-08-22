@@ -14,6 +14,7 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
     private Double avgSalesDays;
     private Double stockDays;
     private Integer productActiveForDays;
+    private MoloniProductStocksDTO[] stockMovements;
 
     public Integer getProductActiveForDays() {
         return productActiveForDays;
