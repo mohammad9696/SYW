@@ -217,12 +217,15 @@ public class FulfillmentService {
                 logger.error("Could not print label for order {}", orderDTO.getOrderNumber());
                 return;
             }
+            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
             return;
         } else if (pickup) {
             fulfillOrderDirectly(orderDTO, "store-pickup", "store-pickup");
+            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
             logger.warn("This is a store pickup print two copies of invoice");
             logger.warn("This is a store pickup print two copies of invoice");
             logger.warn("This is a store pickup print two copies of invoice");
+            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
             logger.warn("This is a store pickup print two copies of invoice");
             logger.warn("This is a store pickup print two copies of invoice");
         } else if (manualShipping){
@@ -230,11 +233,12 @@ public class FulfillmentService {
             logger.warn("This is a CTT order, prepare and take to CTT");
             logger.warn("This is a CTT order, prepare and take to CTT");
             logger.warn("This is a CTT order, prepare and take to CTT");
+            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
             logger.warn("This is a CTT order, prepare and take to CTT");
             logger.warn("This is a CTT order, prepare and take to CTT");
         }
-        MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
-        if (pickup) MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
+
+
 
     }
     private static String displayOrderLine(OrderLineDTO line, ProductDTO product){
