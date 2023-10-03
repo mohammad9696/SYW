@@ -23,8 +23,8 @@ public class Testes {
 
         MoloniService.syncAllMoloniProducts();
         StockKeepingUnitsService.updateOnlineStocks();
-        UpdateFeeds.updateFeeds();
         ShopifyProductMetafieldsManager.updateAllProductsEta(null);
+        UpdateFeeds.updateFeeds();
         /*
         String urlFatura ="https://www.moloni.pt/downloads/index.php?&action=getDownload&h=fa68ae988332b29e65b6cfa20b607b05&d=554580035&e=syw%40smartify.pt&i=1";
         String urlEtiqueta = "https://outvio-prod.s3.eu-central-1.amazonaws.com/labels/452ea76b-6926-4a45-b739-07a2eca19543.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA37K3UPEEW2EVU2OS%2F20230303%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-Date=20230303T155527Z&X-Amz-Expires=86400&X-Amz-Signature=1d2edb94edea66ce1f31ece6c0e29920f2ebee3877e2540aa6677628cd429aea&X-Amz-SignedHeaders=host";

@@ -131,7 +131,7 @@ public class StockKeepingUnitsService {
         if (stockMovements.length == 0){
             Double price = 0.0;
             MoloniProductDTO mp = MoloniService.getProduct(sku);
-            if (mp.getChildProducts().length!=0){
+            if (mp != null && mp.getChildProducts() != null && mp.getChildProducts().length!=0){
 
                 for (MoloniChildProductDTO p : mp.getChildProducts()){
                     price = price + getCostPrice(null, p.getProductDTO().getSku()) * p.getQuantity();
@@ -151,6 +151,10 @@ public class StockKeepingUnitsService {
                     if (mps.getMovementDate().isBefore(dateTime)) {
                         logger.info("Found stock movement for {} that is before {} in document {}{}", sku, date, mps.getDocumentDTO().getDocumentSetName(),mps.getDocumentDTO().getDocumentNumber());
                         MoloniDocumentDTO documentDTO = MoloniService.getMoloniDocumentDTObyId(mps.getDocumentId().toString());
+                        if (documentDTO == null || documentDTO.getProductDTOS() == null){
+                            continue;
+                        }
+
                         for (MoloniProductDTO dto : documentDTO.getProductDTOS()){
                             if (dto.getSku().equals(sku)){
                                 if (dto.getDiscount() == null) dto.setDiscount(0.0);
@@ -285,8 +289,10 @@ public class StockKeepingUnitsService {
         for (Map.Entry<String, StockDetailsDTO> i : mustDoThese.entrySet()){
             StockDetailsDTO stockDetailsDTO = i.getValue();
             if (stockReservations.containsKey(i.getKey())){
-                stockDetailsDTO.setShopifyPaidReservations(stockDetailsDTO.getShopifyPaidReservations() + stockReservations.get(i.getKey()).getShopifyPaidReservations());
-                stockDetailsDTO.setShopifyUnpaidReservations(stockDetailsDTO.getShopifyUnpaidReservations() + stockReservations.get(i.getKey()).getShopifyUnpaidReservations());
+                int pr = stockReservations.get(i.getKey()).getShopifyPaidReservations() != null ? stockReservations.get(i.getKey()).getShopifyPaidReservations() : 0;
+                int ur = stockReservations.get(i.getKey()).getShopifyUnpaidReservations() != null ? stockReservations.get(i.getKey()).getShopifyUnpaidReservations() : 0;
+                stockDetailsDTO.setShopifyPaidReservations(stockDetailsDTO.getShopifyPaidReservations() + pr);
+                stockDetailsDTO.setShopifyUnpaidReservations(stockDetailsDTO.getShopifyUnpaidReservations() + ur);
             }
             purchasingNeeds.add((getPurchasingNeeds(i.getKey(),stockDetailsDTO, moloniService, mustDoThese)));
         }

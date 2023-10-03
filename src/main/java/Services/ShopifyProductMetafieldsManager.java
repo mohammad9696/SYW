@@ -109,22 +109,22 @@ public class ShopifyProductMetafieldsManager {
     private LocalDateTime countWorkDays (LocalDateTime availableDate, int days){
         int hour = availableDate.getHour();
 
-        availableDate = nextWorkDay(availableDate);
+        LocalDateTime workDayDate = nextWorkDay(availableDate);
 
         if(hour>=Integer.parseInt(ConstantsEnum.ETA_CUTOUT_TIME.getConstantValue().toString())
                 && isWorkDay(availableDate)){
 
-            availableDate = availableDate.plusDays(1);
-            availableDate = nextWorkDay(availableDate);
+            workDayDate = workDayDate.plusDays(1);
+            workDayDate = nextWorkDay(workDayDate);
         }
 
         while (days>0){
-            availableDate = availableDate.plusDays(1);
-            availableDate = nextWorkDay(availableDate);
+            workDayDate = workDayDate.plusDays(1);
+            workDayDate = nextWorkDay(workDayDate);
             days--;
         }
 
-        return availableDate.withHour(10);
+        return workDayDate.withHour(10);
 
 
     }
@@ -191,7 +191,7 @@ public class ShopifyProductMetafieldsManager {
                 etaMessage = getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA2);
                 LocalDateTime deliveryDate = getEtaDate(productDTO);
                 if (deliveryDate != null && now.isBefore(deliveryDate)) {
-                    Long minDays = ChronoUnit.DAYS.between(deliveryDate, now);
+                    Long minDays = ChronoUnit.DAYS.between(now, deliveryDate);
                     minDaysToDeliver = minDays.intValue();
                     maxDaysToDeliver = minDaysToDeliver +2;
                     placeholders.put(ProductMetafieldPlaceholdersEnum.DATE_MIN.getKey(), Utils.Utils.dateFormat(countWorkDays(deliveryDate,0)));

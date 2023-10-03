@@ -34,7 +34,7 @@ public class Main {
             System.out.println("6. Sincronizar stocks Moloni com o shopify");
             System.out.println("7. Launch product from testShopify");
             System.out.println("8. Painel de compras");
-            System.out.println("9. Executa 5-6-1-4");
+            System.out.println("9. Executa 5-6-4-1");
             System.out.println("10. Margem de Lucro por documento");
             System.out.println("11. Get cost price for SKU");
             System.out.println("12. Set price for SKU");
