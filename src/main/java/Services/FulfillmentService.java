@@ -116,7 +116,10 @@ public class FulfillmentService {
         String lineToDisplayH = sku + " " + ean + " " + productName + " " + quantity + "  System Stock";
 
         logger.info("Displaying orderLines for order {}", orderDTO.getOrderNumber());
-
+        System.out.println("Contents of order " + orderDTO.getOrderNumber());
+        System.out.println("ORDER NOTES    " + orderDTO.getNote());
+        System.out.println("Shipping method: " + orderDTO.getShippingLine().get(0).getShippingCode());
+        System.out.println(lineToDisplayH);
         String[] lines = new String[orderDTO.getLineItems().size()];
         int lineN = 0;
         for(OrderLineDTO line : orderDTO.getLineItems()){
@@ -126,8 +129,7 @@ public class FulfillmentService {
             lines[lineN] = displayOrderLine(line, getProductDetailsFromOrderLine(line, productDTOList)) + "   "+ line.getMoloniStock();
             lineN++;
         }
-        System.out.println("Contents of order " + orderDTO.getOrderNumber() + "     ORDER NOTES    " + orderDTO.getNote());
-        System.out.println(lineToDisplayH);
+
         for (String line : lines){
             System.out.println(line);
         }

@@ -26,8 +26,9 @@ public class KuantoKustaMotor {
             Scanner scanner = new Scanner(System.in);
             System.out.println("Order to accept: " + kuantoKustaOrderDTO.getKuantoKustaOrderId() );
             for (KuantoKustaProductDTO product : kuantoKustaOrderDTO.getProducts()){
-                System.out.println(product.getOfferSku() + "  " + product.getName() + "  quantidade: " + product.getQuantity());
+                System.out.println(product.getOfferSku() + "  " + product.getName() + "  quantidade: " + product.getQuantity() + " preço: " + product.getPrice());
             }
+            System.out.println("Portes: " + kuantoKustaOrderDTO.getShippingPrice());
             System.out.println("1: Accept  2: Don't accept (accept later)");
             int option = scanner.nextInt();
 
@@ -45,7 +46,11 @@ public class KuantoKustaMotor {
                 }
                 approveOrderKuantoKusta(kuantoKustaOrderDTO.getKuantoKustaOrderId());
                 updateOrderShopify(order.getId(), ConstantsEnum.KUANTOKUSTA_MESSAGE_SHOPIFY.getConstantValue() + kuantoKustaOrderDTO.getKuantoKustaOrderId());
-
+                if (order.getLineItems().get(0).getPrice() != kuantoKustaOrderDTO.getProducts().get(0).getPrice()){
+                    System.out.println("!!!! Order created with price " +order.getLineItems().get(0).getPrice()  + " it should be" + kuantoKustaOrderDTO.getProducts().get(0).getPrice());
+                    System.out.println("!!!! Order created with price " +order.getLineItems().get(0).getPrice()  + " it should be" + kuantoKustaOrderDTO.getProducts().get(0).getPrice());
+                    System.out.println("!!!! Order created with price " +order.getLineItems().get(0).getPrice()  + " it should be" + kuantoKustaOrderDTO.getProducts().get(0).getPrice());
+                }
                 //updateOrderShopify("4628576895233", ConstantsEnum.KUANTOKUSTA_MESSAGE_SHOPIFY.getConstantValue() + "9529-511334-4247");
             } catch (Exception e) {
                 e.printStackTrace();

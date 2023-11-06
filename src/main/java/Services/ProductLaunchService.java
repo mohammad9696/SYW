@@ -26,7 +26,7 @@ public class ProductLaunchService {
             isValid = false;
         }
 
-        if (productToLaunch.barcode().isEmpty() || productToLaunch.barcode().equals("")){
+        if (productToLaunch.barcode() == null || productToLaunch.barcode().isEmpty() || productToLaunch.barcode().equals("")){
             System.out.println("EAN inválido");
             isValid = false;
         }

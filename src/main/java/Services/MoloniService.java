@@ -386,11 +386,11 @@ public class MoloniService {
             DecimalFormat decimalFormat = new DecimalFormat("0.00");
             double shopifyProductPrice = Double.parseDouble(decimalFormat.format(productDTO.getVariants().get(0).getPrice()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString())));
             double moloniProductPrice = Double.parseDouble(decimalFormat.format(moloniProductDTO.getPriceWithoutVat()));
-            if (productDTO.getTitle().equals(moloniProductDTO.getProductName()) &&
-                    shopifyProductPrice - moloniProductPrice == 0.0 &&
-                    productDTO.getVariants().get(0).getBarcode().equals(moloniProductDTO.getEan())){
-                isNeededToSync = false;
-                logger.info("Not syncing because already up to date: " + productDTO.sku()+ " " + productDTO.getTitle());
+            if (productDTO.getTitle().equals(moloniProductDTO.getProductName()) && shopifyProductPrice - moloniProductPrice == 0.0){
+                if(productDTO.getVariants().get(0).getBarcode() != null && productDTO.getVariants().get(0).getBarcode().equals(moloniProductDTO.getEan())){
+                    isNeededToSync = false;
+                    logger.info("Not syncing because already up to date: " + productDTO.sku()+ " " + productDTO.getTitle());
+                }
             }
 
             if (isNeededToSync){

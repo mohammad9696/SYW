@@ -12,6 +12,7 @@ public enum ProductMetafieldEnum {
     ETA_DATE("etaDate","custom","?namespace=custom&key=etaDate",ConstantsEnum.ETA_DEFAULT_ETA_DATE.getConstantValue().toString()),
     ETA_RESULT("etaResult","custom","?namespace=custom&key=etaResult",ConstantsEnum.ETA_DEFAULT_ETA_RESULT.getConstantValue().toString()),
     ETA_CART_RESULT("etaCartResult","custom","?namespace=custom&key=etaCartResult",ConstantsEnum.ETA_DEFAULT_ETA_CART_RESULT.getConstantValue().toString()),
+    ETA_CART_RESULT_NO_STOCK("etaCartResultNoStock","custom","?namespace=custom&key=etaCartResultNoStock",ConstantsEnum.ETA_DEFAULT_ETA_CART_RESULT.getConstantValue().toString()),
     META_TITLE("title_tag","global","?namespace=global&key=title_tag",""),
     META_DESCRIPTION("description_tag","global","?namespace=global&key=description_tag","");;
 
