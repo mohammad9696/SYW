@@ -54,12 +54,19 @@ public class HttpRequestExecutor {
             }
 
             //para a paginacao dos produtos do shopify
-            if (getResponse.containsHeader("Link") && getResponse.getHeaders("Link")[0].getValue().contains("next")){
-                String link = getResponse.getHeaders("Link")[0].getValue();
-                String newUrl =link.split("//")[1].split(">")[0];
-                String newReqUrl = requestUrl.split("@")[0]+"@"+newUrl;
-                params.put("newReqUrl", newReqUrl);
+            if (getResponse.containsHeader("Link")){
+                String[] headerGroup = getResponse.getHeaders("Link")[0].getValue().split(",");
+                for (String h : headerGroup){
+                    if(h.contains("next")){
+                        String link = getResponse.getHeaders("Link")[0].getValue();
+                        String newUrl =link.split("//")[1].split(">")[0];
+                        String newReqUrl = requestUrl.split("@")[0]+"@"+newUrl;
+                        params.put("newReqUrl", newReqUrl);
+                    }
+                }
             }
+
+
 
             ObjectMapper mapper = new ObjectMapper();
             Object object = mapper.readValue(EntityUtils.toString(getResponse.getEntity()), objectClass);

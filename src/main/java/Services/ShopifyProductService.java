@@ -193,6 +193,11 @@ public class ShopifyProductService {
             String newReqUrl = params.get("newReqUrl").toString();
             params.remove("newReqUrl");
             List<ProductDTO> resultNext = HttpRequestExecutor.getObjectRequest(typeReference, newReqUrl, params).getProducts();
+            for (ProductDTO i : result){
+                if (i.sku().equals(resultNext.get(0).sku())){
+                    return result;
+                }
+            }
             for (ProductDTO i : resultNext){
                 result.add(i);
             }
