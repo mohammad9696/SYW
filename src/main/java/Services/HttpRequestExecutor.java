@@ -58,7 +58,7 @@ public class HttpRequestExecutor {
                 String[] headerGroup = getResponse.getHeaders("Link")[0].getValue().split(",");
                 for (String h : headerGroup){
                     if(h.contains("next")){
-                        String link = getResponse.getHeaders("Link")[0].getValue();
+                        String link = h;
                         String newUrl =link.split("//")[1].split(">")[0];
                         String newReqUrl = requestUrl.split("@")[0]+"@"+newUrl;
                         params.put("newReqUrl", newReqUrl);
