@@ -119,6 +119,7 @@ public class FulfillmentService {
         System.out.println("Contents of order " + orderDTO.getOrderNumber());
         System.out.println("ORDER NOTES    " + orderDTO.getNote());
         System.out.println("Shipping method: " + orderDTO.getShippingLine().get(0).getShippingCode());
+        System.out.println("Shipping country: " + orderDTO.getShippingAddress().getPostalCode() + " " + " " + orderDTO.getShippingAddress().getCity() + ", " + orderDTO.getShippingAddress().getCountry());
         System.out.println(lineToDisplayH);
         String[] lines = new String[orderDTO.getLineItems().size()];
         int lineN = 0;

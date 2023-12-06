@@ -53,13 +53,13 @@ public class MoloniService {
             }
             lastMovement = stockMovements[stockMovements.length-1];
             lastMovement.setMovementDate(Utils.StringMoloniDateTime(lastMovement.getMovementDateString()));
-            int skipResults = 50;
+            int skipResults = stockMovements.length;
             while (untilDate != null && stockMovements.length>= 50 && lastMovement.getMovementDate().isAfter(untilDate)){
                 logger.info("Results might be paginated for stockMovements of {}, skipping the first {} results", sku, skipResults);
                 MoloniProductStocksDTO[] mvm;
+                skipResults = skipResults + 50;
                 productStocks.setSkipFirstResults(skipResults);
                 mvm = HttpRequestExecutor.sendRequest(MoloniProductStocksDTO[].class, productStocks, ConstantsEnum.MOLONI_STOCKS_GET_ALL.getConstantValue().toString()+getToken());
-                skipResults = skipResults + 50;
                 MoloniProductStocksDTO[] newArrayMovements = new MoloniProductStocksDTO[stockMovements.length+mvm.length];
                 int i = 0;
                 for (MoloniProductStocksDTO j : stockMovements){
@@ -73,6 +73,7 @@ public class MoloniService {
                 stockMovements = newArrayMovements;
                 lastMovement = stockMovements[stockMovements.length-1];
                 lastMovement.setMovementDate(Utils.StringMoloniDateTime(lastMovement.getMovementDateString()));
+                if (mvm.length < 50) break;
             }
         } catch (Exception e){
             logger.error("Could not get stock movements for {}", sku);

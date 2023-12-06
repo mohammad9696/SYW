@@ -5,11 +5,14 @@ import Constants.CourierExpeditionEnum;
 import DTO.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.api.client.util.ArrayMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class ShopifyOrderService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ShopifyOrderService.class);
 
 
 
@@ -56,10 +59,27 @@ public class ShopifyOrderService {
     }
 
     protected static List<OrderDTO> getOrdersToFulfil(){
+        logger.info("Getting orders to fulfill from shopify");
         TypeReference<OrderListDTO> typeReference = new TypeReference<OrderListDTO>() {};
-        OrderListDTO list = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS.getConstantValue().toString(), new HashMap<>());
-        List<OrderDTO> ordersToFulfill = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
+        OrderListDTO list = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS.getConstantValue().toString(), params);
+        logger.info("Got {} orders to fulfill", list.getOrders().size());
+        while (!params.isEmpty()){
+            logger.info("shopify order list is paginated. Getting next page.");
+            String newReqUrl = params.get("newReqUrl").toString();
+            params.remove("newReqUrl");
+            OrderListDTO resultNext = HttpRequestExecutor.getObjectRequest(typeReference, newReqUrl, params);
+            for (OrderDTO i : list.getOrders()){
+                if (i.getId().equals(resultNext.getOrders().get(0).getId())){
+                    return list.getOrders();
+                }
+            }
+            for (OrderDTO i : resultNext.getOrders()){
+                list.getOrders().add(i);
+            }
+        }
 
+        List<OrderDTO> ordersToFulfill = new ArrayList<>();
         Collections.reverse(list.getOrders());
         for (OrderDTO order : list.getOrders()){
             List<OrderLineDTO> orderLineDTOS = new ArrayList<>();
@@ -79,7 +99,22 @@ public class ShopifyOrderService {
 
     protected static List<OrderDTO> getOrdersUnpaidAndPaid(){
         TypeReference<OrderListDTO> typeReference = new TypeReference<OrderListDTO>() {};
-        OrderListDTO list = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS_ALL_OPEN_UNPAID_AND_PAID.getConstantValue().toString(), new HashMap<>());
+        Map<String, Object> params = new HashMap<>();
+        OrderListDTO list = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS_ALL_OPEN_UNPAID_AND_PAID.getConstantValue().toString(), params);
+        while (!params.isEmpty()){
+            logger.info("shopify order list is paginated. Getting next page.");
+            String newReqUrl = params.get("newReqUrl").toString();
+            params.remove("newReqUrl");
+            OrderListDTO resultNext = HttpRequestExecutor.getObjectRequest(typeReference, newReqUrl, params);
+            for (OrderDTO i : list.getOrders()){
+                if (i.getId().equals(resultNext.getOrders().get(0).getId())){
+                    return list.getOrders();
+                }
+            }
+            for (OrderDTO i : resultNext.getOrders()){
+                list.getOrders().add(i);
+            }
+        }
         return list.getOrders();
     }
 

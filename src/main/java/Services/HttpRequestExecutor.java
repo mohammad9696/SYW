@@ -53,7 +53,7 @@ public class HttpRequestExecutor {
                 logger.error("Got error response for request with HTTP Status code {}", getResponse.getStatusLine().getStatusCode());
             }
 
-            //para a paginacao dos produtos do shopify
+            //para a paginacao do shopify
             if (getResponse.containsHeader("Link")){
                 String[] headerGroup = getResponse.getHeaders("Link")[0].getValue().split(",");
                 for (String h : headerGroup){
