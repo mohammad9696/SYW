@@ -156,18 +156,28 @@ public class FulfillmentService {
             while (!proceed){
                 System.out.println("Type product " + line.getSku() + " barcode:");
                 String barcode = scanner.next();
-                if (productDTO.getVariants().get(0).getBarcode().equals(barcode)){
+                String toMatch = productDTO.getVariants().get(0).getBarcode();
+                if (toMatch.equals(barcode)){
                     proceed = true;
                 } else {
-                    logger.warn("Barcode of product {}, shoud be {} and was matched as {}", line.getSku(), productDTO.getVariants().get(0).getBarcode(), barcode);
-                    System.out.println("Barcode doesn't match. Proceed or try again? 1: Try Again  " + productDTO.getVariants().get(0).getBarcode() + ": prooceed");
-                    String howToProceed = scanner.next();
-                    if(howToProceed.equals(productDTO.getVariants().get(0).getBarcode())){
-                        logger.warn("Product {} for order {} was manually processed because barcode didn't match", line.getSku(), orderDTO.getOrderNumber());
-                        proceed = true;
-                    }
-
+                     MoloniProductDTO productDTO1 = MoloniService.getProduct(productDTO.sku());
+                     loopA:
+                     for (MoloniProductProperty i : productDTO1.getProperties()){
+                         if (i.getTitle().equals("BarcodesAlternativosPorVirgula")){
+                             toMatch =  toMatch+","+i.getValue();
+                             String[] barcodes = toMatch.split(",");
+                             for (String j : barcodes){
+                                 if (j.equals(barcode)){
+                                     proceed = true;
+                                     break loopA;
+                                 }
+                             }
+                             logger.warn("Barcode of product {}, shoud be {} and was matched as {}", line.getSku(), toMatch, barcode);
+                             System.out.println("Barcode doesn't match. Proceed or try again? 1: Try Again  " + productDTO.getVariants().get(0).getBarcode() + ": prooceed");
+                         }
+                     }
                 }
+
             }
 
             int qty;

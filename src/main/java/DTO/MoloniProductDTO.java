@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.lang.reflect.GenericDeclaration;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -57,6 +58,11 @@ public class MoloniProductDTO {
     @JsonProperty("child_products")
     private MoloniChildProductDTO[] childProducts;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("properties")
+    private MoloniProductProperty[] properties;
+
+
     public Integer getLineQuantity() {
         return this.lineQuantity;
     }
@@ -104,6 +110,10 @@ public class MoloniProductDTO {
     }
 
     public MoloniProductDTO() {
+    }
+
+    public MoloniProductProperty[] getProperties() {
+        return this.properties;
     }
 
     public Long getCompanyId() {
