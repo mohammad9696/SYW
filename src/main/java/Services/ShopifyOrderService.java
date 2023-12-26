@@ -27,7 +27,7 @@ public class ShopifyOrderService {
                 }
                 int reservedAmount = line.getFulfillableQuantity();
                 int sumToAmount = 0;
-                if (order.getFinancialStatus().equals("paid")){
+                if (order.getFinancialStatus().equals("paid") || order.getFinancialStatus().equals("authorized")){
                     sumToAmount = stockDetailsDTO.getShopifyPaidReservations() != null? stockDetailsDTO.getShopifyPaidReservations(): 0;
                     reservedAmount = reservedAmount + sumToAmount;
                     stockDetailsDTO.setShopifyPaidReservations(reservedAmount);

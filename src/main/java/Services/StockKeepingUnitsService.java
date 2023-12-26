@@ -41,7 +41,8 @@ public class StockKeepingUnitsService {
         }
     }
     public static String displayServiceHeader(){
-        return Utils.normalizeStringLenght(15, "sku") + " " + Utils.normalizeStringLenght(50, "product name") + " " +
+        return Utils.normalizeStringLenght(15, "sku") + " " + Utils.normalizeStringLenght(14, "ean") + " " +
+                Utils.normalizeStringLenght(50, "product name") + " " +
                 Utils.normalizeStringLenght(5, "stock") + " " + Utils.normalizeStringLenght(9,"stockDays") + " " +
                 Utils.normalizeStringLenght(11, "avgSalesDay") + " " +
                 Utils.normalizeStringLenght(11, "7daySalesT1") + " " +Utils.normalizeStringLenght(7, "Returns") + " " +Utils.normalizeStringLenght(6, "Buyers") + " " +
@@ -50,7 +51,8 @@ public class StockKeepingUnitsService {
     }
 
     public static String displayServiceLine(StockDetailsDTO s){
-        return Utils.normalizeStringLenght(15, s.getSku()) + " " + Utils.normalizeStringLenght(50, s.getProductName()) + " " +
+        return Utils.normalizeStringLenght(15, s.getSku()) + " " + Utils.normalizeStringLenght(14, s.getEan()) + " " +
+                Utils.normalizeStringLenght(50, s.getProductName()) + " " +
                 Utils.normalizeStringLenght(5, s.getMoloniStock().toString()) + " " + Utils.normalizeStringLenght(9, s.getStockDays().toString()) + " " +
                 Utils.normalizeStringLenght(11,s.getAvgSalesDays().toString()) + " " +
                 Utils.normalizeStringLenght(11, s.getSevenDaysOrFirstPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getSevenDaysOrFirstPeriod().getUnitsReturned().toString()) + " " +Utils.normalizeStringLenght(6, s.getSevenDaysOrFirstPeriod().getCustomers().toString()) + " " +
@@ -62,18 +64,24 @@ public class StockKeepingUnitsService {
         logger.debug("Purchasing needs initiating for sku '{}' and productNameContains '{}' ",sku, productNameContains);
         Map<String, StockDetailsDTO> stockReservations = ShopifyOrderService.getStockDetails();
         List<StockDetailsDTO> detailsDTOS = StockKeepingUnitsService.calculatePurchasingNeeds(sku, productNameContains, stockReservations);
+        List<SupplierOrderedLineDate> supplierOrderedLineDates = MoloniService.getSupplierOrderedLines();
 
         int i=10;
         for (StockDetailsDTO s : detailsDTOS){
 
             try {
                 if (i%10 ==0){
-                    logger.info(displayServiceHeader());
+                    System.out.println(displayServiceHeader());
                 }
                 i++;
-                logger.info(displayServiceLine(s));
+                System.out.println(displayServiceLine(s));
             } catch (NullPointerException e){
                 logger.error("Could not print line for {} {}", s.getSku(), s.toString());
+            }
+            for (SupplierOrderedLineDate ordered : supplierOrderedLineDates){
+                if (ordered.getSku().equals(s.getSku())){
+                    System.out.println(ordered.toString());
+                }
             }
         }
     }
@@ -222,6 +230,7 @@ public class StockKeepingUnitsService {
 
         if (stockMovements.length > 0) {
             stockDetails.setProductName(stockMovements[0].getMoloniProductDTO().getProductName());
+            stockDetails.setEan(stockMovements[0].getMoloniProductDTO().getEan());
 
             int firstPeriodDays ;
             int secondPeriodDays;
@@ -255,7 +264,11 @@ public class StockKeepingUnitsService {
             }
             stockDetails.setStockDays(stockDetails.getMoloniStock()/stockDetails.getAvgSalesDays());
         } else {
-            stockDetails.setProductName("");
+            MoloniProductDTO moloniProductDTO = MoloniService.getProduct(sku);
+            if (moloniProductDTO != null ){
+                stockDetails.setProductName(moloniProductDTO.getProductName());
+                stockDetails.setEan(moloniProductDTO.getEan());
+            }
             stockDetails.setMoloniStock(0);
             stockDetails.setAvgSalesDays(0.0);
             stockDetails.setStockDays(1000.0);

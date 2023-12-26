@@ -105,6 +105,15 @@ public class MoloniService {
         return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, docFetchedById, ConstantsEnum.MOLONI_DOCUMENT_GET_ONE.getConstantValue().toString()+getToken());
 
     }
+
+    public static MoloniDocumentDTO[] getMoloniDocumentsByType (MoloniDocumentTypeDTO type){
+        MoloniDocumentDTO doc = new MoloniDocumentDTO();
+        doc.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        doc.setDocumentTypeId(type.getDocumentTypeId());
+
+        return HttpRequestExecutor.sendRequest(MoloniDocumentDTO[].class, doc, ConstantsEnum.MOLONI_DOCUMENT_GET_ALL.getConstantValue().toString()+getToken());
+
+    }
     public static void getProfit(Scanner scanner) {
         logger.info("Starting getProfit method");
         logger.info("Please choose the document type:");
@@ -113,12 +122,8 @@ public class MoloniService {
             logger.info(i + "    " + moloniService.types[i].getTitle());
         }
         MoloniDocumentTypeDTO type = moloniService.types[scanner.nextInt()];
+        MoloniDocumentDTO[] moloniDocumentDTOS = getMoloniDocumentsByType(type);
 
-        MoloniDocumentDTO doc = new MoloniDocumentDTO();
-        doc.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
-        doc.setDocumentTypeId(type.getDocumentTypeId());
-
-        MoloniDocumentDTO[] moloniDocumentDTOS = HttpRequestExecutor.sendRequest(MoloniDocumentDTO[].class, doc, ConstantsEnum.MOLONI_DOCUMENT_GET_ALL.getConstantValue().toString()+getToken());
         for (int i = 0; i< moloniDocumentDTOS.length;i++){
             logger.info("{} {}  {}  {}   {}   {} ", i,moloniDocumentDTOS[i].getDate(), moloniDocumentDTOS[i].getDocumentSetName(), moloniDocumentDTOS[i].getDocumentNumber(),
                     moloniDocumentDTOS[i].getDocumentValueEuros() ,moloniDocumentDTOS[i].getEntityName());
@@ -404,6 +409,34 @@ public class MoloniService {
         } else {
             logger.info("Not syncing because already up to date: " + productDTO.sku()+ " " + productDTO.getTitle());
         }
+    }
+
+    public static List<SupplierOrderedLineDate> getSupplierOrderedLines (){
+        //id 7 = nota de encomenda de fornecedor
+        MoloniDocumentTypeDTO type7 = new MoloniDocumentTypeDTO("7");
+        MoloniDocumentDTO[] documents =getMoloniDocumentsByType(type7);
+        List<MoloniDocumentDTO> finalDocuments = new ArrayList<>();
+        List<SupplierOrderedLineDate> supplierOrderedLineDates = new ArrayList<>();
+        for (MoloniDocumentDTO i : documents){
+            if (i.getDocumentReconciledValueEuros() == 0){
+                MoloniDocumentDTO doc = getMoloniDocumentDTObyId(i.getDocumentId());
+                finalDocuments.add(doc);
+                for (MoloniProductDTO j : doc.getProductDTOS()){
+                    SupplierOrderedLineDate n = new SupplierOrderedLineDate();
+                    n.setDateOrdered(doc.getLastModified());
+                    n.setSupplier(doc.getEntityName());
+                    n.setDateExpected(doc.getDate());
+                    n.setDescription(j.getProductName());
+                    n.setPurchasePrice(j.getPriceWithoutVat().toString());
+                    n.setQuantity(j.getLineQuantity().toString());
+                    n.setSku(j.getSku());
+                    supplierOrderedLineDates.add(n);
+                }
+            }
+
+        }
+        return supplierOrderedLineDates;
+
     }
 
     public static void syncAllMoloniProducts() {

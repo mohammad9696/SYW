@@ -26,6 +26,10 @@ public class MoloniDocumentTypeDTO {
     public MoloniDocumentTypeDTO() {
         this.languageId="1";
     }
+    public MoloniDocumentTypeDTO(String documentTypeId) {
+        this.languageId="1";
+        this.documentTypeId=documentTypeId;
+    }
 
     public String getTitle() {
         return title;

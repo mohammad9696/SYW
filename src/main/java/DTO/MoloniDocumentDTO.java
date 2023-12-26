@@ -35,6 +35,10 @@ public class MoloniDocumentDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String date;
 
+    @JsonProperty("lastmodified")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String lastModified;
+
     @JsonProperty("entity_name")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String entityName;
@@ -51,6 +55,10 @@ public class MoloniDocumentDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Double documentValueEuros;
 
+    @JsonProperty("reconciled_value")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double documentReconciledValueEuros;
+
     @JsonProperty("valid")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isPdfLinkRequestValid;
@@ -58,6 +66,22 @@ public class MoloniDocumentDTO {
     @JsonProperty("products")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private MoloniProductDTO[] productDTOS;
+
+    public String getLastModified() {
+        return this.lastModified;
+    }
+
+    public void setLastModified(final String lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public Double getDocumentReconciledValueEuros() {
+        return this.documentReconciledValueEuros;
+    }
+
+    public void setDocumentReconciledValueEuros(final Double documentReconciledValueEuros) {
+        this.documentReconciledValueEuros = documentReconciledValueEuros;
+    }
 
     public String getDocumentSetName() {
         return this.documentSetName;
