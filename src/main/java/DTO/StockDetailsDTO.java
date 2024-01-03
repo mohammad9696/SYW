@@ -1,5 +1,8 @@
 package DTO;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
     private String sku;
     private String ean;
@@ -15,6 +18,9 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
     private Double stockDays;
     private Integer productActiveForDays;
     private MoloniProductStocksDTO[] stockMovements;
+    private List<SupplierOrderedLineDate> supplierOrderedLineDates;
+    private LocalDateTime lastSale;
+    private Boolean isContinueToSellOutOfStock;
 
     public Integer getProductActiveForDays() {
         return productActiveForDays;
@@ -149,12 +155,41 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
 
     @Override
     public int compareTo(StockDetailsDTO o) {
-        if (getStockDays() > o.getStockDays() ) {
-            return 1;
-        } else if (getStockDays() < o.getStockDays()){
+        try {
+            if (getStockDays() > o.getStockDays() ) {
+                return 1;
+            } else if (getStockDays() < o.getStockDays()){
+                return -1;
+            } else {
+                return 0;
+            }
+        } catch (Exception e){
             return -1;
-        } else {
-            return 0;
         }
+
+    }
+
+    public LocalDateTime getLastSale() {
+        return this.lastSale;
+    }
+
+    public void setLastSale(final LocalDateTime lastSale) {
+        this.lastSale = lastSale;
+    }
+
+    public List<SupplierOrderedLineDate> getSupplierOrderedLineDates() {
+        return this.supplierOrderedLineDates;
+    }
+
+    public void setSupplierOrderedLineDates(final List<SupplierOrderedLineDate> supplierOrderedLineDates) {
+        this.supplierOrderedLineDates = supplierOrderedLineDates;
+    }
+
+    public Boolean getContinueToSellOutOfStock() {
+        return this.isContinueToSellOutOfStock;
+    }
+
+    public void setContinueToSellOutOfStock(final Boolean continueToSellOutOfStock) {
+        this.isContinueToSellOutOfStock = continueToSellOutOfStock;
     }
 }

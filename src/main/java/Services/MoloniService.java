@@ -3,13 +3,11 @@ package Services;
 import Constants.ConstantsEnum;
 import DTO.*;
 import Utils.Utils;
-import com.ctc.wstx.shaded.msv_core.verifier.jarv.Const;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.api.client.util.ArrayMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.InvalidParameterException;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -99,6 +97,7 @@ public class MoloniService {
 
     public static MoloniDocumentDTO getMoloniDocumentDTObyId(String documentId){
 
+        logger.info("Getting moloni document by Id {}", documentId);
         MoloniDocumentDTO docFetchedById = new MoloniDocumentDTO();
         docFetchedById.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
         docFetchedById.setDocumentId(documentId);
@@ -411,7 +410,18 @@ public class MoloniService {
         }
     }
 
+    public static List<SupplierOrderedLineDate> getSupplierOrderedLineDatesPerSku(String sku, List<SupplierOrderedLineDate> skus ){
+        List<SupplierOrderedLineDate> newList = new ArrayList<>();
+        for (SupplierOrderedLineDate i : skus){
+            if (i.getSku().equals(sku)){
+                newList.add(i);
+            }
+        }
+        return newList;
+    }
+
     public static List<SupplierOrderedLineDate> getSupplierOrderedLines (){
+        logger.info("Getting supplier ordered lines");
         //id 7 = nota de encomenda de fornecedor
         MoloniDocumentTypeDTO type7 = new MoloniDocumentTypeDTO("7");
         MoloniDocumentDTO[] documents =getMoloniDocumentsByType(type7);
@@ -420,6 +430,7 @@ public class MoloniService {
         for (MoloniDocumentDTO i : documents){
             if (i.getDocumentReconciledValueEuros() == 0){
                 MoloniDocumentDTO doc = getMoloniDocumentDTObyId(i.getDocumentId());
+                if (doc == null) continue;
                 finalDocuments.add(doc);
                 for (MoloniProductDTO j : doc.getProductDTOS()){
                     SupplierOrderedLineDate n = new SupplierOrderedLineDate();

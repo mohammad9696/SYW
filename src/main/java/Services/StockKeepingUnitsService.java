@@ -1,6 +1,5 @@
 package Services;
 
-import Constants.ConstantsEnum;
 import DTO.*;
 import Utils.Utils;
 import com.google.api.client.util.ArrayMap;
@@ -25,18 +24,18 @@ public class StockKeepingUnitsService {
         switch (option){
             case 1:
                 logger.info("Checking all product needs");
-                StockKeepingUnitsService.purchasingNeeds(null, null);
+                StockKeepingUnitsService.purchasingNeeds(null, null, getStockReservations());
                 main(null);
             case 2:
                 logger.info("Checking specific product needs. Please insert sku");
                 String sku  = scanner.next();
-                StockKeepingUnitsService.purchasingNeeds(sku, null);
+                StockKeepingUnitsService.purchasingNeeds(sku, null, getStockReservations());
                 main(null);
             case 3:
                 logger.info("What string should the products contain?");
                 String str  = scanner.next();
                 logger.info("Checking all products containing {} ", str);
-                StockKeepingUnitsService.purchasingNeeds(null, str);
+                StockKeepingUnitsService.purchasingNeeds(null, str, getStockReservations());
                 main(null);
         }
     }
@@ -60,12 +59,17 @@ public class StockKeepingUnitsService {
                 Utils.normalizeStringLenght(12, s.getNinetyDaysOrThirdPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getNinetyDaysOrThirdPeriod().getUnitsReturned().toString())+ " " +Utils.normalizeStringLenght(6, s.getNinetyDaysOrThirdPeriod().getCustomers().toString());
     }
 
-    public static void purchasingNeeds(String sku, String productNameContains) {
-        logger.debug("Purchasing needs initiating for sku '{}' and productNameContains '{}' ",sku, productNameContains);
+    public static Map<String, StockDetailsDTO>  getStockReservations() {
+        logger.debug("Getting stock reservations");
         Map<String, StockDetailsDTO> stockReservations = ShopifyOrderService.getStockDetails();
-        List<StockDetailsDTO> detailsDTOS = StockKeepingUnitsService.calculatePurchasingNeeds(sku, productNameContains, stockReservations);
-        List<SupplierOrderedLineDate> supplierOrderedLineDates = MoloniService.getSupplierOrderedLines();
+        return stockReservations;
 
+    }
+
+    public static void purchasingNeeds(String sku, String productNameContains, Map<String, StockDetailsDTO> stockReservations) {
+        logger.debug("Purchasing needs initiating for sku '{}' and productNameContains '{}' ",sku, productNameContains);
+        List<SupplierOrderedLineDate> supplierOrderedLineDates = MoloniService.getSupplierOrderedLines();
+        List<StockDetailsDTO> detailsDTOS = StockKeepingUnitsService.getSkuDetailsList(sku, productNameContains, stockReservations, supplierOrderedLineDates, ShopifyProductService.getShopifyProductList());
         int i=10;
         for (StockDetailsDTO s : detailsDTOS){
 
@@ -78,10 +82,8 @@ public class StockKeepingUnitsService {
             } catch (NullPointerException e){
                 logger.error("Could not print line for {} {}", s.getSku(), s.toString());
             }
-            for (SupplierOrderedLineDate ordered : supplierOrderedLineDates){
-                if (ordered.getSku().equals(s.getSku())){
-                    System.out.println(ordered.toString());
-                }
+            for (SupplierOrderedLineDate ordered : s.getSupplierOrderedLineDates()){
+                System.out.println(ordered.toString());
             }
         }
     }
@@ -189,9 +191,9 @@ public class StockKeepingUnitsService {
 
         return 0.0;
     }
-    public static StockDetailsDTO getPurchasingNeeds(String sku, StockDetailsDTO reservations, MoloniService moloniService, Map<String, StockDetailsDTO> mustDoThese){
+    public static StockDetailsDTO getSkuDetails(ProductDTO shopifyProductDTO, StockDetailsDTO reservations, MoloniService moloniService, Map<String, StockDetailsDTO> mustDoThese, List<SupplierOrderedLineDate> supplierOrderedLineDatesBySKU){
 
-        //
+        String sku = shopifyProductDTO.sku();
         logger.debug("Getting purchasing needs for sku '{}'  ",sku);
         MoloniProductStocksDTO[] stockMovements = MoloniService.getStockMovements(sku, null, null);
         logger.debug("Got {} stock movements for sku {}", stockMovements.length, sku);
@@ -207,8 +209,8 @@ public class StockKeepingUnitsService {
                     if (mustDoThese.containsKey(childProductDTO.getProductDTO().getSku())) {
                         updating = mustDoThese.get(childProductDTO.getProductDTO().getSku());
                     }
-                    Integer paidReservations = reservations.getShopifyPaidReservations() != null ? reservations.getShopifyPaidReservations() : 0;
-                    Integer unpaidReservations = reservations.getShopifyUnpaidReservations() != null ? reservations.getShopifyUnpaidReservations() : 0;
+                    Integer paidReservations = reservations != null && reservations.getShopifyPaidReservations() != null ? reservations.getShopifyPaidReservations() : 0;
+                    Integer unpaidReservations = reservations != null && reservations.getShopifyUnpaidReservations() != null ? reservations.getShopifyUnpaidReservations() : 0;
                     updating.setShopifyPaidReservations(updating.getShopifyPaidReservations() + paidReservations * childProductDTO.getQuantity());
                     updating.setShopifyUnpaidReservations(updating.getShopifyUnpaidReservations() + unpaidReservations * childProductDTO.getQuantity());
                     mustDoThese.put(childProductDTO.getProductDTO().getSku(), updating);
@@ -226,6 +228,17 @@ public class StockKeepingUnitsService {
         } else {
             stockDetails = reservations;
         }
+
+        stockDetails.setSupplierOrderedLineDates(supplierOrderedLineDatesBySKU);
+        stockDetails.setContinueToSellOutOfStock(shopifyProductDTO.getVariants().get(0).getInventoryPolicy().equals("continue"));
+        for (MoloniProductStocksDTO mps : stockMovements) {
+            if (mps.getQuantityMoved() < 0 && mps.getDocumentDTO() != null && mps.getDocumentId() != 0
+                    && !moloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())) {
+                stockDetails.setLastSale(mps.getMovementDate());
+                break;
+            }
+        }
+
 
 
         if (stockMovements.length > 0) {
@@ -279,9 +292,8 @@ public class StockKeepingUnitsService {
 
     }
 
-    public static List<StockDetailsDTO> calculatePurchasingNeeds(String sku, String productNameContains, Map<String, StockDetailsDTO> stockReservations){
+    public static List<StockDetailsDTO> getSkuDetailsList(String sku, String productNameContains, Map<String, StockDetailsDTO> stockReservations, List<SupplierOrderedLineDate> supplierOrderedLineDates, List<ProductDTO> products ){
         logger.debug("Calculating Purchasing needs for sku '{}' and productNameContains '{}' ",sku, productNameContains);
-        List<ProductDTO> products = ShopifyProductService.getShopifyProductList();
         List<StockDetailsDTO> purchasingNeeds = new ArrayList<>();
         Map<String, StockDetailsDTO> mustDoThese = new ArrayMap<>();
 
@@ -293,9 +305,9 @@ public class StockKeepingUnitsService {
                         (sku == null && productNameContains == null) ||
                             (sku != null && productNameContains != null)){
                 if(!stockReservations.containsKey(productDTO.sku())){
-                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), new StockDetailsDTO(productDTO.sku()), moloniService, mustDoThese));
+                    purchasingNeeds.add(getSkuDetails(productDTO, new StockDetailsDTO(productDTO.sku()), moloniService, mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(productDTO.sku(), supplierOrderedLineDates)));
                 } else {
-                    purchasingNeeds.add(getPurchasingNeeds(productDTO.sku(), stockReservations.get(productDTO.sku()), moloniService, mustDoThese));
+                    purchasingNeeds.add(getSkuDetails(productDTO, stockReservations.get(productDTO.sku()), moloniService, mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(productDTO.sku(), supplierOrderedLineDates)));
                 }
             }
         }
@@ -307,7 +319,12 @@ public class StockKeepingUnitsService {
                 stockDetailsDTO.setShopifyPaidReservations(stockDetailsDTO.getShopifyPaidReservations() + pr);
                 stockDetailsDTO.setShopifyUnpaidReservations(stockDetailsDTO.getShopifyUnpaidReservations() + ur);
             }
-            purchasingNeeds.add((getPurchasingNeeds(i.getKey(),stockDetailsDTO, moloniService, mustDoThese)));
+            for (ProductDTO j :products){
+                if (j.sku().equals(i.getKey())){
+                    purchasingNeeds.add((getSkuDetails(j,stockDetailsDTO, moloniService, mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(i.getKey(), supplierOrderedLineDates))));
+                    break;
+                }
+            }
         }
 
         purchasingNeeds.sort(StockDetailsDTO::compareTo);

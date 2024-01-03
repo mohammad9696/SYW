@@ -149,7 +149,7 @@ public class ShopifyProductService {
     }
 
     public static boolean removeProductDiscount(ProductDTO productToUpdate){
-        updateProductPrice(productToUpdate, productToUpdate.getVariants().get(0).getCompareAtPrice() );
+        updateProductPrice(productToUpdate, productToUpdate.getVariants().get(0).getCompareAtPrice(), null );
         return true;
     }
 
@@ -334,8 +334,14 @@ public class ShopifyProductService {
             }
             if (indexFound != null){
                 ProductDTO p = productsFromShopify.get(indexFound);
-                logger.info("Please insert new price for {}", sku);
-                updateProductPrice(p, scanner.nextDouble());
+                System.out.println("Current price: " + p.getVariants().get(0).getPrice());
+                System.out.println("Current compare price: " + p.getVariants().get(0).getCompareAtPrice());
+
+                System.out.println("Please insert new price for " + sku);
+                Double priceDouble = scanner.nextDouble();
+                System.out.println("Please insert compare at price for " + sku);
+                Double comparePriceDouble = scanner.nextDouble();
+                updateProductPrice(p, priceDouble, comparePriceDouble);
             } else {
                 logger.error("Could not find sku {}", sku);
             }
@@ -343,11 +349,13 @@ public class ShopifyProductService {
 
     }
 
-    private static void updateProductPrice (ProductDTO productDTO, Double price){
+    public static void updateProductPrice (ProductDTO productDTO, Double price, Double comparePrice){
 
         ProductVariantDTO variant = new ProductVariantDTO();
         variant.setId(productDTO.getVariants().get(0).getId());
         variant.setPrice(price);
+        if (comparePrice == 0) comparePrice = null;
+        variant.setCompareAtPrice(comparePrice);
         Scanner scanner = new Scanner(System.in);
         boolean process =true;
         double costPrice =StockKeepingUnitsService.getCostPrice(null, productDTO.sku());

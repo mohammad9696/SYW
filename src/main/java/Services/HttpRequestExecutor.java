@@ -1,7 +1,10 @@
 package Services;
 import Constants.HttpRequestAuthTypeEnum;
+import DTO.MoloniProductProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.CoercionAction;
+import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
@@ -128,6 +131,10 @@ public class HttpRequestExecutor {
             }
 
             ObjectMapper mapper = new ObjectMapper();
+
+            //hardcoded, later look for solution to make any array that json inputs as "" to return empty
+            mapper.coercionConfigFor(MoloniProductProperty[].class).setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull);
+
             String jsonValue = mapper.writeValueAsString(requestObject);
             StringEntity stringEntity = new StringEntity(jsonValue, "UTF-8");
             stringEntity.setContentType("application/json");

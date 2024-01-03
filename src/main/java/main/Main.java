@@ -38,6 +38,7 @@ public class Main {
             System.out.println("10. Margem de Lucro por documento");
             System.out.println("11. Get cost price for SKU");
             System.out.println("12. Set price for SKU");
+            System.out.println("13. Compare prices XLSX");
             System.out.println("99. Restart (at any time)");
             int option = scanner.nextInt();
             if (option == 1){
@@ -76,6 +77,8 @@ public class Main {
                 }
             } else if (option == 12){
                 ShopifyProductService.updateProductPrices(scanner);
+            } else if (option == 13){
+                XlsPriceProcessor.main(null);
             } else {
                 System.out.println("Option not available!");
                 chooseProcedure();
