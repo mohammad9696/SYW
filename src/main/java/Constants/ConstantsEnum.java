@@ -22,7 +22,7 @@ public enum ConstantsEnum {
     COMPLETE_DRAFT_ORDER_REQUEST_SHOPIFY_PREFIX("shopify.complete.draft.order.prefix","insertValueInProperties"),
     COMPLETE_DRAFT_ORDER_REQUEST_SHOPIFY_SUFIX("shopify.complete.draft.order.sufix","insertValueInProperties"),
     KUANTOKUSTA_SPREADSHEET_ID("sheets.kuantokusta.id","insertValueInProperties"),
-    DOTT_SPREADSHEET_ID("sheets.dott.id","insertValueInProperties"),
+    PARTNERS_SPREADSHEET_ID("sheets.dott.id","insertValueInProperties"),
     SHOPIFY_MAIN_LOCATION_ID("shopify.location.main.id","insertValueInProperties"),
     FULFILLMENT_REQUEST_URL_PREFIX("shopify.fulfillment.url.prefix","insertValueInProperties"),
     FULFILLMENT_REQUEST_URL_SUFIX("shopify.fulfillment.url.sufix","insertValueInProperties"),

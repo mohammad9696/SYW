@@ -56,14 +56,14 @@ public class ProductCompareDataDTO implements Comparable<ProductCompareDataDTO>{
     @Override
     public String toString() {
         costAmountInStock = stockDetailsDTO.getMoloniStock() * costPrice;
-        String competitorsString = Utils.normalizeStringLenght(8, "Smartify") +  " " +Utils.normalizeStringLenght(5, smartifyPrice+"") + "   " ;
+        String competitorsString = Utils.normalizeStringLenght(8, "Smartify") +  " " +Utils.normalizeStringLenght(5, smartifyPrice+"") + "€   " ;
         for (CompetitorCompareDataDTO i : competitors){
-            competitorsString =competitorsString + Utils.normalizeStringLenght(10, i.getCompetitorName()) +  " " +Utils.normalizeStringLenght(5, i.getComeptitorPrice()+"") + "   ";
+            competitorsString =competitorsString + Utils.normalizeStringLenght(10, i.getCompetitorName()) +  " " +Utils.normalizeStringLenght(5, i.getComeptitorPrice()+"") + " €  ";
         }
 
         return Utils.normalizeStringLenght(20,sku) + "   " + Utils.normalizeStringLenght(15,ean) + "   " + Utils.normalizeStringLenght(50,productName) + "  " + competitorsString + "\n"+
-                "CostPrice: " +  Utils.normalizeStringLenght(5, costPrice+"") + "   Stock: " + Utils.normalizeStringLenght(3, stockDetailsDTO.getMoloniStock()+"") +  "   Reserved: " + Utils.normalizeStringLenght(3, stockDetailsDTO.getShopifyPaidReservations()+"") + "     SellWithoutStock: " +  Utils.normalizeStringLenght(5,stockDetailsDTO.getContinueToSellOutOfStock()+"") +
-                "    Amount in stock: " + Utils.normalizeStringLenght(5, costAmountInStock+"") + "    Current Margin: " + Utils.normalizeStringLenght(3,  marginWithCurrent*100+"") + "       Min Margin: " + Utils.normalizeStringLenght(3,  marginWithMin*100+"") + "\n" + "Last sell was  " + stockDetailsDTO.getLastSale() + " ago\n" ;
+                "CostPrice: " +  Utils.normalizeStringLenght(5, costPrice+"") + "€   Stock: " + Utils.normalizeStringLenght(3, stockDetailsDTO.getMoloniStock()+"") +  "   Reserved: " + Utils.normalizeStringLenght(3, stockDetailsDTO.getShopifyPaidReservations()+"") + "     SellWithoutStock: " +  Utils.normalizeStringLenght(5,stockDetailsDTO.getContinueToSellOutOfStock()+"") +
+                "    Amount in stock: " + Utils.normalizeStringLenght(5, costAmountInStock+"") + "€    Current Margin: " + Utils.normalizeStringLenght(3,  marginWithCurrent*100+"") + "%       Min Margin: " + Utils.normalizeStringLenght(3,  marginWithMin*100+"") + "%\n" + "Last sell was  " + stockDetailsDTO.getLastSale() + " ago\n" ;
 
     }
 

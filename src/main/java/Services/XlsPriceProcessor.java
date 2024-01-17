@@ -166,69 +166,76 @@ public class XlsPriceProcessor {
     }
 
     public void optionsForSelected (int selected, Scanner scanner){
-        System.out.println(selected + "  " +productCompareData.get(selected));
-        System.out.println("Please choose one of the options:");
-        System.out.println("1: Set new Price with vat");
-        System.out.println("2: Set new price with margin 0-100");
-        System.out.println("3: Check next");
-        System.out.println("4: Check previous");
-        System.out.println("5: Reorder");
-        System.out.println("6: Check All");
-        int option = scanner.nextInt();
-        if(option == 1){
+        try {
+            System.out.println(selected + "  " +productCompareData.get(selected));
+            System.out.println("Please choose one of the options:");
+            System.out.println("1: Set new Price with vat");
+            System.out.println("2: Set new price with margin 0-100");
+            System.out.println("3: Check next");
+            System.out.println("4: Check previous");
+            System.out.println("5: Reorder");
+            System.out.println("6: Check All");
+            int option = scanner.nextInt();
+            if(option == 1){
 
-            ProductDTO p = null;
-            for (ProductDTO dto : productDTOList ){
-                if (dto.sku().equals(productCompareData.get(selected).getSku())){
-                    p = dto;
-                    break;
+                ProductDTO p = null;
+                for (ProductDTO dto : productDTOList ){
+                    if (dto.sku().equals(productCompareData.get(selected).getSku())){
+                        p = dto;
+                        break;
+                    }
                 }
+
+                System.out.println("Current price: " + p.getVariants().get(0).getPrice());
+                System.out.println("Current compare price: " + p.getVariants().get(0).getCompareAtPrice());
+
+                System.out.println("Please insert new price for " + p.sku());
+                Double priceDouble = scanner.nextDouble();
+                System.out.println("Please insert compare at price for " + p.sku());
+                Double comparePriceDouble = scanner.nextDouble();
+                ShopifyProductService.updateProductPrice(p, priceDouble, comparePriceDouble);
+
+                if (productCompareData.size()-1 <= selected) selected = productCompareData.size()-2;
+                optionsForSelected(selected+1, scanner);
+            } else if (option == 2){
+                ProductDTO p = null;
+                for (ProductDTO dto : productDTOList ){
+                    if (dto.sku().equals(productCompareData.get(selected).getSku())){
+                        p = dto;
+                        break;
+                    }
+                }
+
+                System.out.println("Current price: " + p.getVariants().get(0).getPrice());
+                System.out.println("Current compare price: " + p.getVariants().get(0).getCompareAtPrice());
+
+                System.out.println("Please insert margin 0-100");
+                Double priceDouble = (productCompareData.get(selected).getCostPrice()*1.23)/(1-scanner.nextDouble()/100);
+                System.out.println("Setting price to " + priceDouble);
+                System.out.println("Please insert compare at price for " + p.sku());
+                Double comparePriceDouble = scanner.nextDouble();
+                ShopifyProductService.updateProductPrice(p,priceDouble , comparePriceDouble);
+            } else if (option == 3){
+                if (productCompareData.size()-1 <= selected) selected = productCompareData.size()-2;
+                optionsForSelected(selected+1, scanner);
+            } else if (option == 4){
+                if (selected == 0) selected = 1;
+                optionsForSelected(selected-1, scanner);
+            } else if (option == 5){
+                productDTOList = ShopifyProductService.getShopifyProductList();
+                print();
+                System.out.println("Which product number would you like to select?");
+                optionsForSelected(scanner.nextInt(), scanner);
+            } else if (option == 6){
+                print();
+                System.out.println("Which product number would you like to select?");
+                optionsForSelected(scanner.nextInt(), scanner);
             }
 
-            System.out.println("Current price: " + p.getVariants().get(0).getPrice());
-            System.out.println("Current compare price: " + p.getVariants().get(0).getCompareAtPrice());
-
-            System.out.println("Please insert new price for " + p.sku());
-            Double priceDouble = scanner.nextDouble();
-            System.out.println("Please insert compare at price for " + p.sku());
-            Double comparePriceDouble = scanner.nextDouble();
-            ShopifyProductService.updateProductPrice(p, priceDouble, comparePriceDouble);
-
-            if (productCompareData.size()-1 <= selected) selected = productCompareData.size()-2;
-            optionsForSelected(selected+1, scanner);
-        } else if (option == 2){
-            ProductDTO p = null;
-            for (ProductDTO dto : productDTOList ){
-                if (dto.sku().equals(productCompareData.get(selected).getSku())){
-                    p = dto;
-                    break;
-                }
-            }
-
-            System.out.println("Current price: " + p.getVariants().get(0).getPrice());
-            System.out.println("Current compare price: " + p.getVariants().get(0).getCompareAtPrice());
-
-            System.out.println("Please insert margin 0-100");
-            Double priceDouble = (productCompareData.get(selected).getCostPrice()*1.23)/(1-scanner.nextDouble());
-            System.out.println("Setting price to " + priceDouble);
-            System.out.println("Please insert compare at price for " + p.sku());
-            Double comparePriceDouble = scanner.nextDouble();
-            ShopifyProductService.updateProductPrice(p,priceDouble , comparePriceDouble);
-        } else if (option == 3){
-            if (productCompareData.size()-1 <= selected) selected = productCompareData.size()-2;
-            optionsForSelected(selected+1, scanner);
-        } else if (option == 4){
-            if (selected == 0) selected = 1;
-            optionsForSelected(selected-1, scanner);
-        } else if (option == 5){
-            productDTOList = ShopifyProductService.getShopifyProductList();
-            print();
-            System.out.println("Which product number would you like to select?");
-            optionsForSelected(scanner.nextInt(), scanner);
-        } else if (option == 6){
-            print();
-            System.out.println("Which product number would you like to select?");
-            optionsForSelected(scanner.nextInt(), scanner);
+        } catch (Exception e){
+            logger.error("There was an error executing XlsPriceProcessor tasks.");
+            scanner.next();
+            optionsForSelected(selected, scanner);
         }
 
 

@@ -80,7 +80,7 @@ public class SheetsServiceUtil {
         return _values;
     }
 
-    public static List<List<Object>> getDottSheetValues(Map<String, MacroProductDTO> originalProductList){
+    public static List<List<Object>> getPartnerSheetValues(Map<String, MacroProductDTO> originalProductList){
         List<List<Object>> _values = new ArrayList<>();
         _values.add(partnerFeedSheetHeaderRow());
         for (Map.Entry<String, MacroProductDTO> obj : originalProductList.entrySet()){
@@ -107,7 +107,7 @@ public class SheetsServiceUtil {
     }
 
     private static List<Object> partnerFeedSheetHeaderRow(){
-        List<Object> headers = startDottSheetRow();
+        List<Object> headers = startPartnerSheetRow();
         for (PartnerFeedPropertiesEnum p : PartnerFeedPropertiesEnum.values()){
             headers.set(p.getColumn_number(), p.getColumn_name());
         }
@@ -115,7 +115,7 @@ public class SheetsServiceUtil {
     }
 
     private static List<Object> partnerFeedSheetProductRow(MacroProductDTO macroProductDTO){
-        List<Object> productRow = startDottSheetRow();
+        List<Object> productRow = startPartnerSheetRow();
 
         if (macroProductDTO.getId() != null) {
             productRow.set(PartnerFeedPropertiesEnum.ID.getColumn_number(), macroProductDTO.getVariantId());
@@ -501,7 +501,7 @@ public class SheetsServiceUtil {
         return row;
     }
 
-    private static List<Object> startDottSheetRow() {
+    private static List<Object> startPartnerSheetRow() {
         List<Object> row = new ArrayList<>();
         for(int i = 0; i< PartnerFeedPropertiesEnum.values().length; i++){
             row.add("");

@@ -157,14 +157,14 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
     public int compareTo(StockDetailsDTO o) {
         try {
             if (getStockDays() > o.getStockDays() ) {
-                return 1;
-            } else if (getStockDays() < o.getStockDays()){
                 return -1;
+            } else if (getStockDays() < o.getStockDays()){
+                return 1;
             } else {
                 return 0;
             }
         } catch (Exception e){
-            return -1;
+            return 1;
         }
 
     }

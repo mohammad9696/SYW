@@ -89,7 +89,6 @@ public class UpdateFeeds {
 
             Map<String, MacroProductDTO> sheetsProductList = getSheetsProductList(spreadsheetId, snippet);
             List<ProductDTO> productsFromShopify = ShopifyProductService.getShopifyProductList();
-            updateMetafieldsForProducts(productsFromShopify);
 
             List<List<Object>> _values = SheetsServiceUtil.getMainSheetValues(sheetsProductList, productsFromShopify);
             snippet.updateValues(spreadsheetId, "A1","RAW", _values);
@@ -98,7 +97,7 @@ public class UpdateFeeds {
             sheetsProductList = getSheetsProductList(spreadsheetId, snippet);
 
             snippet.updateValues(ConstantsEnum.KUANTOKUSTA_SPREADSHEET_ID.getConstantValue().toString(), "A1", "RAW", SheetsServiceUtil.getKuantokustaSheetValues(sheetsProductList));
-            snippet.updateValues(ConstantsEnum.DOTT_SPREADSHEET_ID.getConstantValue().toString(), "A1", "RAW", SheetsServiceUtil.getDottSheetValues(sheetsProductList));
+            snippet.updateValues(ConstantsEnum.PARTNERS_SPREADSHEET_ID.getConstantValue().toString(), "A1", "RAW", SheetsServiceUtil.getPartnerSheetValues(sheetsProductList));
 
         } catch (Exception e) {
             e.printStackTrace();
