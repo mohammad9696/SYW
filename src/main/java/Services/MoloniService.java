@@ -15,17 +15,18 @@ import java.util.*;
 public class MoloniService {
     private static final Logger logger = LoggerFactory.getLogger(MoloniService.class);
 
-    private MoloniDocumentTypeDTO[] types;
+    public static final MoloniDocumentTypeDTO[] types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
+
 
     public MoloniService() {
-        try {
+    /*    try {
             logger.info("Initiating moloni service and getting document types");
             this.types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
             logger.debug("Initiated moloni service and got document types successfully");
         } catch (Exception e){
             logger.error("Error Initiating moloni service and getting document types. Trying again...");
             this.types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
-        }
+        }*/
     }
 
     public static MoloniProductStocksDTO[] getStockMovements(String sku, LocalDateTime beforeDate, LocalDateTime untilDate){
@@ -116,11 +117,10 @@ public class MoloniService {
     public static void getProfit(Scanner scanner) {
         logger.info("Starting getProfit method");
         logger.info("Please choose the document type:");
-        MoloniService moloniService = new MoloniService();
-        for (int i =0; i<moloniService.types.length; i++){
-            logger.info(i + "    " + moloniService.types[i].getTitle());
+        for (int i =0; i<MoloniService.types.length; i++){
+            logger.info(i + "    " + MoloniService.types[i].getTitle());
         }
-        MoloniDocumentTypeDTO type = moloniService.types[scanner.nextInt()];
+        MoloniDocumentTypeDTO type = MoloniService.types[scanner.nextInt()];
         MoloniDocumentDTO[] moloniDocumentDTOS = getMoloniDocumentsByType(type);
 
         for (int i = 0; i< moloniDocumentDTOS.length;i++){
@@ -138,7 +138,7 @@ public class MoloniService {
             double costPrice = StockKeepingUnitsService.getCostPrice(finalDocument.getDate(), finalDocument.getProductDTOS()[i].getSku());
             logger.info("Cost price: {}", costPrice);
             double discount = finalDocument.getProductDTOS()[i].getDiscount()!= null ? finalDocument.getProductDTOS()[i].getDiscount() : 0;
-            double profitUnit = finalDocument.getProductDTOS()[i].getPriceWithoutVat()-discount-costPrice;
+            double profitUnit = finalDocument.getProductDTOS()[i].getPriceWithoutVat()*((100-discount)/100)-costPrice;
             double profit = profitUnit * finalDocument.getProductDTOS()[i].getLineQuantity();
             documentProfit = documentProfit + profit;
 
@@ -163,8 +163,8 @@ public class MoloniService {
         getProfit(scanner);
     }
 
-    public boolean isSupplierDocumentTypeId(String documentTypeId){
-        for (MoloniDocumentTypeDTO type : this.types){
+    public static boolean isSupplierDocumentTypeId(String documentTypeId){
+        for (MoloniDocumentTypeDTO type : types){
             if(type.getDocumentTypeId().equals(documentTypeId)){
                 if(type.getTitle().toLowerCase(Locale.ROOT).contains("fornecedor")){
                     return true;

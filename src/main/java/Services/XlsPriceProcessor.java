@@ -21,6 +21,8 @@ public class XlsPriceProcessor {
     private Map<Integer, List<String>> data = new HashMap<>();
     private List<String> competitorNames = new ArrayList<>();
     private List<ProductCompareDataDTO> productCompareData = new ArrayList<>();
+    private List<ProductCompareDataDTO> filteredProductCompareData = new ArrayList<>();
+    private List<ProductCompareDataDTO> backupProductCompareData = new ArrayList<>();
     private List<ProductDTO> productDTOList = new ArrayList<>();
     public Map<Integer, List<String>> getData() {
         return this.data;
@@ -55,7 +57,6 @@ public class XlsPriceProcessor {
     }
 
     public List<ProductCompareDataDTO> addSkuDetails (){
-        MoloniService moloniService = new MoloniService();
         productDTOList = ShopifyProductService.getShopifyProductList();
         Map<String, StockDetailsDTO> reservations = StockKeepingUnitsService.getStockReservations();
         List<SupplierOrderedLineDate> supplierOrderedLineDates = MoloniService.getSupplierOrderedLines();
@@ -69,10 +70,16 @@ public class XlsPriceProcessor {
                 }
             }
             logger.debug("Getting SKU Details for {}", dto.getSku());
-            dto.setStockDetailsDTO(StockKeepingUnitsService.getSkuDetails(productDTO, reservations.get(dto.getSku()), moloniService, new ArrayMap<>(), MoloniService.getSupplierOrderedLineDatesPerSku(dto.getSku(),supplierOrderedLineDates)));
-            dto.setCostPrice(StockKeepingUnitsService.getCostPrice(null, dto.getSku()));
-            dto.setMarginWithCurrent(1-(dto.getCostPrice()*1.23/dto.getSmartifyPrice()));
-            dto.setMarginWithMin(1-(dto.getCostPrice()*1.23/dto.getMinPrice()));
+            try {
+                dto.setStockDetailsDTO(StockKeepingUnitsService.getSkuDetails(productDTO, reservations.get(dto.getSku()), new ArrayMap<>(), MoloniService.getSupplierOrderedLineDatesPerSku(dto.getSku(),supplierOrderedLineDates)));
+                dto.setCostPrice(StockKeepingUnitsService.getCostPrice(null, dto.getSku()));
+                dto.setMarginWithCurrent(1-(dto.getCostPrice()*1.23/dto.getSmartifyPrice()));
+                dto.setMarginWithMin(1-(dto.getCostPrice()*1.23/dto.getMinPrice()));
+            } catch (Exception e){
+                logger.error("Couldn't workout because of product {}  {}  {} {}", dto.getSku(), dto.getEan(), dto.getProductName(), dto.getCompetitors());
+            }
+
+
 
         }
         return productCompareData;
@@ -130,6 +137,8 @@ public class XlsPriceProcessor {
                 productCompareDataDTOS.add(productCompareDataDTO);
             }
             productCompareData = productCompareDataDTOS;
+            filteredProductCompareData = productCompareData;
+            backupProductCompareData = productCompareData;
             return productCompareDataDTOS;
 
         } catch (Exception e) {
@@ -173,8 +182,9 @@ public class XlsPriceProcessor {
             System.out.println("2: Set new price with margin 0-100");
             System.out.println("3: Check next");
             System.out.println("4: Check previous");
-            System.out.println("5: Reorder");
+            System.out.println("5: Reorder and update changes");
             System.out.println("6: Check All");
+            System.out.println("7: Filter name contains");
             int option = scanner.nextInt();
             if(option == 1){
 
@@ -227,6 +237,10 @@ public class XlsPriceProcessor {
                 System.out.println("Which product number would you like to select?");
                 optionsForSelected(scanner.nextInt(), scanner);
             } else if (option == 6){
+                print();
+                System.out.println("Which product number would you like to select?");
+                optionsForSelected(scanner.nextInt(), scanner);
+            } else if (option == 7){
                 print();
                 System.out.println("Which product number would you like to select?");
                 optionsForSelected(scanner.nextInt(), scanner);

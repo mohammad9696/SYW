@@ -149,13 +149,12 @@ public class StockKeepingUnitsService {
             }
             return price;
         }
-        MoloniService moloniService = new MoloniService();
         for (MoloniProductStocksDTO mps : stockMovements) {
             mps.setMovementDate(Utils.StringMoloniDateTime(mps.getMovementDateString()));
         }
         for (MoloniProductStocksDTO mps : stockMovements) {
             if (mps.getQuantityMoved() > 0 && mps.getDocumentDTO() != null && mps.getDocumentId() != 0
-                    && moloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())) {
+                    && MoloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())) {
                 if (mps.getQuantityAfterMovement()>= 0){
                     logger.info("Looking for stock purchase before this document");
                     if (mps.getMovementDate().isBefore(dateTime)) {
@@ -191,7 +190,7 @@ public class StockKeepingUnitsService {
 
         return 0.0;
     }
-    public static StockDetailsDTO getSkuDetails(ProductDTO shopifyProductDTO, StockDetailsDTO reservations, MoloniService moloniService, Map<String, StockDetailsDTO> mustDoThese, List<SupplierOrderedLineDate> supplierOrderedLineDatesBySKU){
+    public static StockDetailsDTO getSkuDetails(ProductDTO shopifyProductDTO, StockDetailsDTO reservations, Map<String, StockDetailsDTO> mustDoThese, List<SupplierOrderedLineDate> supplierOrderedLineDatesBySKU){
 
         String sku = shopifyProductDTO.sku();
         logger.debug("Getting purchasing needs for sku '{}'  ",sku);
@@ -233,7 +232,7 @@ public class StockKeepingUnitsService {
         stockDetails.setContinueToSellOutOfStock(shopifyProductDTO.getVariants().get(0).getInventoryPolicy().equals("continue"));
         for (MoloniProductStocksDTO mps : stockMovements) {
             if (mps.getQuantityMoved() < 0 && mps.getDocumentDTO() != null && mps.getDocumentId() != 0
-                    && !moloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())) {
+                    && !MoloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())) {
                 stockDetails.setLastSale(mps.getMovementDate());
                 break;
             }
@@ -267,9 +266,9 @@ public class StockKeepingUnitsService {
             }
 
             Integer paidReservations = stockDetails.getShopifyPaidReservations() != null ? stockDetails.getShopifyPaidReservations() : 0;
-            stockDetails.setSevenDaysOrFirstPeriod(new SalesTimePeriodDTO(sku, firstPeriodDays, stockMovements, moloniService));
-            stockDetails.setThirtyDaysOrSecondPeriod(new SalesTimePeriodDTO(sku, secondPeriodDays, stockMovements, moloniService));
-            stockDetails.setNinetyDaysOrThirdPeriod(new SalesTimePeriodDTO(sku, thirdPeriodDays, stockMovements, moloniService));
+            stockDetails.setSevenDaysOrFirstPeriod(new SalesTimePeriodDTO(sku, firstPeriodDays, stockMovements));
+            stockDetails.setThirtyDaysOrSecondPeriod(new SalesTimePeriodDTO(sku, secondPeriodDays, stockMovements));
+            stockDetails.setNinetyDaysOrThirdPeriod(new SalesTimePeriodDTO(sku, thirdPeriodDays, stockMovements));
             stockDetails.setMoloniStock(stockMovements[0].getQuantityAfterMovement() - paidReservations);
             stockDetails.setAvgSalesDays((stockDetails.getSevenDaysOrFirstPeriod().getSalesPerDay() +stockDetails.getThirtyDaysOrSecondPeriod().getSalesPerDay() +stockDetails.getNinetyDaysOrThirdPeriod().getSalesPerDay())/ 3);
             if (stockDetails.getAvgSalesDays() == 0){
@@ -282,9 +281,9 @@ public class StockKeepingUnitsService {
                 stockDetails.setProductName(moloniProductDTO.getProductName());
                 stockDetails.setEan(moloniProductDTO.getEan());
             }
-            stockDetails.setMoloniStock(0);
+            stockDetails.setMoloniStock(0-(stockDetails.getShopifyPaidReservations()!=null?stockDetails.getShopifyPaidReservations():0));
             stockDetails.setAvgSalesDays(0.0);
-            stockDetails.setStockDays(1000.0);
+            stockDetails.setStockDays((stockDetails.getShopifyPaidReservations()!=null?1000.0*-stockDetails.getShopifyPaidReservations():0));
 
         }
 
@@ -297,7 +296,6 @@ public class StockKeepingUnitsService {
         List<StockDetailsDTO> purchasingNeeds = new ArrayList<>();
         Map<String, StockDetailsDTO> mustDoThese = new ArrayMap<>();
 
-        MoloniService moloniService = new MoloniService();
 
         for (ProductDTO productDTO : products){
             if((sku != null && productNameContains == null && productDTO.sku().toLowerCase(Locale.ROOT).equals(sku.toLowerCase(Locale.ROOT))) ||
@@ -305,9 +303,9 @@ public class StockKeepingUnitsService {
                         (sku == null && productNameContains == null) ||
                             (sku != null && productNameContains != null)){
                 if(!stockReservations.containsKey(productDTO.sku())){
-                    purchasingNeeds.add(getSkuDetails(productDTO, new StockDetailsDTO(productDTO.sku()), moloniService, mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(productDTO.sku(), supplierOrderedLineDates)));
+                    purchasingNeeds.add(getSkuDetails(productDTO, new StockDetailsDTO(productDTO.sku()), mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(productDTO.sku(), supplierOrderedLineDates)));
                 } else {
-                    purchasingNeeds.add(getSkuDetails(productDTO, stockReservations.get(productDTO.sku()), moloniService, mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(productDTO.sku(), supplierOrderedLineDates)));
+                    purchasingNeeds.add(getSkuDetails(productDTO, stockReservations.get(productDTO.sku()), mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(productDTO.sku(), supplierOrderedLineDates)));
                 }
             }
         }
@@ -321,7 +319,7 @@ public class StockKeepingUnitsService {
             }
             for (ProductDTO j :products){
                 if (j.sku().equals(i.getKey())){
-                    purchasingNeeds.add((getSkuDetails(j,stockDetailsDTO, moloniService, mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(i.getKey(), supplierOrderedLineDates))));
+                    purchasingNeeds.add((getSkuDetails(j,stockDetailsDTO, mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(i.getKey(), supplierOrderedLineDates))));
                     break;
                 }
             }

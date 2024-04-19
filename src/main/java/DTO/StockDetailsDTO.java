@@ -161,10 +161,15 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
             } else if (getStockDays() < o.getStockDays()){
                 return 1;
             } else {
+                if (avgSalesDays > o.getAvgSalesDays()){
+                    return 1;
+                } else if (avgSalesDays < o.getAvgSalesDays()){
+                    return -1;
+                }
                 return 0;
             }
         } catch (Exception e){
-            return 1;
+            return 0;
         }
 
     }

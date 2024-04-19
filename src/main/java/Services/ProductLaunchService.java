@@ -270,9 +270,6 @@ public class ProductLaunchService {
             markProductAsLaunched(productToLaunch);
         }
 
-
-
-
         main(null);
 
     }

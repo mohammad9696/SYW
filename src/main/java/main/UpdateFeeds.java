@@ -89,6 +89,7 @@ public class UpdateFeeds {
 
             Map<String, MacroProductDTO> sheetsProductList = getSheetsProductList(spreadsheetId, snippet);
             List<ProductDTO> productsFromShopify = ShopifyProductService.getShopifyProductList();
+            updateMetafieldsForProducts(productsFromShopify);
 
             List<List<Object>> _values = SheetsServiceUtil.getMainSheetValues(sheetsProductList, productsFromShopify);
             snippet.updateValues(spreadsheetId, "A1","RAW", _values);

@@ -122,6 +122,18 @@ public class ProductCompareDataDTO implements Comparable<ProductCompareDataDTO>{
         return this.minPrice;
     }
 
+    public String getEan() {
+        return this.ean;
+    }
+
+    public Double getMaxPrice() {
+        return this.maxPrice;
+    }
+
+    public String getProductName() {
+        return this.productName;
+    }
+
     public Double getSmartifyPrice() {
         return this.smartifyPrice;
     }

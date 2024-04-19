@@ -3,6 +3,8 @@ package DTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.lang.reflect.GenericDeclaration;
 import java.util.List;
@@ -61,6 +63,27 @@ public class MoloniProductDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("properties")
     private MoloniProductProperty[] properties;
+
+
+    // handle dos casos em que o moloni manda estruturas de dados incoerentes.
+    @JsonSetter("properties")
+    public void setPropertiesSafely(Object properties) {
+        try {
+            // Directly assign if already the correct type
+            if (properties instanceof MoloniProductProperty[]) {
+                this.properties = (MoloniProductProperty[]) properties;
+            } else {
+                // Attempt conversion if it's a different format, e.g., a String
+                ObjectMapper mapper = new ObjectMapper();
+                // This assumes properties is a JSON string that can be converted.
+                // Adjust logic here based on the actual structure you're expecting.
+                this.properties = mapper.convertValue(properties, MoloniProductProperty[].class);
+            }
+        } catch (Exception e) {
+            // In case of any conversion error, just set properties to null or an empty array
+            this.properties = null; // Or new MoloniProductProperty[0];
+        }
+    }
 
 
     public Integer getLineQuantity() {

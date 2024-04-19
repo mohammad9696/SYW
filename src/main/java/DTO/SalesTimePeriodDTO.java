@@ -31,7 +31,7 @@ public class SalesTimePeriodDTO {
     }
 
 
-    public SalesTimePeriodDTO(String sku, Integer days, MoloniProductStocksDTO[] stockMovements, MoloniService moloniService) {
+    public SalesTimePeriodDTO(String sku, Integer days, MoloniProductStocksDTO[] stockMovements) {
         logger.info("Getting {} sales for last {} days", sku, days);
         this.sku = sku;
         this.days = days;
@@ -52,7 +52,7 @@ public class SalesTimePeriodDTO {
 
         for (MoloniProductStocksDTO mps : stockMovements){
             if (mps.getQuantityMoved()< 0 && mps.getDocumentDTO() != null && mps.getDocumentId() != 0
-                    && !moloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())){
+                    && !MoloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())){
                 if (mps.getMovementDate().isAfter(daysAgo)){
                     this.unitsSold = (this.unitsSold - mps.getQuantityMoved());
                     if(!clientIds.contains(mps.getDocumentId())){
@@ -60,7 +60,7 @@ public class SalesTimePeriodDTO {
                     }
                 }
             } else if (mps.getQuantityMoved() > 0 && mps.getDocumentDTO() != null &&
-                    !moloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())){
+                    !MoloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())){
                 this.unitsReturned = (this.unitsReturned + mps.getQuantityMoved());
             }
         }
