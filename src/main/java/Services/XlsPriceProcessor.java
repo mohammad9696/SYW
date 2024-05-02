@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class XlsPriceProcessor {
@@ -237,12 +238,19 @@ public class XlsPriceProcessor {
                 System.out.println("Which product number would you like to select?");
                 optionsForSelected(scanner.nextInt(), scanner);
             } else if (option == 6){
+                if ( backupProductCompareData != null && !backupProductCompareData.isEmpty()){
+                    productCompareData = new ArrayList<>(backupProductCompareData);
+                }
                 print();
                 System.out.println("Which product number would you like to select?");
                 optionsForSelected(scanner.nextInt(), scanner);
             } else if (option == 7){
+                backupProductCompareData = new ArrayList<>(productCompareData);
+                System.out.println("What should the product name contain?");
+                String next = scanner.next();
+                filteredProductCompareData = productCompareData.stream().filter( p -> p.getProductName().contains(next)).collect(Collectors.toList());
+                productCompareData = new ArrayList<>(filteredProductCompareData);
                 print();
-                System.out.println("Which product number would you like to select?");
                 optionsForSelected(scanner.nextInt(), scanner);
             }
 
