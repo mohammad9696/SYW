@@ -367,6 +367,7 @@ public class ShopifyProductService {
             }
         }
         if (process) {
+            logger.info("New price margin     {}  %  ", (1-costPrice/price)*100 );
             logger.info("Updating price for {}  cost is {} and trying to set price {}",  productDTO.sku(), costPrice, price);
             HttpRequestExecutor.updateRequest(Object.class, new ProductVariantObjectDTO(variant), getUpdateProductVariantRequestUrl(productDTO));
 

@@ -16,12 +16,12 @@ public class Main {
 
         System.out.println("Welcome to Smartify Your Work");
         logger.info("Application was initiated.");
-        chooseProcedure();
+        chooseProcedure(args);
 
 
     }
 
-    public static void chooseProcedure (){
+    public static void chooseProcedure (String[] args){
 
         try {
             Scanner scanner = new Scanner(System.in);
@@ -40,30 +40,37 @@ public class Main {
             System.out.println("12. Set price for SKU");
             System.out.println("13. Compare prices XLSX");
             System.out.println("99. Restart (at any time)");
-            int option = scanner.nextInt();
+
+            Integer option = null;
+            try {
+                option = Integer.parseInt(args[0]);
+            } catch (Exception e){
+                option = scanner.nextInt();
+            }
+
             if (option == 1){
                 UpdateFeeds.updateFeeds();
-                chooseProcedure();
+                chooseProcedure(null);
             } else if (option == 2){
                 FulfillmentService.main(null);
-                chooseProcedure();
+                chooseProcedure(null);
             } else if (option == 3){
                 KuantoKustaMotor.main(null);
-                chooseProcedure();
+                chooseProcedure(null);
             } else if (option == 4){
                 ShopifyProductMetafieldsManager.main(null);
-                chooseProcedure();
+                chooseProcedure(null);
             } else if (option == 5){
                 MoloniService.syncAllMoloniProducts();
-                chooseProcedure();
+                chooseProcedure(null);
             } else if (option == 6){
                 StockKeepingUnitsService.updateOnlineStocks();
             } else if (option == 7){
                 ProductLaunchService.main(null);
-                chooseProcedure();
+                chooseProcedure(null);
             } else if (option == 8){
                 StockKeepingUnitsService.main(null);
-                chooseProcedure();
+                chooseProcedure(null);
             } else if (option == 9){
                 Testes.main(null);
             } else if (option == 10){
@@ -77,16 +84,18 @@ public class Main {
                 }
             } else if (option == 12){
                 ShopifyProductService.updateProductPrices(scanner);
+                chooseProcedure(null);
             } else if (option == 13){
                 XlsPriceProcessor.main(null);
+                chooseProcedure(null);
             } else {
                 System.out.println("Option not available!");
-                chooseProcedure();
+                chooseProcedure(null);
             }
         } catch (NumberFormatException e){
             System.out.println("Will proceed with invalid tracking number");
         } catch (Exception e){
-            chooseProcedure();
+            chooseProcedure(null);
         }
 
     }
