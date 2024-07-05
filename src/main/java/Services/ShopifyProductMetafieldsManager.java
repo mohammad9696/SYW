@@ -311,6 +311,35 @@ public class ShopifyProductMetafieldsManager {
         }
     }
 
+    public static void updateSomeProductsEta(String[] skus){
+
+        logger.info("Updating all product ETAs");
+        ShopifyProductMetafieldsManager shopifyProductMetafieldsManager = new ShopifyProductMetafieldsManager();
+
+        List<ProductDTO> products= ShopifyProductService.getShopifyProductList();
+        int i = 0;
+        LocalDateTime start = LocalDateTime.now();
+        for(ProductDTO product : products){
+            i++;
+            for (String sku : skus){
+                if (product.sku().equals(sku)){
+                    logger.info(i + "  " + product.getTitle() + " was consulted and has id " + product.getId());
+                    try {
+                        shopifyProductMetafieldsManager.calculateETA(product);
+                        LocalDateTime end = LocalDateTime.now();
+                        logger.info("Time taken:   " +Duration.between(start,end));
+                    } catch (Exception e){
+                        LocalDateTime end = LocalDateTime.now();
+                        logger.error("There was an error! Time taken:   " +Duration.between(start,end));
+                        continue;
+                    }
+                }
+
+            }
+
+        }
+    }
+
     public static void main(String[] args) {
         System.out.println("1 - Atualizar todas as ETAs (cerca de 30 minutos)");
         System.out.println("2 - Atualizar de alguns produtos");

@@ -1,11 +1,9 @@
 package main;
 
-import DTO.ProductDTO;
 import Services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -72,7 +70,7 @@ public class Main {
                 StockKeepingUnitsService.main(null);
                 chooseProcedure(null);
             } else if (option == 9){
-                Testes.main(null);
+                DailyRun.main(null);
             } else if (option == 10){
                 MoloniService.getProfit(scanner);
             } else if (option == 11){

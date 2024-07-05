@@ -3,22 +3,11 @@ package main;
 import Services.MoloniService;
 import Services.ShopifyProductMetafieldsManager;
 import Services.StockKeepingUnitsService;
-import org.cups4j.CupsClient;
-import org.cups4j.CupsPrinter;
-import org.cups4j.PrintJob;
-import org.cups4j.PrintRequestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
-
-public class Testes {
-    private static final Logger logger = LoggerFactory.getLogger(Testes.class);
+public class DailyRun {
+    private static final Logger logger = LoggerFactory.getLogger(DailyRun.class);
     public static void main(String[] args) {
 
         MoloniService.syncAllMoloniProducts();
