@@ -14,30 +14,47 @@ public class StockKeepingUnitsService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockKeepingUnitsService.class);
 
-    public static void main(String[] args) {
+    public static String stockStatus(String option1, String string) {
 
         logger.info("Starting stock keeping service");
         logger.info("How would you like to check?");
         logger.info("1. Check all needs     2. Check Needs for SKU      3. Product name contains");
         Scanner scanner = new Scanner(System.in);
-        int option = scanner.nextInt();
+
+        int option;
+        if (option1 != null){
+            option = Integer.parseInt(option1);
+        } else {
+            option= scanner.nextInt();
+        }
+
         switch (option){
             case 1:
                 logger.info("Checking all product needs");
-                StockKeepingUnitsService.purchasingNeeds(null, null, getStockReservations());
-                main(null);
+                return StockKeepingUnitsService.purchasingNeeds(null, null, getStockReservations());
+
             case 2:
                 logger.info("Checking specific product needs. Please insert sku");
-                String sku  = scanner.next();
-                StockKeepingUnitsService.purchasingNeeds(sku, null, getStockReservations());
-                main(null);
+                String sku;
+                if (string != null) {
+                    sku = string;
+                } else {
+                    sku= scanner.next();
+                }
+                return StockKeepingUnitsService.purchasingNeeds(sku, null, getStockReservations());
+
             case 3:
                 logger.info("What string should the products contain?");
-                String str  = scanner.next();
+                String str;
+                if (string != null) {
+                    str = string;
+                } else {
+                    str= scanner.next();
+                }
                 logger.info("Checking all products containing {} ", str);
-                StockKeepingUnitsService.purchasingNeeds(null, str, getStockReservations());
-                main(null);
+                return StockKeepingUnitsService.purchasingNeeds(null, str, getStockReservations());
         }
+        return null;
     }
     public static String displayServiceHeader(){
         return Utils.normalizeStringLenght(15, "sku") + " " + Utils.normalizeStringLenght(14, "ean") + " " +
@@ -66,26 +83,31 @@ public class StockKeepingUnitsService {
 
     }
 
-    public static void purchasingNeeds(String sku, String productNameContains, Map<String, StockDetailsDTO> stockReservations) {
+    public static String purchasingNeeds(String sku, String productNameContains, Map<String, StockDetailsDTO> stockReservations) {
         logger.debug("Purchasing needs initiating for sku '{}' and productNameContains '{}' ",sku, productNameContains);
         List<SupplierOrderedLineDate> supplierOrderedLineDates = MoloniService.getSupplierOrderedLines();
         List<StockDetailsDTO> detailsDTOS = StockKeepingUnitsService.getSkuDetailsList(sku, productNameContains, stockReservations, supplierOrderedLineDates, ShopifyProductService.getShopifyProductList());
+        StringBuilder sb = new StringBuilder();
         int i=10;
         for (StockDetailsDTO s : detailsDTOS){
 
             try {
                 if (i%10 ==0){
                     System.out.println(displayServiceHeader());
+                    sb.append(displayServiceHeader()).append(System.lineSeparator());
                 }
                 i++;
                 System.out.println(displayServiceLine(s));
+                sb.append(displayServiceLine(s)).append(System.lineSeparator());
             } catch (NullPointerException e){
                 logger.error("Could not print line for {} {}", s.getSku(), s.toString());
             }
             for (SupplierOrderedLineDate ordered : s.getSupplierOrderedLineDates()){
                 System.out.println(ordered.toString());
+                sb.append(ordered.toString()).append(System.lineSeparator());
             }
         }
+        return sb.toString();
     }
 
     public static void updateOnlineStocks(){

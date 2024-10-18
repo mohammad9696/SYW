@@ -261,12 +261,20 @@ public class ShopifyProductMetafieldsManager {
             System.out.println(i + " " + productDTO.getVariants().get(0).getSku() + "  " + productDTO.getTitle() + "   Stock: " + productDTO.getVariants().get(0).getInventoryQuantity() + "  continueToSell:" + productDTO.getVariants().get(0).getInventoryPolicy());
             i++;
         }
-        System.out.println("Qual o intervalo que pretende atualizar? ");
-        System.out.println("Desde o produto nº:");
         Scanner scanner = new Scanner(System.in);
-        start = scanner.nextInt();
-        System.out.println("Até ao produto nº:");
-        end = scanner.nextInt();
+        System.out.println("Qual o intervalo que pretende atualizar? ");
+        if (args[2] !=null){
+            start = Integer.parseInt(args[2]);
+        } else {
+            System.out.println("Desde o produto nº:");
+            start = scanner.nextInt();
+        }
+        if (args[3] !=null){
+            end = Integer.parseInt(args[3]);
+        } else {
+            System.out.println("Até ao produto nº:");
+            end = scanner.nextInt();
+        }
         if (end < start){
             end = start;
         }
@@ -281,7 +289,7 @@ public class ShopifyProductMetafieldsManager {
         ShopifyProductMetafieldsManager shopifyProductMetafieldsManager = new ShopifyProductMetafieldsManager();
         while(start<=end){
             ProductDTO product = products.get(start);
-            logger.info(start + "  " + product.getTitle() + " was consulted and has id " + product.getId());
+            logger.info(start + "  " + product.sku() +"  " +product.getTitle() + " was consulted and has id " + product.getId());
             shopifyProductMetafieldsManager.calculateETA(product);
             start++;
         }
@@ -311,44 +319,21 @@ public class ShopifyProductMetafieldsManager {
         }
     }
 
-    public static void updateSomeProductsEta(String[] skus){
-
-        logger.info("Updating all product ETAs");
-        ShopifyProductMetafieldsManager shopifyProductMetafieldsManager = new ShopifyProductMetafieldsManager();
-
-        List<ProductDTO> products= ShopifyProductService.getShopifyProductList();
-        int i = 0;
-        LocalDateTime start = LocalDateTime.now();
-        for(ProductDTO product : products){
-            i++;
-            for (String sku : skus){
-                if (product.sku().equals(sku)){
-                    logger.info(i + "  " + product.getTitle() + " was consulted and has id " + product.getId());
-                    try {
-                        shopifyProductMetafieldsManager.calculateETA(product);
-                        LocalDateTime end = LocalDateTime.now();
-                        logger.info("Time taken:   " +Duration.between(start,end));
-                    } catch (Exception e){
-                        LocalDateTime end = LocalDateTime.now();
-                        logger.error("There was an error! Time taken:   " +Duration.between(start,end));
-                        continue;
-                    }
-                }
-
-            }
-
-        }
-    }
-
     public static void main(String[] args) {
         System.out.println("1 - Atualizar todas as ETAs (cerca de 30 minutos)");
         System.out.println("2 - Atualizar de alguns produtos");
         Scanner scanner = new Scanner(System.in);
-        int option = scanner.nextInt();
-        if(option==1){
+        Integer option;
+        if (args[1]==null){
+            option = scanner.nextInt();
+        } else {
+            option = Integer.parseInt(args[1]);
+        }
+
+        if(option == 1){
             ShopifyProductMetafieldsManager.updateAllProductsEta(null);
         } else {
-            ShopifyProductMetafieldsManager.updateProductEta(null);
+            ShopifyProductMetafieldsManager.updateProductEta(args);
         }
 
     }

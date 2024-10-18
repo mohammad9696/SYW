@@ -5,12 +5,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.CoercionAction;
 import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.*;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.client5.http.classic.methods.*;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,18 +46,21 @@ public class HttpRequestExecutor {
             }
 
             CloseableHttpResponse getResponse = client.execute(get);
+            boolean firsTry = true;
+            while (firsTry || getResponse.getCode()==429) {
+                firsTry =false;
+                if (getResponse.getCode() >= 200 && getResponse.getCode() < 300 ){
+                    logger.info("Got success response for request with HTTP Status code {}", getResponse.getCode());
+                } else if (getResponse.getCode()==429) {
+                    logger.error("Got error response for request with HTTP Status code 429. Too many requests. Retrying in 1 second");
+                    Thread.sleep(1000);
+                    getResponse = client.execute(get);
 
-
-            if (getResponse.getStatusLine().getStatusCode() >= 200 && getResponse.getStatusLine().getStatusCode() < 300 ){
-                logger.info("Got success response for request with HTTP Status code {}", getResponse.getStatusLine().getStatusCode());
-            } else if (getResponse.getStatusLine().getStatusCode()==429) {
-                logger.error("Got error response for request with HTTP Status code 429. Too many requests. Retrying in 1 second");
-                Thread.sleep(1000);
-                getObjectRequest(objectClass, requestUrl, httpRequestAuthTypeEnum, authKey, params);
-
-            } else {
-                logger.error("Got error response for request with HTTP Status code {}", getResponse.getStatusLine().getStatusCode());
+                } else {
+                    logger.error("Got error response for request with HTTP Status code {}", getResponse.getCode());
+                }
             }
+
 
             //para a paginacao do shopify
             if (getResponse.containsHeader("Link")){
@@ -82,6 +88,8 @@ public class HttpRequestExecutor {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
 
         return null;
@@ -136,8 +144,7 @@ public class HttpRequestExecutor {
             mapper.coercionConfigFor(MoloniProductProperty[].class).setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull);
 
             String jsonValue = mapper.writeValueAsString(requestObject);
-            StringEntity stringEntity = new StringEntity(jsonValue, "UTF-8");
-            stringEntity.setContentType("application/json");
+            StringEntity stringEntity = new StringEntity(jsonValue, ContentType.APPLICATION_JSON);
 
             post.setEntity(stringEntity);
             CloseableHttpClient client = HttpClients.createDefault();
@@ -151,6 +158,8 @@ public class HttpRequestExecutor {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
 
         return null;
@@ -165,8 +174,7 @@ public class HttpRequestExecutor {
 
             ObjectMapper mapper = new ObjectMapper();
             String jsonValue = mapper.writeValueAsString(requestObject);
-            StringEntity stringEntity = new StringEntity(jsonValue, "UTF-8");
-            stringEntity.setContentType("application/json");
+            StringEntity stringEntity = new StringEntity(jsonValue, ContentType.APPLICATION_JSON);
 
             put.setEntity(stringEntity);
             CloseableHttpClient client = HttpClients.createDefault();
@@ -176,7 +184,7 @@ public class HttpRequestExecutor {
 
             return  (S) object;
 
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | ParseException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();

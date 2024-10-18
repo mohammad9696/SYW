@@ -15,6 +15,6 @@ public class GoogleFunctionUpdateETAs implements HttpFunction {
     public void service(HttpRequest request, HttpResponse response) throws Exception {
         BufferedWriter writer = response.getWriter();
         writer.write("Updating ETAs!");
-        ShopifyProductMetafieldsManager.updateSomeProductsEta(request.getFirstQueryParameter("sku").orElseThrow(() -> new NoSuchElementException("SKU parameter is missing")).split(","));
+        ShopifyProductMetafieldsManager.updateAllProductsEta(request.getFirstQueryParameter("sku").orElseThrow(() -> new NoSuchElementException("SKU parameter is missing")).split(","));
     }
 }

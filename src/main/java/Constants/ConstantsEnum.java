@@ -106,7 +106,7 @@ public enum ConstantsEnum {
     ConstantsEnum(String constantName, Object constantValue) {
         Properties properties = new Properties();
         InputStream inputStream;
-        inputStream = getClass().getClassLoader().getResourceAsStream("application.properties");
+        inputStream = getClass().getClassLoader().getResourceAsStream("sywapp.properties");
         try {
             properties.load(inputStream);
         } catch (IOException e) {
