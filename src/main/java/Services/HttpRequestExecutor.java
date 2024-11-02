@@ -1,4 +1,5 @@
 package Services;
+import Constants.ConstantsEnum;
 import Constants.HttpRequestAuthTypeEnum;
 import DTO.MoloniProductProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,8 +28,8 @@ public class HttpRequestExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpRequestExecutor.class);
 
-    public static <T> T getObjectRequest (TypeReference<T> objectClass, String requestUrl, Map<String, Object> params){
-        return getObjectRequest ( objectClass,  requestUrl,  null,  null, params);
+    public static <T> T getObjectRequestShopify(TypeReference<T> objectClass, String requestUrl, Map<String, Object> params){
+        return getObjectRequest ( objectClass,  requestUrl,  HttpRequestAuthTypeEnum.X_SHOPIFY_ACCESS_TOKEN,  ConstantsEnum.SHOPIFY_TOKEN.getConstantValue().toString(), params);
     }
 
     public static <T> T getObjectRequest (TypeReference<T> objectClass, String requestUrl, HttpRequestAuthTypeEnum httpRequestAuthTypeEnum, String authKey, Map<String, Object> params){
@@ -43,6 +44,12 @@ public class HttpRequestExecutor {
 
             if (httpRequestAuthTypeEnum == HttpRequestAuthTypeEnum.XXX_API_KEY && authKey != null){
                 get.addHeader("x-api-key", authKey);
+            }
+            if (httpRequestAuthTypeEnum == HttpRequestAuthTypeEnum.BEARER_TOKEN && authKey != null){
+                get.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + authKey);
+            }
+            if (httpRequestAuthTypeEnum == HttpRequestAuthTypeEnum.X_SHOPIFY_ACCESS_TOKEN && authKey != null){
+                get.addHeader("X-Shopify-Access-Token", authKey);
             }
 
             CloseableHttpResponse getResponse = client.execute(get);
@@ -68,9 +75,8 @@ public class HttpRequestExecutor {
                 for (String h : headerGroup){
                     if(h.contains("next")){
                         String link = h;
-                        String newUrl =link.split("//")[1].split(">")[0];
-                        String newReqUrl = requestUrl.split("@")[0]+"@"+newUrl;
-                        params.put("newReqUrl", newReqUrl);
+                        String newUrl =link.split("<")[1].split(">")[0];
+                        params.put("newReqUrl", newUrl);
                     }
                 }
             }
@@ -78,7 +84,10 @@ public class HttpRequestExecutor {
 
 
             ObjectMapper mapper = new ObjectMapper();
-            Object object = mapper.readValue(EntityUtils.toString(getResponse.getEntity()), objectClass);
+            String response =EntityUtils.toString(getResponse.getEntity());
+            Object object = mapper.readValue(response, objectClass);
+
+            logger.info("Sent GET Request to {} and got response {}", requestUrl, response);
 
             return  (T) object;
 
@@ -119,10 +128,18 @@ public class HttpRequestExecutor {
     }
 
     public static <S, T> S sendRequest (Class<S> responseObject, T requestObject, String requestUrl){
-        return sendRequest(responseObject, requestObject, requestUrl, null, null);
+        return sendRequest(responseObject, requestObject, null, requestUrl, null, null);
     }
 
-    public static <S, T> S sendRequest (Class<S> responseObject, T requestObject, String requestUrl, HttpRequestAuthTypeEnum httpRequestAuthTypeEnum, String authKey){
+    public static <S, T> S sendRequestShopify (Class<S> responseObject, T requestObject, String requestUrl){
+        return sendRequest(responseObject, requestObject, null, requestUrl, HttpRequestAuthTypeEnum.X_SHOPIFY_ACCESS_TOKEN, ConstantsEnum.SHOPIFY_TOKEN.getConstantValue().toString());
+    }
+
+    public static <S, T> S sendRequestGraphQL (Class<S> responseObject, String graphqlJson, String requestUrl){
+        return sendRequest(responseObject, null, graphqlJson, requestUrl, HttpRequestAuthTypeEnum.X_SHOPIFY_ACCESS_TOKEN, ConstantsEnum.SHOPIFY_TOKEN.getConstantValue().toString());
+    }
+
+    public static <S, T> S sendRequest (Class<S> responseObject, T requestObject, String graphqlJson, String requestUrl, HttpRequestAuthTypeEnum httpRequestAuthTypeEnum, String authKey){
 
         try {
             URL url= new URL(requestUrl);
@@ -138,19 +155,30 @@ public class HttpRequestExecutor {
                 post.addHeader("x-api-key", authKey);
             }
 
+            if (httpRequestAuthTypeEnum == HttpRequestAuthTypeEnum.X_SHOPIFY_ACCESS_TOKEN && authKey != null){
+                post.addHeader("X-Shopify-Access-Token", authKey);
+            }
+
             ObjectMapper mapper = new ObjectMapper();
 
             //hardcoded, later look for solution to make any array that json inputs as "" to return empty
             mapper.coercionConfigFor(MoloniProductProperty[].class).setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull);
 
-            String jsonValue = mapper.writeValueAsString(requestObject);
+            String jsonValue;
+            if (graphqlJson != null) {
+                jsonValue = graphqlJson;
+            } else {
+                jsonValue = mapper.writeValueAsString(requestObject);
+            }
             StringEntity stringEntity = new StringEntity(jsonValue, ContentType.APPLICATION_JSON);
 
             post.setEntity(stringEntity);
             CloseableHttpClient client = HttpClients.createDefault();
             CloseableHttpResponse getResponse = client.execute(post);
+            String response = EntityUtils.toString(getResponse.getEntity());
+            Object object = mapper.readValue(response, responseObject);
 
-            Object object = mapper.readValue(EntityUtils.toString(getResponse.getEntity()), responseObject);
+            logger.info("Sent POST Request to {} with body {} and got response {}", requestUrl, jsonValue, response);
 
             return  (S) object;
 

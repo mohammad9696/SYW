@@ -14,7 +14,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 
 public class ShopifyProductMetafieldsManager {
@@ -32,7 +31,7 @@ public class ShopifyProductMetafieldsManager {
             requestUrl = ConstantsEnum.GET_TEST_PRODUCT_METAFIELDS_PREFIX.getConstantValue()+productDTO.getId()+ConstantsEnum.GET_TEST_PRODUCT_METAFIELDS_SUFIX.getConstantValue()+productMetafieldEnum.getUrlWithKeyAndNameSpace();
         }
         TypeReference<ProductMetafieldListDTO> metafieldListDTOTypeReference = new TypeReference<ProductMetafieldListDTO>() {};
-        ProductMetafieldListDTO result = HttpRequestExecutor.getObjectRequest(metafieldListDTOTypeReference, requestUrl, new HashMap<>());
+        ProductMetafieldListDTO result = HttpRequestExecutor.getObjectRequestShopify(metafieldListDTOTypeReference, requestUrl, new HashMap<>());
 
         if(result!= null && result.getMetafields() != null && !result.getMetafields().isEmpty())
             return result.getMetafields().get(0);
@@ -82,7 +81,7 @@ public class ShopifyProductMetafieldsManager {
         if (metafieldType != null){
             metafieldDTO.setType(metafieldType.getKey());
         }
-        ProductMetafieldObjectDTO result = HttpRequestExecutor.sendRequest(ProductMetafieldObjectDTO.class, new ProductMetafieldObjectDTO(metafieldDTO), requestUrl);
+        ProductMetafieldObjectDTO result = HttpRequestExecutor.sendRequestShopify(ProductMetafieldObjectDTO.class, new ProductMetafieldObjectDTO(metafieldDTO), requestUrl);
 
         if (result == null){
             logger.error("Error in createOrUpdateMetafield {} for product {}. Trying again...",productMetafieldEnum, productDTO.sku());
@@ -223,9 +222,11 @@ public class ShopifyProductMetafieldsManager {
             createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_CART_RESULT_NO_STOCK, resultEtaCartNoStockMessage);
             createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_MIN_DAYS, minDaysToDeliver);
             createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_MAX_DAYS, maxDaysToDeliver+"");
+            HttpGraphQLRequestExecutor.updateETATranslations(productDTO.getAdminGraphqlApiId());
             logger.info("ETA was updated : " + productDTO.getTitle());
         } else {
             createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_RESULT, ConstantsEnum.ETA_DEFAULT_UNAVAILABLE.getConstantValue());
+            HttpGraphQLRequestExecutor.updateETATranslations(productDTO.getAdminGraphqlApiId());
             logger.info("ETA was removed : " + productDTO.getTitle());
         }
 

@@ -180,14 +180,13 @@ public class MoloniService {
         try{
             logger.info("Getting token for moloni request");
             TypeReference<MoloniTokenDTO> typeReference = new TypeReference<MoloniTokenDTO>(){};
-            MoloniTokenDTO token = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.MOLONI_GET_TOKEN.getConstantValue().toString(), new ArrayMap<>());
+            MoloniTokenDTO token = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.MOLONI_GET_TOKEN.getConstantValue().toString(), null, null, new ArrayMap<>());
             logger.debug("Got moloni token {}",token.getAccessToken());
             return token.getAccessToken();
         } catch (Exception e){
             logger.error("Getting token for moloni failed. Trying again");
             return getToken();
         }
-
     }
     
     public static int getStock(String sku){

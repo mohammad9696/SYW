@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class LognowExpeditionRequest {
-
+/*
     public static void shipAndFulfill (OrderDTO order, OrderAddressDTO pickupAddress){
         shipAndFulfill (order, pickupAddress, null, null);
     }
@@ -99,7 +99,7 @@ public class LognowExpeditionRequest {
                 expedition, ""+volumes,  weight.toString() );
 
         return courierExpeditionDTO;
-    }
+    }*/
 /*
     private static void fulfillOrder(OrderDTO order, String trackingNumber){
         String tracking = ConstantsEnum.TRACKING_URL_PREFIX.getConstantValue().toString()+trackingNumber;

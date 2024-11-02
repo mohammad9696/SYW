@@ -104,7 +104,7 @@ public class ShopifyProductService {
         inventoryDTO.setLocationId(Long.parseLong(ConstantsEnum.SHOPIFY_MAIN_LOCATION_ID.getConstantValue().toString()));
         inventoryDTO.setAvailable(stock);
         inventoryDTO.setInventoryItemId(productDTO.getVariants().get(0).getInventoryItemId());
-        HttpRequestExecutor.sendRequest(Object.class, inventoryDTO, getUpdateProductInventoryRequestUrl(productDTO));
+        HttpRequestExecutor.sendRequestShopify(Object.class, inventoryDTO, getUpdateProductInventoryRequestUrl(productDTO));
     }
 
     public static boolean removePreSaleProduct (){
@@ -187,12 +187,12 @@ public class ShopifyProductService {
         logger.info("Getting all product details list from shopify");
         TypeReference<ProductListDTO> typeReference = new TypeReference<ProductListDTO>() {};
         Map<String, Object> params = new HashMap<>();
-        List<ProductDTO> result = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_PRODUCTS.getConstantValue().toString(), params).getProducts();
+        List<ProductDTO> result = HttpRequestExecutor.getObjectRequestShopify(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_PRODUCTS.getConstantValue().toString(), params).getProducts();
         while (!params.isEmpty()){
             logger.info("Getting shopify product list is paginated. Getting next page.");
             String newReqUrl = params.get("newReqUrl").toString();
             params.remove("newReqUrl");
-            List<ProductDTO> resultNext = HttpRequestExecutor.getObjectRequest(typeReference, newReqUrl, params).getProducts();
+            List<ProductDTO> resultNext = HttpRequestExecutor.getObjectRequestShopify(typeReference, newReqUrl, params).getProducts();
             for (ProductDTO i : result){
                 if (i.sku().equals(resultNext.get(0).sku())){
                     return result;
@@ -210,11 +210,11 @@ public class ShopifyProductService {
 
         TypeReference<ProductListDTO> typeReference = new TypeReference<ProductListDTO>() {};
         Map<String, Object> params = new HashMap<>();
-        List<ProductDTO> result = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_REQUEST_TESTSHOPIFY_PRODUCTS.getConstantValue().toString(), params).getProducts();
+        List<ProductDTO> result = HttpRequestExecutor.getObjectRequestShopify(typeReference, ConstantsEnum.GET_REQUEST_TESTSHOPIFY_PRODUCTS.getConstantValue().toString(), params).getProducts();
         while (!params.isEmpty()){
             String newReqUrl = params.get("newReqUrl").toString();
             params.remove("newReqUrl");
-            List<ProductDTO> resultNext = HttpRequestExecutor.getObjectRequest(typeReference, newReqUrl, params).getProducts();
+            List<ProductDTO> resultNext = HttpRequestExecutor.getObjectRequestShopify(typeReference, newReqUrl, params).getProducts();
             for (ProductDTO i : resultNext){
                 result.add(i);
             }
@@ -269,7 +269,7 @@ public class ShopifyProductService {
         productToLaunch.setImages(images);
 
         logger.debug("Post request create shopify product");
-        HttpRequestExecutor.sendRequest(Object.class, new ProductObjectDTO(productToLaunch), ConstantsEnum.SHOPIFY_CREATE_PRODUCT.getConstantValue().toString());
+        HttpRequestExecutor.sendRequestShopify(Object.class, new ProductObjectDTO(productToLaunch), ConstantsEnum.SHOPIFY_CREATE_PRODUCT.getConstantValue().toString());
         ProductDTO result = null;
         List<ProductDTO> productList = getShopifyProductList();
         for (ProductDTO i : productList){

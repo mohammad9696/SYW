@@ -12,12 +12,12 @@ public class CreateOrderService {
         phone = phone.replace("+","");
         String id = null;
         TypeReference<CustomerListDTO> typeReference = new TypeReference<CustomerListDTO>(){};
-        CustomerListDTO objectDTO = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_CUSTOMER_BY_EMAIL_URL.getConstantValue().toString()+email, new HashMap<>());
+        CustomerListDTO objectDTO = HttpRequestExecutor.getObjectRequestShopify(typeReference, ConstantsEnum.GET_CUSTOMER_BY_EMAIL_URL.getConstantValue().toString()+email, new HashMap<>());
 
         if (!objectDTO.getCustomerDTO().isEmpty()){
             id = objectDTO.getCustomerDTO().get(0).getId();
         } else {
-            objectDTO = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.GET_CUSTOMER_BY_PHONE_URL.getConstantValue().toString()+phone, new HashMap<>());
+            objectDTO = HttpRequestExecutor.getObjectRequestShopify(typeReference, ConstantsEnum.GET_CUSTOMER_BY_PHONE_URL.getConstantValue().toString()+phone, new HashMap<>());
             if (!objectDTO.getCustomerDTO().isEmpty()) {
                 id = objectDTO.getCustomerDTO().get(0).getId();
             }
