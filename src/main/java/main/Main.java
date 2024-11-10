@@ -52,6 +52,7 @@ public class Main {
             System.out.println("11. Get cost price for SKU");
             System.out.println("12. Set price for SKU");
             System.out.println("13. Compare prices XLSX");
+            System.out.println("14. Translate All etas");
             System.out.println("99. Restart (at any time)");
 
             Integer option = null;
@@ -100,6 +101,9 @@ public class Main {
                 chooseProcedure(null);
             } else if (option == 13){
                 XlsPriceProcessor.main(null);
+                chooseProcedure(null);
+            } else if (option == 14){
+                HttpGraphQLRequestExecutor.main(null);
                 chooseProcedure(null);
             } else {
                 System.out.println("Option not available!");

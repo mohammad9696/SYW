@@ -61,9 +61,9 @@ public class StockKeepingUnitsService {
                 Utils.normalizeStringLenght(50, "product name") + " " +
                 Utils.normalizeStringLenght(5, "stock") + " " + Utils.normalizeStringLenght(9,"stockDays") + " " +
                 Utils.normalizeStringLenght(11, "avgSalesDay") + " " +
-                Utils.normalizeStringLenght(11, "7daySalesT1") + " " +Utils.normalizeStringLenght(7, "Returns") + " " +Utils.normalizeStringLenght(6, "Buyers") + " " +
-                Utils.normalizeStringLenght(12, "30daySalesT2") + " " +Utils.normalizeStringLenght(7, "Returns") + " " +Utils.normalizeStringLenght(6, "Buyers") + " " +
-                Utils.normalizeStringLenght(12, "90daySalesT2") + " " +Utils.normalizeStringLenght(7, "Returns") + " " +Utils.normalizeStringLenght(6, "Buyers");
+                Utils.normalizeStringLenght(11, "30daySalesT1") + " " +Utils.normalizeStringLenght(7, "Returns") + " " +Utils.normalizeStringLenght(6, "Buyers") + " " +
+                Utils.normalizeStringLenght(12, "90daySalesT2") + " " +Utils.normalizeStringLenght(7, "Returns") + " " +Utils.normalizeStringLenght(6, "Buyers") + " " +
+                Utils.normalizeStringLenght(12, "365daySalesT3") + " " +Utils.normalizeStringLenght(7, "Returns") + " " +Utils.normalizeStringLenght(6, "Buyers");
     }
 
     public static String displayServiceLine(StockDetailsDTO s){
@@ -71,9 +71,9 @@ public class StockKeepingUnitsService {
                 Utils.normalizeStringLenght(50, s.getProductName()) + " " +
                 Utils.normalizeStringLenght(5, s.getMoloniStock().toString()) + " " + Utils.normalizeStringLenght(9, s.getStockDays().toString()) + " " +
                 Utils.normalizeStringLenght(11,s.getAvgSalesDays().toString()) + " " +
-                Utils.normalizeStringLenght(11, s.getSevenDaysOrFirstPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getSevenDaysOrFirstPeriod().getUnitsReturned().toString()) + " " +Utils.normalizeStringLenght(6, s.getSevenDaysOrFirstPeriod().getCustomers().toString()) + " " +
-                Utils.normalizeStringLenght(12, s.getThirtyDaysOrSecondPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getThirtyDaysOrSecondPeriod().getUnitsReturned().toString())+ " " +Utils.normalizeStringLenght(6, s.getThirtyDaysOrSecondPeriod().getCustomers().toString()) + " " +
-                Utils.normalizeStringLenght(12, s.getNinetyDaysOrThirdPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getNinetyDaysOrThirdPeriod().getUnitsReturned().toString())+ " " +Utils.normalizeStringLenght(6, s.getNinetyDaysOrThirdPeriod().getCustomers().toString());
+                Utils.normalizeStringLenght(11, s.getFirstPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getFirstPeriod().getUnitsReturned().toString()) + " " +Utils.normalizeStringLenght(6, s.getFirstPeriod().getCustomers().toString()) + " " +
+                Utils.normalizeStringLenght(12, s.getSecondPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getSecondPeriod().getUnitsReturned().toString())+ " " +Utils.normalizeStringLenght(6, s.getSecondPeriod().getCustomers().toString()) + " " +
+                Utils.normalizeStringLenght(12, s.getThirdPeriod().getUnitsSold().toString()) + " " +Utils.normalizeStringLenght(7, s.getThirdPeriod().getUnitsReturned().toString())+ " " +Utils.normalizeStringLenght(6, s.getThirdPeriod().getCustomers().toString());
     }
 
     public static Map<String, StockDetailsDTO>  getStockReservations() {
@@ -270,29 +270,29 @@ public class StockKeepingUnitsService {
             int secondPeriodDays;
             int thirdPeriodDays;
             Long days = Duration.between(stockMovements[stockMovements.length-1].getMovementDate(), LocalDateTime.now()).toDays();
-            if (stockMovements.length >= 50 && days< 90){
-                LocalDateTime dateAfter90Days = LocalDateTime.now().minusDays(90);
+            if (stockMovements.length >= 50 && days< 365){
+                LocalDateTime dateAfter90Days = LocalDateTime.now().minusDays(365);
                 stockMovements = MoloniService.getStockMovements(sku, null, dateAfter90Days);
                 days = Duration.between(stockMovements[stockMovements.length-1].getMovementDate(), LocalDateTime.now()).toDays();
             }
             int daysInt = Integer.parseInt(days.toString());
             stockDetails.setProductActiveForDays(daysInt);
-            if (daysInt < 90) {
+            if (daysInt < 365) {
                 firstPeriodDays = daysInt/12;
                 secondPeriodDays = daysInt/3;
                 thirdPeriodDays = daysInt;
             } else {
-                firstPeriodDays = 7;
-                secondPeriodDays = 30;
-                thirdPeriodDays =90;
+                firstPeriodDays = 365;
+                secondPeriodDays = 90;
+                thirdPeriodDays =30;
             }
 
             Integer paidReservations = stockDetails.getShopifyPaidReservations() != null ? stockDetails.getShopifyPaidReservations() : 0;
-            stockDetails.setSevenDaysOrFirstPeriod(new SalesTimePeriodDTO(sku, firstPeriodDays, stockMovements));
-            stockDetails.setThirtyDaysOrSecondPeriod(new SalesTimePeriodDTO(sku, secondPeriodDays, stockMovements));
-            stockDetails.setNinetyDaysOrThirdPeriod(new SalesTimePeriodDTO(sku, thirdPeriodDays, stockMovements));
+            stockDetails.setFirstPeriod(new SalesTimePeriodDTO(sku, firstPeriodDays, stockMovements));
+            stockDetails.setSecondPeriod(new SalesTimePeriodDTO(sku, secondPeriodDays, stockMovements));
+            stockDetails.setThirdPeriod(new SalesTimePeriodDTO(sku, thirdPeriodDays, stockMovements));
             stockDetails.setMoloniStock(stockMovements[0].getQuantityAfterMovement() - paidReservations);
-            stockDetails.setAvgSalesDays((stockDetails.getSevenDaysOrFirstPeriod().getSalesPerDay() +stockDetails.getThirtyDaysOrSecondPeriod().getSalesPerDay() +stockDetails.getNinetyDaysOrThirdPeriod().getSalesPerDay())/ 3);
+            stockDetails.setAvgSalesDays((stockDetails.getFirstPeriod().getSalesPerDay() +stockDetails.getSecondPeriod().getSalesPerDay() +stockDetails.getThirdPeriod().getSalesPerDay())/ 3);
             if (stockDetails.getAvgSalesDays() == 0){
                 stockDetails.setAvgSalesDays(0.001);
             }

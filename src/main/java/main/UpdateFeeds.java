@@ -70,8 +70,8 @@ public class UpdateFeeds {
     private static void updateMetafieldsForProducts(List<ProductDTO> productDTOS){
         ShopifyProductMetafieldsManager shopifyProductMetafieldsManager = new ShopifyProductMetafieldsManager();
         for (ProductDTO p : productDTOS){
-            ProductMetafieldDTO minDays = shopifyProductMetafieldsManager.getMetafield(true, p,ProductMetafieldEnum.ETA_MIN_DAYS);
-            ProductMetafieldDTO maxDays = shopifyProductMetafieldsManager.getMetafield(true, p,ProductMetafieldEnum.ETA_MAX_DAYS);
+            ProductMetafieldDTO minDays = p.getMetafield(ProductMetafieldEnum.ETA_MIN_DAYS);
+            ProductMetafieldDTO maxDays = p.getMetafield(ProductMetafieldEnum.ETA_MAX_DAYS);
             if (minDays != null && maxDays != null){
                 p.setDeliveryMinDays(Integer.parseInt(minDays.getValue()));
                 p.setMaxDays(Integer.parseInt(maxDays.getValue()));

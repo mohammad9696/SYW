@@ -1,13 +1,16 @@
 package DTO;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductVariantDTO {
 
-    @JsonProperty("product_id")
+    @JsonProperty("product_id")//deprecated
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String productId;
 
@@ -35,15 +38,15 @@ public class ProductVariantDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String barcode;
 
-    @JsonProperty("option1")
+    @JsonProperty("option1") //Deprecated
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String option1;
 
-    @JsonProperty("option2")
+    @JsonProperty("option2") //deprecated
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String option2;
 
-    @JsonProperty("option3")
+    @JsonProperty("option3") //deprecated
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String option3;
 
@@ -65,7 +68,7 @@ public class ProductVariantDTO {
 
     @JsonProperty("inventory_item_id")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long inventoryItemId;
+    private String inventoryItemId;
 
     @JsonProperty("inventory_quantity")
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -84,20 +87,34 @@ public class ProductVariantDTO {
     private Double compareAtPrice;
 
     @JsonProperty("admin_graphql_api_id")
+    @JsonAlias("id")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String adminGraphqlApiId;
 
-    @JsonProperty("fulfillment_service")
+    @JsonProperty("fulfillment_service")//deprecated
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String fulfillmentService;
 
-    @JsonProperty("inventory_management")
+    @JsonProperty("inventory_management")//deprecated
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String inventoryManagement;
 
-    @JsonProperty("taxable")
+    @JsonProperty("taxable")//deprecated
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String taxable;
+
+
+    @JsonProperty("inventoryItem")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private InventoryItemDTO inventoryItemDTO;
+
+    public InventoryItemDTO getInventoryItemDTO() {
+        return this.inventoryItemDTO;
+    }
+
+    public void setInventoryItemDTO(final InventoryItemDTO inventoryItemDTO) {
+        this.inventoryItemDTO = inventoryItemDTO;
+    }
 
     @Override
     public String toString() {
@@ -196,11 +213,11 @@ public class ProductVariantDTO {
         this.weightUnit = weightUnit;
     }
 
-    public Long getInventoryItemId() {
+    public String getInventoryItemId() {
         return inventoryItemId;
     }
 
-    public void setInventoryItemId(Long inventoryItemId) {
+    public void setInventoryItemId(String inventoryItemId) {
         this.inventoryItemId = inventoryItemId;
     }
 
@@ -302,5 +319,75 @@ public class ProductVariantDTO {
 
     public void setInventoryPolicy(String inventoryPolicy) {
         this.inventoryPolicy = inventoryPolicy;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class InventoryItemDTO {
+
+        @JsonProperty("id")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String id;
+
+        @JsonProperty("inventoryLevel")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private InventoryLevelQuantitiesDTO inventoryLevelQuantitiesDTO;
+
+        public String getId() {
+            return this.id;
+        }
+
+        public void setId(final String id) {
+            this.id = id;
+        }
+
+        public InventoryLevelQuantitiesDTO getInventoryLevelQuantitiesDTO() {
+            return this.inventoryLevelQuantitiesDTO;
+        }
+
+        public void setInventoryLevelQuantitiesDTO(final InventoryLevelQuantitiesDTO inventoryLevelQuantitiesDTO) {
+            this.inventoryLevelQuantitiesDTO = inventoryLevelQuantitiesDTO;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class InventoryLevelQuantitiesDTO {
+        @JsonProperty("quantities")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private List<Quantities> quantities;
+
+        public List<Quantities> getQuantities() {
+            return this.quantities;
+        }
+
+        public void setQuantities(final List<Quantities> quantities) {
+            this.quantities = quantities;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Quantities {
+        @JsonProperty("quantity")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer quantity;
+
+        @JsonProperty("name")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String name;
+
+        public Integer getQuantity() {
+            return this.quantity;
+        }
+
+        public void setQuantity(final Integer quantity) {
+            this.quantity = quantity;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public void setName(final String name) {
+            this.name = name;
+        }
     }
 }

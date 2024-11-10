@@ -1,10 +1,8 @@
 package Services;
 
 import Constants.ConstantsEnum;
-import DTO.GQLMutationTranslationsVariablesDTO;
-import DTO.GQLQueryTranslatableResourceResponseDTO;
-import DTO.GQLQueryTranslationsResponseDTO;
-import DTO.OpenAIResponseDTO;
+import DTO.*;
+import Utils.Utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -19,10 +17,93 @@ public class HttpGraphQLRequestExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpGraphQLRequestExecutor.class);
 
+    public static void setProductMetafields (List<ProductMetafieldDTO> list){
+
+        GQLMutationMetafieldsVariablesDTO qglVariables = new GQLMutationMetafieldsVariablesDTO(list);
+        HttpRequestExecutor.sendRequestGraphQL(Object.class, getMetafieldMutationQuery(qglVariables) , ConstantsEnum.SHOPIFY_GRAPHQL_URL.getConstantValue().toString());
+
+    }
+
+    private static String getMetafieldMutationQuery(GQLMutationMetafieldsVariablesDTO metafieldsVariablesDTO){
+        ObjectMapper objectMapper = new ObjectMapper();
+        String variables;
+        try {
+            variables = objectMapper.writeValueAsString(metafieldsVariablesDTO);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        String query ="{\n" +
+                "  \"query\": \"mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $metafields) { metafields { key namespace value createdAt updatedAt } userErrors { field message code } }}\",\n" +
+                "  \"variables\": "+variables+"\n" +
+                "}";
+
+        return query;
+    }
+
+    public static void setAvailableInventory (int quantity, String inventoryItemId){
+        HttpRequestExecutor.sendRequestGraphQL(Object.class, mutationSetInventory(quantity, inventoryItemId) , ConstantsEnum.SHOPIFY_GRAPHQL_URL.getConstantValue().toString());
+
+    }
+    public static String mutationSetInventory (int quantity, String inventoryItemId){
+        String query = "{\n" +
+                "  \"query\": \"mutation SetProductAvailableInventory($name: String!, $quantities: [InventoryQuantityInput!]!, $reason: String!, $ignoreCompareQuantity: Boolean!) { inventorySetQuantities(input: {name: $name, quantities: $quantities, reason: $reason, ignoreCompareQuantity: $ignoreCompareQuantity}) { inventoryAdjustmentGroup { id createdAt reason } userErrors { field message } }}\",\n" +
+                "  \"variables\": {\n" +
+                "    \"name\": \"available\",\n" +
+                "    \"quantities\": [\n" +
+                "      {\n" +
+                "        \"inventoryItemId\": \""+inventoryItemId+"\",\n" +
+                "        \"locationId\": \"gid://shopify/Location/58086129815\",\n" +
+                "        \"quantity\": "+quantity+"\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    \"reason\": \"correction\",\n" +
+                "    \"ignoreCompareQuantity\": true\n" +
+                "  }\n" +
+                "}";
+
+        return query;
+    }
+    public static List<ProductDTO> getAllProducts (){
+        boolean first = true;
+        List<ProductGQLDTO> productListList = new ArrayList<>();
+        ProductGQLDTO products = null;
+        String lastCursor ="";
+
+        while (first || (products!= null && products.getData() != null && products.getData().getProducts() != null && !products.getData().getProducts().getEdges().isEmpty() &&products.getData().getProducts().getPageInfo().isHasNextPage()==true)) {
+            if (!first){
+                lastCursor = products.getData().getProducts().getEdges().get(products.getData().getProducts().getEdges().size()-1).getCursor();
+            }
+            first = false;
+            products = HttpRequestExecutor.sendRequestGraphQL(ProductGQLDTO.class, getProductsQuery(lastCursor) , ConstantsEnum.SHOPIFY_GRAPHQL_URL.getConstantValue().toString());
+            productListList.add(products);
+        }
+
+        List<ProductDTO> result = Utils.getProductsDTOfromProductGQLDTO(productListList);
+
+        return result;
+    }
+
+    private static String getProductsQuery(String cursor){
+        String after = "";
+
+        if (cursor != null && !cursor.equals("")){
+            after = ", after: \\\""+cursor+"\\\"";
+        }
+
+        String query = "{\n" +
+                "  \"query\": \"query { products(first: 250"+after+") { edges { node { id title descriptionHtml vendor productType createdAt handle updatedAt publishedAt templateSuffix status tags metafields(first: 10, namespace: \\\"custom\\\") { edges { node { id key namespace value type } } } variants (first: 10) { edges{ node { id title price compareAtPrice taxable sku position barcode inventoryPolicy inventoryQuantity inventoryItem { id inventoryLevel (locationId:\\\"gid://shopify/Location/58086129815\\\") { quantities (names:[\\\"available\\\", \\\"committed\\\", \\\"incoming\\\", \\\"on_hand\\\", \\\"reserved\\\"]) { quantity name } } measurement{ weight{ unit value } } requiresShipping } } } } media (first: 10){ edges { node { alt id status mediaContentType preview { image { url } } } } } } cursor } pageInfo { hasNextPage } }}\"\n" +
+                "}";
+
+        return query;
+
+
+    }
     public static void registerTranslationsMutation (GQLMutationTranslationsVariablesDTO translations){
         HttpRequestExecutor.sendRequestGraphQL(Object.class, updateTranslationsMutationsQuery(translations) , ConstantsEnum.SHOPIFY_GRAPHQL_URL.getConstantValue().toString());
     }
-    public static GQLMutationTranslationsVariablesDTO translate(List<GQLQueryTranslatableResourceResponseDTO.TranslatableContent> toTranslate){
+    public static GQLMutationTranslationsVariablesDTO translate(List<GQLQueryTranslatableResourceResponseDTO.TranslatableContent> toTranslate, int tries){
+        logger.info("Translating from OpenAI. Request try {}", tries);
         GQLMutationTranslationsVariablesDTO dto = null;
         Map<String, List<GQLMutationTranslationsVariablesDTO.Translation>> translated = new HashMap<>();
         List<GQLQueryTranslatableResourceResponseDTO.TranslatableContent> notTranslated = new ArrayList<>();
@@ -39,12 +120,13 @@ public class HttpGraphQLRequestExecutor {
             }
         }
 
+        String contentJson = null;
         try {
             if (notTranslated.size()!=0){
                 OpenAIResponseDTO result = OpenAIService.getTranslate(notTranslated);
                 OpenAIResponseDTO.Choice choice = result.getChoices().get(0);
 
-                String contentJson = choice.getMessage().getContent();
+                contentJson = choice.getMessage().getContent();
 
                 dto = new ObjectMapper().readValue(contentJson, GQLMutationTranslationsVariablesDTO.class);
             } else {
@@ -53,8 +135,10 @@ public class HttpGraphQLRequestExecutor {
 
 
         } catch (JsonProcessingException e) {
-            logger.error("Error parsing OpenAI response JSON for resource ID {}, {}, {}", toTranslate.get(0).getResourceId(), toTranslate.get(1).getResourceId(), toTranslate.get(2).getResourceId());
-            throw new RuntimeException(e);
+            logger.error("Try {} ; Error parsing OpenAI response JSON for resource ID {}, {}, {}", tries, toTranslate.get(0).getResourceId(), toTranslate.get(1).getResourceId(), toTranslate.get(2).getResourceId());
+            if (tries <5){
+                return translate(toTranslate,tries+1);
+            }
         }
         if(notTranslated.size()>0){//nt=1 t=2
             for (GQLQueryTranslatableResourceResponseDTO.TranslatableContent i : toTranslate){
@@ -113,6 +197,7 @@ public class HttpGraphQLRequestExecutor {
 
         return dto;
     }
+
     public static List<GQLQueryTranslationsResponseDTO.Node> metafieldsToTranslate(String id){
         GQLQueryTranslationsResponseDTO a = getProductETAsById(id);
         List<GQLQueryTranslationsResponseDTO.Node> nodes = new ArrayList<>();
@@ -195,15 +280,32 @@ public class HttpGraphQLRequestExecutor {
         }
 
         List<GQLQueryTranslatableResourceResponseDTO.TranslatableContent> translatableContents = getTranslatableResourcesById(ids);
-        GQLMutationTranslationsVariablesDTO openAiTranslation = translate(translatableContents);
+        GQLMutationTranslationsVariablesDTO openAiTranslation = translate(translatableContents,0);
 
         registerTranslationsMutation(openAiTranslation);
     }
 
     public static void main(String[] args) {
-        String id ="gid://shopify/Product/9004516114778";
-        updateETATranslations(id);
+        List<ProductDTO> productDTOS = getAllProducts();
 
+        int j = 0;
+        for (ProductDTO i : productDTOS){
+            try {
+                logger.info("{} Translating ETAs for {} {}", j, i.sku(), i.getTitle());
+                updateETATranslations(i.getId());
+                logger.info("{} Translated ETAs for {} {}", j, i.sku(), i.getTitle());
+            } catch (Exception e){
+                try {
+                    logger.warn("{} Retrying Translating ETAs for {} {}",j, i.sku(), i.getTitle());
+                    updateETATranslations(i.getId());
+                } catch (Exception f){
+                    logger.error("{} Couldn't translate {} {}",j,i.sku(), i.getTitle());
+                }
+
+            }
+            j++;
+
+        }
 
     }
 }

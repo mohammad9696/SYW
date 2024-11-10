@@ -11,9 +11,9 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
     private Integer shopifyStock;
     private Integer shopifyPaidReservations;
     private Integer shopifyUnpaidReservations;
-    private SalesTimePeriodDTO sevenDaysOrFirstPeriod;
-    private SalesTimePeriodDTO thirtyDaysOrSecondPeriod;
-    private SalesTimePeriodDTO ninetyDaysOrThirdPeriod;
+    private SalesTimePeriodDTO firstPeriod;
+    private SalesTimePeriodDTO secondPeriod;
+    private SalesTimePeriodDTO thirdPeriod;
     private Double avgSalesDays;
     private Double stockDays;
     private Integer productActiveForDays;
@@ -54,24 +54,24 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
         this.stockDays = stockDays;
     }
 
-    public SalesTimePeriodDTO getSevenDaysOrFirstPeriod() {
+    public SalesTimePeriodDTO getFirstPeriod() {
 
-        return sevenDaysOrFirstPeriod;
+        return firstPeriod;
     }
 
-    public SalesTimePeriodDTO getThirtyDaysOrSecondPeriod() {
-        return thirtyDaysOrSecondPeriod;
+    public SalesTimePeriodDTO getSecondPeriod() {
+        return secondPeriod;
     }
 
-    public SalesTimePeriodDTO getNinetyDaysOrThirdPeriod() {
-        return ninetyDaysOrThirdPeriod;
+    public SalesTimePeriodDTO getThirdPeriod() {
+        return thirdPeriod;
     }
 
     public StockDetailsDTO(String sku) {
         this.sku = sku;
-        this.sevenDaysOrFirstPeriod = new SalesTimePeriodDTO();
-        this.thirtyDaysOrSecondPeriod = new SalesTimePeriodDTO();
-        this.ninetyDaysOrThirdPeriod = new SalesTimePeriodDTO();
+        this.firstPeriod = new SalesTimePeriodDTO();
+        this.secondPeriod = new SalesTimePeriodDTO();
+        this.thirdPeriod = new SalesTimePeriodDTO();
     }
 
     public String getSku() {
@@ -123,16 +123,16 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
     }
 
 
-    public void setSevenDaysOrFirstPeriod(SalesTimePeriodDTO sevenDaysOrFirstPeriod) {
-        this.sevenDaysOrFirstPeriod = sevenDaysOrFirstPeriod;
+    public void setFirstPeriod(SalesTimePeriodDTO firstPeriod) {
+        this.firstPeriod = firstPeriod;
     }
 
-    public void setThirtyDaysOrSecondPeriod(SalesTimePeriodDTO thirtyDaysOrSecondPeriod) {
-        this.thirtyDaysOrSecondPeriod = thirtyDaysOrSecondPeriod;
+    public void setSecondPeriod(SalesTimePeriodDTO secondPeriod) {
+        this.secondPeriod = secondPeriod;
     }
 
-    public void setNinetyDaysOrThirdPeriod(SalesTimePeriodDTO ninetyDaysOrThirdPeriod) {
-        this.ninetyDaysOrThirdPeriod = ninetyDaysOrThirdPeriod;
+    public void setThirdPeriod(SalesTimePeriodDTO thirdPeriod) {
+        this.thirdPeriod = thirdPeriod;
     }
 
     @Override
@@ -144,9 +144,9 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
                 ", shopifyStock=" + shopifyStock +
                 ", shopifyPaidReservations=" + shopifyPaidReservations +
                 ", shopifyUnpaidReservations=" + shopifyUnpaidReservations +
-                ", sevenDaysOrFirstPeriod=" + sevenDaysOrFirstPeriod +
-                ", thirtyDaysOrSecondPeriod=" + thirtyDaysOrSecondPeriod +
-                ", ninetyDaysOrThirdPeriod=" + ninetyDaysOrThirdPeriod +
+                ", sevenDaysOrFirstPeriod=" + firstPeriod +
+                ", thirtyDaysOrSecondPeriod=" + secondPeriod +
+                ", ninetyDaysOrThirdPeriod=" + thirdPeriod +
                 ", avgSalesDays=" + avgSalesDays +
                 ", stockDays=" + stockDays +
                 ", productActiveForDays=" + productActiveForDays +

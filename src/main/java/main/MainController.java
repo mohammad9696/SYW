@@ -33,6 +33,7 @@ public class MainController {
         sb.append("11. Get cost price for SKU<br>");
         sb.append("12. Set price for SKU<br>");
         sb.append("13. Compare prices XLSX<br>");
+        sb.append("14. All ETA translations with OpenAI<b4>");
         sb.append("99. Restart (at any time)<br>");
         return sb.toString();
     }
@@ -95,6 +96,8 @@ public class MainController {
                 ShopifyProductService.updateProductPrices(scanner);
             } else if (option == 13){
                 XlsPriceProcessor.main(null);
+            }else if (option == 14){
+                HttpGraphQLRequestExecutor.main(null);
             } else {
                 System.out.println("Option not available!");
             }

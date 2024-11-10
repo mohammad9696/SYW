@@ -1,9 +1,8 @@
 package DTO;
 
 import Constants.ConstantsEnum;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import Constants.ProductMetafieldEnum;
+import com.fasterxml.jackson.annotation.*;
 
 import java.util.List;
 
@@ -19,6 +18,7 @@ public class ProductDTO {
     private String title;
 
     @JsonProperty("body_html")
+    @JsonAlias("descriptionHtml")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String bodyHtml;
 
@@ -27,10 +27,12 @@ public class ProductDTO {
     private String brand;
 
     @JsonProperty("product_type")
+    @JsonAlias("productType")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String productType;
 
     @JsonProperty("created_at")
+    @JsonAlias("createdAt")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String createdAt;
 
@@ -39,14 +41,17 @@ public class ProductDTO {
     private String handle;
 
     @JsonProperty("updated_at")
+    @JsonAlias("updatedAt")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String updatedAt;
 
     @JsonProperty("published_at")
+    @JsonAlias("publishedAt")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String publishedAt;
 
     @JsonProperty("template_suffix")
+    @JsonAlias("templateSuffix")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String templateSuffix;
 
@@ -54,15 +59,14 @@ public class ProductDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String status;
 
-    @JsonProperty("published_scope")
+    @JsonProperty("published_scope") //deprecated
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String publishedScope;
 
-    @JsonProperty("tags")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String tags;
+    @JsonIgnore
+    private String[] tags;
 
-    @JsonProperty("admin_graphql_api_id")
+    @JsonProperty("admin_graphql_api_id") //id
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String adminGraphqlApiId;
 
@@ -77,6 +81,18 @@ public class ProductDTO {
     @JsonProperty("image")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private ProductImageDTO image;
+
+    @JsonProperty("metafields")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<ProductMetafieldDTO> metafields;
+
+    public List<ProductMetafieldDTO> getMetafields() {
+        return this.metafields;
+    }
+
+    public void setMetafields(final List<ProductMetafieldDTO> metafields) {
+        this.metafields = metafields;
+    }
 
     public Integer getDeliveryMaxDays() {
         return this.deliveryMaxDays;
@@ -193,11 +209,11 @@ public class ProductDTO {
         this.publishedScope = publishedScope;
     }
 
-    public String getTags() {
+    public String[] getTags() {
         return tags;
     }
 
-    public void setTags(String tags) {
+    public void setTags(String tags[]) {
         this.tags = tags;
     }
 
@@ -262,5 +278,14 @@ public class ProductDTO {
 
     public void setMaxDays(final Integer maxDays) {
         this.deliveryMaxDays = maxDays;
+    }
+
+    public ProductMetafieldDTO getMetafield (ProductMetafieldEnum metafield){
+        for (ProductMetafieldDTO i : metafields){
+            if (i.getProductMetafieldEnum()==metafield){
+                return i;
+            }
+        }
+        return  null;
     }
 }

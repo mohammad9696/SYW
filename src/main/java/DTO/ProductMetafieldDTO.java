@@ -1,8 +1,8 @@
 package DTO;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import Constants.MetafieldTypeEnum;
+import Constants.ProductMetafieldEnum;
+import com.fasterxml.jackson.annotation.*;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductMetafieldDTO {
@@ -27,20 +27,21 @@ public class ProductMetafieldDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String description;
 
-    @JsonProperty("owner_id")
+    @JsonProperty("ownerId")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String owner_id;
 
     @JsonProperty("created_at")
+    @JsonAlias("createdAt")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String created_at;
 
     @JsonProperty("updated_at")
+    @JsonAlias("updatedAt")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String updated_at;
 
-    @JsonProperty("owner_resource")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnore
     private String owner_resource;
 
     @JsonProperty("type")
@@ -50,6 +51,17 @@ public class ProductMetafieldDTO {
     @JsonProperty("admin_graphql_api_id")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String admin_graphql_api_id;
+
+    @JsonIgnore
+    private ProductMetafieldEnum productMetafieldEnum;
+
+    public ProductMetafieldEnum getProductMetafieldEnum() {
+        return this.productMetafieldEnum;
+    }
+
+    public void setProductMetafieldEnum(final ProductMetafieldEnum productMetafieldEnum) {
+        this.productMetafieldEnum = productMetafieldEnum;
+    }
 
     public String getId() {
         return id;

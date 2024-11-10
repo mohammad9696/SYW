@@ -65,7 +65,7 @@ public class MacroProductDTO {
         this.updatedAt = productDTO.getUpdatedAt();
         this.url = ConstantsEnum.PRODUCT_URL_PREFIX.getConstantValue() + productDTO.getHandle();
         this.status = productDTO.getStatus();
-        this.tags = productDTO.getTags();
+        this.tags = String.join(",",productDTO.getTags());
         this.price = productDTO.getVariants().get(0).getPrice();
         this.sku = productDTO.getVariants().get(0).getSku();
         this.barcode = productDTO.getVariants().get(0).getBarcode();
@@ -97,7 +97,7 @@ public class MacroProductDTO {
         this.updatedAt = productDTO.getUpdatedAt();
         this.url = ConstantsEnum.PRODUCT_URL_PREFIX.getConstantValue() + productDTO.getHandle() + "?variant=" + variantDTO.getId();
         this.status = productDTO.getStatus();
-        this.tags = productDTO.getTags();
+        this.tags = String.join(",",productDTO.getTags());
         this.price = variantDTO.getPrice();
         this.sku = variantDTO.getSku();
         this.barcode = variantDTO.getBarcode();
@@ -125,7 +125,7 @@ public class MacroProductDTO {
             dto.updatedAt = productDTO.getUpdatedAt();
             dto.url = ConstantsEnum.PRODUCT_URL_PREFIX.getConstantValue() + productDTO.getHandle() + "?variant=" + variantDTO.getId();
             dto.status = productDTO.getStatus();
-            dto.tags = productDTO.getTags();
+            dto.tags = String.join(",",productDTO.getTags());
             dto.price = variantDTO.getPrice();
             dto.sku = variantDTO.getSku();
             dto.barcode = variantDTO.getBarcode();

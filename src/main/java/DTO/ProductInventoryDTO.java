@@ -9,29 +9,29 @@ public class ProductInventoryDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("location_id")
-    private Long locationId;
+    private String locationId;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("inventory_item_id")
-    private Long inventoryItemId;
+    private String inventoryItemId;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("available")
     private int available;
 
-    public Long getLocationId() {
+    public String getLocationId() {
         return locationId;
     }
 
-    public void setLocationId(Long locationId) {
+    public void setLocationId(String locationId) {
         this.locationId = locationId;
     }
 
-    public Long getInventoryItemId() {
+    public String getInventoryItemId() {
         return inventoryItemId;
     }
 
-    public void setInventoryItemId(Long inventoryItemId) {
+    public void setInventoryItemId(String inventoryItemId) {
         this.inventoryItemId = inventoryItemId;
     }
 

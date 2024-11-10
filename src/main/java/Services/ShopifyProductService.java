@@ -100,11 +100,16 @@ public class ShopifyProductService {
     }
 
     public static void setInvetory (int stock, ProductDTO productDTO){
+        /* old with ID before graphql
         ProductInventoryDTO inventoryDTO = new ProductInventoryDTO();
-        inventoryDTO.setLocationId(Long.parseLong(ConstantsEnum.SHOPIFY_MAIN_LOCATION_ID.getConstantValue().toString()));
+        inventoryDTO.setLocationId((ConstantsEnum.SHOPIFY_MAIN_LOCATION_ID.getConstantValue().toString()));
         inventoryDTO.setAvailable(stock);
         inventoryDTO.setInventoryItemId(productDTO.getVariants().get(0).getInventoryItemId());
         HttpRequestExecutor.sendRequestShopify(Object.class, inventoryDTO, getUpdateProductInventoryRequestUrl(productDTO));
+        */
+
+        HttpGraphQLRequestExecutor.setAvailableInventory(stock, productDTO.getVariants().get(0).getInventoryItemId());
+
     }
 
     public static boolean removePreSaleProduct (){
@@ -184,7 +189,7 @@ public class ShopifyProductService {
 
     public static List<ProductDTO> getShopifyProductList(){
 
-        logger.info("Getting all product details list from shopify");
+        logger.info("Getting all product details list from shopify");/*
         TypeReference<ProductListDTO> typeReference = new TypeReference<ProductListDTO>() {};
         Map<String, Object> params = new HashMap<>();
         List<ProductDTO> result = HttpRequestExecutor.getObjectRequestShopify(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_PRODUCTS.getConstantValue().toString(), params).getProducts();
@@ -202,7 +207,10 @@ public class ShopifyProductService {
                 result.add(i);
             }
         }
-        logger.info("Got product details for {} products", result.size());
+*/
+        List<ProductDTO> result = HttpGraphQLRequestExecutor.getAllProducts();
+
+         logger.info("Got product details for {} products", result.size());
         return result;
     }
 
@@ -287,7 +295,6 @@ public class ShopifyProductService {
             if (metaDescription != null){
                 metafieldsService.createOrUpdateMetafield(true, result, ProductMetafieldEnum.META_DESCRIPTION, metaDescription, MetafieldTypeEnum.MULTI_LINE_TEXT_FIELD);
             }
-
             int minDays = Integer.parseInt(ConstantsEnum.ETA_DEFAULT_ETA_MIN_DAYS.getConstantValue().toString());
             int maxDays = Integer.parseInt(ConstantsEnum.ETA_DEFAULT_ETA_MAX_DAYS.getConstantValue().toString());
             Scanner scanner = new Scanner(System.in);
@@ -305,7 +312,7 @@ public class ShopifyProductService {
             metafieldsService.createOrUpdateMetafield(true, result, ProductMetafieldEnum.ETA_CART, ProductMetafieldEnum.ETA_CART.getDefaultMessage());
             metafieldsService.createOrUpdateMetafield(true, result, ProductMetafieldEnum.ETA_MIN, minDays);
             metafieldsService.createOrUpdateMetafield(true, result, ProductMetafieldEnum.ETA_MAX, maxDays);
-
+            metafieldsService.updateMetafields();
         }
 
         return result;

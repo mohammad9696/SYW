@@ -25,6 +25,7 @@ public class OpenAIService {
         String jsonRequest = mapper.writeValueAsString(translatableContents);
         OpenAIRequestDTO dto = new OpenAIRequestDTO("gpt-4o-mini", null, 1500, 0.5);
         List<OpenAIRequestDTO.Message> messages = new ArrayList<>();
+        /*
         messages.add(new OpenAIRequestDTO.Message("system","You are a translation assistant skilled in providing JSON-formatted translations in multiple languages that ONLY outputs the json object in one line ensuring there are no extra `{` or `}` characters that may be resulted from poor escaping"));
         messages.add(new OpenAIRequestDTO.Message("system","You always check and fix json formatting and specially second last '}' of the response, iy often gets added wrongfully and messes entire structure, by removing it the structure gets fixed"));
         messages.add(new OpenAIRequestDTO.Message("user","Keep emojis as they are. Translate flags only to France, Britain, Spain, Italy, Germany"));
@@ -33,6 +34,14 @@ public class OpenAIService {
         messages.add(new OpenAIRequestDTO.Message("user","It is very important for schema to always have the keys: resourceId1, translations1, resourceId2, translations2, resourceId3, translations3"));
         messages.add(new OpenAIRequestDTO.Message("user","It is very important for schema of object translations to always have keys: locale, translatableContentDigest, key, value"));
         messages.add(new OpenAIRequestDTO.Message("user","Request: "+ jsonRequest));
+*/
+        messages.add(new OpenAIRequestDTO.Message("system", "You are a translation assistant. Always return JSON translations in a single line, formatted strictly with no extra `{` or `}` characters."));
+        messages.add(new OpenAIRequestDTO.Message("system", "Check JSON syntax carefully, especially for any trailing or misplaced braces. Ensure no errors by verifying structure manually."));
+        messages.add(new OpenAIRequestDTO.Message("user", "Translate the following texts into French, English, Spanish, Italian, and German. Keep emojis as they are, and translate flags only to 🇫🇷, 🇬🇧, 🇪🇸, 🇮🇹, and 🇩🇪."));
+        messages.add(new OpenAIRequestDTO.Message("user", "Use this JSON schema format, changing only values, not keys: " + schema));
+        messages.add(new OpenAIRequestDTO.Message("user", "Ensure the JSON always includes keys: `resourceId1`, `translations1`, `resourceId2`, `translations2`, `resourceId3`, `translations3`."));
+        messages.add(new OpenAIRequestDTO.Message("user", "Within each `translations` object, always include `locale`, `translatableContentDigest`, `key`, and `value`."));
+        messages.add(new OpenAIRequestDTO.Message("user", "Here is the request data: " + jsonRequest));
         dto.setMessages(messages);
 
         OpenAIResponseDTO result = HttpRequestExecutor.sendRequest(OpenAIResponseDTO.class, dto, null, ConstantsEnum.OPENAI_REQUEST_URL.getConstantValue().toString(), HttpRequestAuthTypeEnum.BEARER_TOKEN,
