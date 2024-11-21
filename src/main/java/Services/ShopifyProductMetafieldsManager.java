@@ -242,6 +242,8 @@ public class ShopifyProductMetafieldsManager {
             logger.info("ETA was updated : " + productDTO.getTitle());
         } else {
             createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_RESULT, ConstantsEnum.ETA_DEFAULT_UNAVAILABLE.getConstantValue());
+            createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_CART_RESULT, ConstantsEnum.ETA_DEFAULT_UNAVAILABLE.getConstantValue());
+            createOrUpdateMetafield(true, productDTO, ProductMetafieldEnum.ETA_CART_RESULT_NO_STOCK, ConstantsEnum.ETA_DEFAULT_UNAVAILABLE.getConstantValue());
             updateMetafields();
             logger.info("ETA was removed : " + productDTO.getTitle());
         }

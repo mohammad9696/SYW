@@ -12,75 +12,15 @@ public class GQLMutationTranslationsVariablesDTO {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("resourceId1")
-    private String resourceId1;
+    @JsonProperty("translations")
+    private List<Translation> translations;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("translations1")
-    private List<Translation> translations1;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("resourceId2")
-    private String resourceId2;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("translations2")
-    private List<Translation> translations2;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("resourceId3")
-    private String resourceId3;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("translations3")
-    private List<Translation> translations3;
-
-    public String getResourceId1() {
-        return this.resourceId1;
+    public List<Translation> getTranslations() {
+        return this.translations;
     }
 
-    public void setResourceId1(final String resourceId1) {
-        this.resourceId1 = resourceId1;
-    }
-
-    public List<Translation> getTranslations1() {
-        return this.translations1;
-    }
-
-    public void setTranslations1(final List<Translation> translations1) {
-        this.translations1 = translations1;
-    }
-
-    public String getResourceId2() {
-        return this.resourceId2;
-    }
-
-    public void setResourceId2(final String resourceId2) {
-        this.resourceId2 = resourceId2;
-    }
-
-    public List<Translation> getTranslations2() {
-        return this.translations2;
-    }
-
-    public void setTranslations2(final List<Translation> translations2) {
-        this.translations2 = translations2;
-    }
-
-    public String getResourceId3() {
-        return this.resourceId3;
-    }
-
-    public void setResourceId3(final String resourceId3) {
-        this.resourceId3 = resourceId3;
-    }
-
-    public List<Translation> getTranslations3() {
-        return this.translations3;
-    }
-
-    public void setTranslations3(final List<Translation> translations3) {
-        this.translations3 = translations3;
+    public void setTranslations(final List<Translation> translations) {
+        this.translations = translations;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -103,6 +43,34 @@ public class GQLMutationTranslationsVariablesDTO {
         @JsonInclude(JsonInclude.Include.NON_NULL)
         @JsonProperty("value")
         private String value;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @JsonProperty("resourceId")
+        private String resourceId;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @JsonProperty("translatedContent")
+        private String translatedContent;
+
+        public void setLocale(final String locale) {
+            this.locale = locale;
+        }
+
+        public String getResourceId() {
+            return this.resourceId;
+        }
+
+        public void setResourceId(final String resourceId) {
+            this.resourceId = resourceId;
+        }
+
+        public String getTranslatedContent() {
+            return this.translatedContent;
+        }
+
+        public void setTranslatedContent(final String translatedContent) {
+            this.translatedContent = translatedContent;
+        }
 
         public String getLocale() {
             return this.locale;
