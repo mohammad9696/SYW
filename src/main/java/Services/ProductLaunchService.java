@@ -247,7 +247,7 @@ public class ProductLaunchService {
         List<ProductDTO> productReadyToLaunch = new ArrayList<>();
         int i = 0;
         for (ProductDTO product : productsToLaunch){
-            if (product.getStatus().toLowerCase(Locale.ROOT).equals("active")){
+            if (product.getStatus().toLowerCase(Locale.ROOT).equalsIgnoreCase("active")){
                 productReadyToLaunch.add(product);
                 System.out.println(i + " " +product.sku() +" "+ product.getTitle());
                 i++;

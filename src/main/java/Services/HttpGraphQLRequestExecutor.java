@@ -18,6 +18,21 @@ public class HttpGraphQLRequestExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpGraphQLRequestExecutor.class);
 
+    public static void updateProductVariantPrice(String productId, String variantId, Double priceToSet, Double compareAtPriceToSet){
+        if (priceToSet == null || priceToSet < 0.01){
+            throw new NumberFormatException();
+        }
+
+        if (compareAtPriceToSet == null || priceToSet < 0.01){
+            compareAtPriceToSet = 0.0;
+        }
+
+        String mutation = "{\n" +
+                "  \"query\": \"mutation UpdateVariantPrice { productVariantsBulkUpdate(productId: \\\""+productId+"\\\", variants: [{id: \\\""+variantId+"\\\", price: \\\""+priceToSet+"\\\", compareAtPrice: \\\""+compareAtPriceToSet+"\\\"}]) { product { id variants(first: 10) { edges { node { id price } } } } userErrors { field message } }}\"\n" +
+                "}";
+        HttpRequestExecutor.sendRequestGraphQL(Object.class, mutation , ConstantsEnum.SHOPIFY_GRAPHQL_URL.getConstantValue().toString());
+
+    }
     public static void setProductMetafields (List<ProductMetafieldDTO> list){
 
         GQLMutationMetafieldsVariablesDTO qglVariables = new GQLMutationMetafieldsVariablesDTO(list);

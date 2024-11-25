@@ -72,7 +72,7 @@ public class SheetsServiceUtil {
         List<List<Object>> _values = new ArrayList<>();
         _values.add(kuantokustaSheetHeaderRow());
         for (Map.Entry<String, MacroProductDTO> obj : originalProductList.entrySet()){
-            if(obj.getValue().getStatus().equals("active") && isProductSellable(obj)){
+            if(obj.getValue().getStatus().equalsIgnoreCase("active") && isProductSellable(obj)){
                 _values.add(kuantokustaSheetProductRow(obj.getValue()));
             }
         }
@@ -84,7 +84,7 @@ public class SheetsServiceUtil {
         List<List<Object>> _values = new ArrayList<>();
         _values.add(partnerFeedSheetHeaderRow());
         for (Map.Entry<String, MacroProductDTO> obj : originalProductList.entrySet()){
-            if(obj.getValue().getStatus().equals("active") && isProductSellable(obj)){
+            if(obj.getValue().getStatus().equalsIgnoreCase("active") && isProductSellable(obj)){
                 _values.add(partnerFeedSheetProductRow(obj.getValue()));
             }
         }
