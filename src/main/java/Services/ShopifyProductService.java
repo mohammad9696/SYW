@@ -154,7 +154,7 @@ public class ShopifyProductService {
     }
 
     public static boolean removeProductDiscount(ProductDTO productToUpdate){
-        updateProductPrice(productToUpdate, productToUpdate.getVariants().get(0).getCompareAtPrice(), null );
+        updateProductPrice(productToUpdate, productToUpdate.getVariants().get(0).getCompareAtPrice(), null, true );
         return true;
     }
 
@@ -348,7 +348,7 @@ public class ShopifyProductService {
                 Double priceDouble = scanner.nextDouble();
                 System.out.println("Please insert compare at price for " + sku);
                 Double comparePriceDouble = scanner.nextDouble();
-                updateProductPrice(p, priceDouble, comparePriceDouble);
+                updateProductPrice(p, priceDouble, comparePriceDouble, false);
             } else {
                 logger.error("Could not find sku {}", sku);
             }
@@ -356,7 +356,7 @@ public class ShopifyProductService {
 
     }
 
-    public static void updateProductPrice (ProductDTO productDTO, Double price, Double comparePrice){
+    public static void updateProductPrice (ProductDTO productDTO, Double price, Double comparePrice, boolean ignoreCosts){
 
         ProductVariantDTO variant = new ProductVariantDTO();
         variant.setId(productDTO.getVariants().get(0).getId());
@@ -366,7 +366,7 @@ public class ShopifyProductService {
         Scanner scanner = new Scanner(System.in);
         boolean process =true;
         double costPrice =StockKeepingUnitsService.getCostPrice(null, productDTO.sku());
-        if (costPrice> price){
+        if (costPrice> price && !ignoreCosts){
             process = false;
             logger.error("Can't update price for {} because cost is {} and trying to set price {}. Insert override password to override", productDTO.sku(), costPrice, price);
             if (scanner.next().equals("OVERRIDE")){

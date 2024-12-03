@@ -152,7 +152,7 @@ public class Utils {
                     variantDTO.setInventoryQuantity(variantNode.getInventoryQuantity());
                     variantDTO.setWeight(variantNode.getInventoryItem().getMeasurement().getWeight().getValue());
                     variantDTO.setWeightUnit(variantNode.getInventoryItem().getMeasurement().getWeight().getUnit());
-                    variantDTO.setCompareAtPrice(variantNode.getCompareAtPrice() != null ? Double.valueOf(variantNode.getPrice()) : null);
+                    variantDTO.setCompareAtPrice(variantNode.getCompareAtPrice() != null ? Double.valueOf(variantNode.getCompareAtPrice()) : null);
                     variantDTO.setTaxable(variantNode.getTaxable());
                     variantDTO.setInventoryItemId(variantNode.getInventoryItem().getId());
                     // Set InventoryItemDTO
@@ -204,6 +204,7 @@ public class Utils {
                         metafieldDTO.setNamespace(metafieldNode.getNamespace());
                         metafieldDTO.setKey(metafieldNode.getKey());
                         metafieldDTO.setValue(metafieldNode.getValue());
+                        metafieldDTO.setOwner_id(productDTO.getId());
 
                         for (ProductMetafieldEnum i : ProductMetafieldEnum.values()){
                             if (i.getKey().equals(metafieldDTO.getKey())){

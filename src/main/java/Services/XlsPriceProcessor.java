@@ -204,7 +204,7 @@ public class XlsPriceProcessor {
                 Double priceDouble = scanner.nextDouble();
                 System.out.println("Please insert compare at price for " + p.sku());
                 Double comparePriceDouble = scanner.nextDouble();
-                ShopifyProductService.updateProductPrice(p, priceDouble, comparePriceDouble);
+                ShopifyProductService.updateProductPrice(p, priceDouble, comparePriceDouble, false);
 
                 if (productCompareData.size()-1 <= selected) selected = productCompareData.size()-2;
                 optionsForSelected(selected+1, scanner);
@@ -225,7 +225,7 @@ public class XlsPriceProcessor {
                 System.out.println("Setting price to " + priceDouble);
                 System.out.println("Please insert compare at price for " + p.sku());
                 Double comparePriceDouble = scanner.nextDouble();
-                ShopifyProductService.updateProductPrice(p,priceDouble , comparePriceDouble);
+                ShopifyProductService.updateProductPrice(p,priceDouble , comparePriceDouble, false);
                 optionsForSelected(selected+1, scanner);
             } else if (option == 3){
                 if (productCompareData.size()-1 <= selected) selected = productCompareData.size()-2;

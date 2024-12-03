@@ -5,7 +5,6 @@ import Constants.MetafieldTypeEnum;
 import Constants.ProductMetafieldEnum;
 import Constants.ProductMetafieldPlaceholdersEnum;
 import DTO.*;
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +24,7 @@ public class ShopifyProductMetafieldsManager {
         HttpGraphQLRequestExecutor.setProductMetafields(metafieldsToUpdate);
         metafieldsToUpdate = new ArrayList<>();
     }
-    public ProductMetafieldDTO getMetafield(boolean liveMetafield, ProductDTO productDTO, ProductMetafieldEnum productMetafieldEnum){
+    public static ProductMetafieldDTO getMetafield(boolean liveMetafield, ProductDTO productDTO, ProductMetafieldEnum productMetafieldEnum){
         logger.debug("Getting metafield {} for product {}", productMetafieldEnum.getKey(), productDTO.sku());
         if (!productDTO.getMetafields().isEmpty()){
             return productDTO.getMetafield(productMetafieldEnum);
@@ -72,7 +71,7 @@ public class ShopifyProductMetafieldsManager {
         return result;
     }
 
-    protected <T> ProductMetafieldDTO createOrUpdateMetafield(boolean liveMetafield, ProductDTO productDTO, ProductMetafieldEnum productMetafieldEnum, T value){
+    public <T> ProductMetafieldDTO createOrUpdateMetafield(boolean liveMetafield, ProductDTO productDTO, ProductMetafieldEnum productMetafieldEnum, T value){
         return createOrUpdateMetafield(liveMetafield, productDTO, productMetafieldEnum, value, null);
     }
 
@@ -90,6 +89,8 @@ public class ShopifyProductMetafieldsManager {
         metafieldDTO.setOwner_id(productDTO.getId());
         if (metafieldType != null){
             metafieldDTO.setType(metafieldType.getKey());
+        } else {
+            metafieldDTO.setType(productMetafieldEnum.getMetafieldTypeEnum().getKey());
         }
 
         metafieldsToUpdate.add(metafieldDTO);
@@ -211,7 +212,7 @@ public class ShopifyProductMetafieldsManager {
 
 
             etaMessage = getOrSimulateMetafield(true, productDTO, ProductMetafieldEnum.ETA2);
-            LocalDateTime deliveryDate = getEtaDate(productDTO);
+            LocalDateTime deliveryDate = getDateMetafield(productDTO, ProductMetafieldEnum.ETA_DATE);
             if (deliveryDate != null && now.isBefore(deliveryDate)) {
                 Long minDays = ChronoUnit.DAYS.between(now, deliveryDate);
                 minDaysToDeliver = minDays.intValue();
@@ -262,8 +263,8 @@ public class ShopifyProductMetafieldsManager {
         return result;
     }
 
-    private LocalDateTime getEtaDate(ProductDTO productDTO){
-        ProductMetafieldDTO metafieldDTO = getMetafield(true, productDTO, ProductMetafieldEnum.ETA_DATE);
+    public static LocalDateTime getDateMetafield(ProductDTO productDTO, ProductMetafieldEnum metafieldEnum){
+        ProductMetafieldDTO metafieldDTO = getMetafield(true, productDTO, metafieldEnum);
         if(metafieldDTO == null){
             return null;
         }
@@ -343,7 +344,7 @@ public class ShopifyProductMetafieldsManager {
         System.out.println("2 - Atualizar de alguns produtos");
         Scanner scanner = new Scanner(System.in);
         Integer option;
-        if (args[1]==null){
+        if (args==null || args[1]==null){
             option = scanner.nextInt();
         } else {
             option = Integer.parseInt(args[1]);

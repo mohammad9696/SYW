@@ -16,7 +16,8 @@ public class MoloniService {
     private static final Logger logger = LoggerFactory.getLogger(MoloniService.class);
 
     public static final MoloniDocumentTypeDTO[] types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
-
+    public static String token = null;
+    public static LocalDateTime tokenDateTime = null;
 
     public MoloniService() {
     /*    try {
@@ -177,12 +178,17 @@ public class MoloniService {
     }
 
     private static String getToken(){
+        if (token != null && !LocalDateTime.now().isAfter(tokenDateTime.plusMinutes(59))){
+            return token;
+        }
         try{
             logger.info("Getting token for moloni request");
             TypeReference<MoloniTokenDTO> typeReference = new TypeReference<MoloniTokenDTO>(){};
-            MoloniTokenDTO token = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.MOLONI_GET_TOKEN.getConstantValue().toString(), null, null, new ArrayMap<>());
-            logger.debug("Got moloni token {}",token.getAccessToken());
-            return token.getAccessToken();
+            MoloniTokenDTO moloniToken = HttpRequestExecutor.getObjectRequest(typeReference, ConstantsEnum.MOLONI_GET_TOKEN.getConstantValue().toString(), null, null, new ArrayMap<>());
+            logger.debug("Got moloni token {}",moloniToken.getAccessToken());
+            token = moloniToken.getAccessToken();
+            tokenDateTime = LocalDateTime.now();
+            return moloniToken.getAccessToken();
         } catch (Exception e){
             logger.error("Getting token for moloni failed. Trying again");
             return getToken();

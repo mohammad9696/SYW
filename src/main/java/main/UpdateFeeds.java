@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class UpdateFeeds {
@@ -31,7 +32,100 @@ public class UpdateFeeds {
 
     }
 
+    public static void applyBulkDiscounts (Scanner scanner){
+        logger.info("Applying bulk discounts. Please insert brand to offer discount");
+        ShopifyProductMetafieldsManager shopifyProductMetafieldsManager = new ShopifyProductMetafieldsManager();
+        String brand = scanner.next();
+        List<ProductDTO> productDTOS = ShopifyProductService.getShopifyProductList();
+        List<ProductDTO> productsToAffect = new ArrayList<>();
 
+        int j= 0;
+        for (ProductDTO i : productDTOS){
+            if (i.getBrand().equalsIgnoreCase(brand)){
+                productsToAffect.add(i);
+                logger.info("{}    {} {} {}  {}  {}", j, i.sku(), i.getTitle(), i.getVariants().get(0).getPrice(), i.getVariants().get(0).getCompareAtPrice() );
+                j++;
+            }
+        }
+
+        boolean process = true;
+
+        String dateEnd ="";
+        String dateInit ="";
+        while (process){
+            logger.info("Pretende excluir algum produto? Sim: Escolher número  Não:-1");
+            int option = scanner.nextInt();
+            if (option <= -1 || productsToAffect.size()<option ){
+                process = false;
+            } else {
+                productsToAffect.remove(option);
+                j = 0;
+                for (ProductDTO i : productsToAffect){
+                    logger.info("{}    {} {} {}  {}  {}", j, i.sku(), i.getTitle(), i.getVariants().get(0).getPrice(), i.getVariants().get(0).getCompareAtPrice() );
+                }
+            }
+        }
+        if (productsToAffect.size() == 0) throw new NullPointerException();
+
+        logger.info("Start discount now or at a later date?  0: Start now    1: Later date");
+        int option = scanner.nextInt();
+        if (option == 1) {
+            logger.info("What date to start discount? AAAA-MM-DD");
+            dateInit = scanner.next();
+        }
+        logger.info("What date to end discount? AAAA-MM-DD");
+        dateEnd = scanner.next();
+
+
+        logger.info("What percentage discount to be given for brand {}?", brand);
+        int discount = scanner.nextInt();
+
+        for (ProductDTO p : productsToAffect) {
+            ProductVariantDTO variant = p.getVariants().get(0);
+            if (variant.getCompareAtPrice() == null || variant.getCompareAtPrice() < variant.getPrice()){
+                variant.setCompareAtPrice(variant.getPrice());
+            }
+            shopifyProductMetafieldsManager.createOrUpdateMetafield(true,p, ProductMetafieldEnum.SET_PRICE_DATE_END, dateEnd);
+            shopifyProductMetafieldsManager.createOrUpdateMetafield(true,p, ProductMetafieldEnum.SET_PRICE_VALUE_END, variant.getCompareAtPrice());
+            double priceToSet = variant.getCompareAtPrice()*.01*(100-discount);
+            if (option == 1){
+                shopifyProductMetafieldsManager.createOrUpdateMetafield(true,p, ProductMetafieldEnum.SET_PRICE_DATE_INIT, dateInit);
+                shopifyProductMetafieldsManager.createOrUpdateMetafield(true,p, ProductMetafieldEnum.SET_PRICE_VALUE_INIT, priceToSet);
+            } else {
+                ShopifyProductService.updateProductPrice(p, priceToSet, variant.getCompareAtPrice(), true);
+            }
+            shopifyProductMetafieldsManager.updateMetafields();
+        }
+
+    }
+
+    public static void checkUpdateDates (ProductDTO p, ProductMetafieldEnum dateMetafield, ProductMetafieldEnum priceMetafield){
+        Double priceToSet = null;
+        LocalDateTime date = ShopifyProductMetafieldsManager.getDateMetafield(p, dateMetafield);
+        if (date != null && java.time.LocalDateTime.now().isAfter(date) && !java.time.LocalDateTime.now().minusDays(1).isAfter(date)){
+            try {
+                logger.info("Updating scheduled init price for {}, scheduled for {} to set price", p.sku(), date);
+                priceToSet = Double.parseDouble(p.getMetafield(priceMetafield).getValue());
+                if(priceToSet != null && priceToSet>0.00){
+                    HttpGraphQLRequestExecutor.removeMetafield(p.getMetafield(priceMetafield));
+                    HttpGraphQLRequestExecutor.removeMetafield(p.getMetafield(dateMetafield));
+                    ShopifyProductService.updateProductPrice(p, priceToSet, p.getVariants().get(0).getCompareAtPrice(), true);
+                }
+
+            } catch (Exception e){
+                logger.info("Unable to update scheduled init price for {}, scheduled for {} to set price at {}", p.sku(), date, priceToSet);
+            }
+        }
+    }
+
+    public static void updateScheduledPrices (){
+        List<ProductDTO> productDTOS = ShopifyProductService.getShopifyProductList();
+
+        for (ProductDTO p : productDTOS){
+            checkUpdateDates(p, ProductMetafieldEnum.SET_PRICE_DATE_INIT, ProductMetafieldEnum.SET_PRICE_VALUE_INIT);
+            checkUpdateDates(p, ProductMetafieldEnum.SET_PRICE_DATE_END, ProductMetafieldEnum.SET_PRICE_VALUE_END);
+        }
+    }
     public static void main(String[] args) {
         logger.info("Initiated");
         Scanner scanner = new Scanner(System.in);
@@ -68,7 +162,7 @@ public class UpdateFeeds {
     }
 
     private static void updateMetafieldsForProducts(List<ProductDTO> productDTOS){
-        ShopifyProductMetafieldsManager shopifyProductMetafieldsManager = new ShopifyProductMetafieldsManager();
+        //ShopifyProductMetafieldsManager shopifyProductMetafieldsManager = new ShopifyProductMetafieldsManager();
         for (ProductDTO p : productDTOS){
             ProductMetafieldDTO minDays = p.getMetafield(ProductMetafieldEnum.ETA_MIN_DAYS);
             ProductMetafieldDTO maxDays = p.getMetafield(ProductMetafieldEnum.ETA_MAX_DAYS);

@@ -18,6 +18,21 @@ public class HttpGraphQLRequestExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpGraphQLRequestExecutor.class);
 
+    public static void removeMetafield (ProductMetafieldDTO p){
+        String query = "{\n" +
+                "  \"query\": \"mutation DeleteMetafield($metafields: [MetafieldIdentifierInput!]!) { metafieldsDelete(metafields: $metafields) { userErrors { field message } }}\",\n" +
+                "  \"variables\": {\n" +
+                "    \"metafields\": [\n" +
+                "      {\n" +
+                "        \"key\": \""+p.getKey()+"\",\n" +
+                "        \"namespace\": \""+p.getNamespace()+"\",\n" +
+                "        \"ownerId\": \""+p.getOwner_id()+"\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+        HttpRequestExecutor.sendRequestGraphQL(Object.class, query , ConstantsEnum.SHOPIFY_GRAPHQL_URL.getConstantValue().toString());
+    }
     public static void updateProductVariantPrice(String productId, String variantId, Double priceToSet, Double compareAtPriceToSet){
         if (priceToSet == null || priceToSet < 0.01){
             throw new NumberFormatException();
@@ -108,7 +123,7 @@ public class HttpGraphQLRequestExecutor {
         }
 
         String query = "{\n" +
-                "  \"query\": \"query { products(first: 250"+after+") { edges { node { id title descriptionHtml vendor productType createdAt handle updatedAt publishedAt templateSuffix status tags metafields(first: 10, namespace: \\\"custom\\\") { edges { node { id key namespace value type } } } variants (first: 10) { edges{ node { id title price compareAtPrice taxable sku position barcode inventoryPolicy inventoryQuantity inventoryItem { id inventoryLevel (locationId:\\\"gid://shopify/Location/58086129815\\\") { quantities (names:[\\\"available\\\", \\\"committed\\\", \\\"incoming\\\", \\\"on_hand\\\", \\\"reserved\\\"]) { quantity name } } measurement{ weight{ unit value } } requiresShipping } } } } media (first: 10){ edges { node { alt id status mediaContentType preview { image { url } } } } } } cursor } pageInfo { hasNextPage } }}\"\n" +
+                "  \"query\": \"query { products(first: 250"+after+") { edges { node { id title descriptionHtml vendor productType createdAt handle updatedAt publishedAt templateSuffix status tags metafields(first: 20, namespace: \\\"custom\\\") { edges { node { id key namespace value type } } } variants (first: 10) { edges{ node { id title price compareAtPrice taxable sku position barcode inventoryPolicy inventoryQuantity inventoryItem { id inventoryLevel (locationId:\\\"gid://shopify/Location/58086129815\\\") { quantities (names:[\\\"available\\\", \\\"committed\\\", \\\"incoming\\\", \\\"on_hand\\\", \\\"reserved\\\"]) { quantity name } } measurement{ weight{ unit value } } requiresShipping } } } } media (first: 10){ edges { node { alt id status mediaContentType preview { image { url } } } } } } cursor } pageInfo { hasNextPage } }}\"\n" +
                 "}";
 
         return query;
