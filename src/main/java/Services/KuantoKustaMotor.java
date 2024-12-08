@@ -12,7 +12,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import static Services.MoloniService.createPurchaseOrder;
 
 public class KuantoKustaMotor {
 
@@ -39,18 +43,24 @@ public class KuantoKustaMotor {
 
             OrderDTO order = null;
             try {
-                order = createOrderDtoFromKuantoKustaOrderDto(kuantoKustaOrderDTO);
-                order = CreateOrderService.createDraftOrder(order);
+
+                Boolean valid  = createMoloniOrderDtoFromKuantoKustaOrderDto(kuantoKustaOrderDTO).getPdfLinkRequestValid();
+                if (valid){
+                    approveOrderKuantoKusta(kuantoKustaOrderDTO.getKuantoKustaOrderId());
+                }
+               /*
+                order = createShopifyOrderDtoFromKuantoKustaOrderDto(kuantoKustaOrderDTO);
+                order = CreateOrderService.createDraftOrderShopify(order);
                 if (order == null){
                     throw new Exception("Order not created");
                 }
-                approveOrderKuantoKusta(kuantoKustaOrderDTO.getKuantoKustaOrderId());
                 updateOrderShopify(order.getId(), ConstantsEnum.KUANTOKUSTA_MESSAGE_SHOPIFY.getConstantValue() + kuantoKustaOrderDTO.getKuantoKustaOrderId());
                 if (order.getLineItems().get(0).getPrice() != kuantoKustaOrderDTO.getProducts().get(0).getPrice()){
                     System.out.println("!!!! Order created with price " +order.getLineItems().get(0).getPrice()  + " it should be" + kuantoKustaOrderDTO.getProducts().get(0).getPrice());
                     System.out.println("!!!! Order created with price " +order.getLineItems().get(0).getPrice()  + " it should be" + kuantoKustaOrderDTO.getProducts().get(0).getPrice());
                     System.out.println("!!!! Order created with price " +order.getLineItems().get(0).getPrice()  + " it should be" + kuantoKustaOrderDTO.getProducts().get(0).getPrice());
                 }
+                */
                 //updateOrderShopify("4628576895233", ConstantsEnum.KUANTOKUSTA_MESSAGE_SHOPIFY.getConstantValue() + "9529-511334-4247");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -78,7 +88,91 @@ public class KuantoKustaMotor {
         OrderDTO orderDTO = HttpRequestExecutor.updateRequest(OrderDTO.class, updateOrderObjectDTO, requestUrl);
     }
 
-    public static OrderDTO createOrderDtoFromKuantoKustaOrderDto (KuantoKustaOrderDTO kuantoKustaOrderDTO) throws GeneralSecurityException, IOException {
+    public static MoloniDocumentDTO createMoloniOrderDtoFromKuantoKustaOrderDto (KuantoKustaOrderDTO kuantoKustaOrderDTO){
+        MoloniDocumentDTO dto = new MoloniDocumentDTO();
+        //ZonedDateTime zonedDateTime = ZonedDateTime.parse(kuantoKustaOrderDTO.getCreatedAt());
+        //LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
+        LocalDateTime localDateTime = LocalDateTime.now();
+        dto.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        dto.setInternalOrderNumber("KK-"+kuantoKustaOrderDTO.getKuantoKustaOrderId());
+        dto.setDate(localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        dto.setExpirationDate(localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        dto.setDocumentSetId(MoloniService.getDocumentSetIdByName("SMARTIFY"));
+        dto.setDeliveryDestinationAddress(kuantoKustaOrderDTO.getShippingAddress().getAddress1()+ " " +kuantoKustaOrderDTO.getShippingAddress().getAddress2());
+        dto.setDeliveryDestinationCity(kuantoKustaOrderDTO.getShippingAddress().getCity());
+        dto.setDeliveryDestinationZipCode(kuantoKustaOrderDTO.getShippingAddress().getPostalCode());
+        dto.setDeliveryDestinationCountryId(MoloniService.getCountryIdByName(kuantoKustaOrderDTO.getShippingAddress().getCountry()));
+        dto.setStatus(1);
+        MoloniService moloniService = new MoloniService();
+        List<MoloniProductDTO> moloniProductDTOS = new ArrayList<>();
+        int docLineOrder = 0;
+
+        for (KuantoKustaProductDTO i: kuantoKustaOrderDTO.getProducts()){
+            MoloniProductDTO productDTO = moloniService.getProduct(i.getOfferSku());
+            MoloniProductDTO lineProduct = kkProductToMoloni(i, productDTO, docLineOrder);
+            moloniProductDTOS.add(lineProduct);
+            docLineOrder++;
+        }
+
+        Double shippingPrice = kuantoKustaOrderDTO.getShippingPrice() == null? 0.0 : kuantoKustaOrderDTO.getShippingPrice();
+        moloniProductDTOS.add(getShippingProduct("KuantoKusta Portes", shippingPrice, docLineOrder));
+        dto.setProductDTOS(moloniProductDTOS.toArray(new MoloniProductDTO[0]));
+
+        MoloniEntityClientDTO kkData = new MoloniEntityClientDTO();
+        kkData.setVat(kuantoKustaOrderDTO.getBillingAddress().getNipc());
+        kkData.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        kkData.setClientNumber(MoloniService.getNextClientNumber());
+        kkData.setName(kuantoKustaOrderDTO.getBillingAddress().getName());
+        kkData.setAddress(kuantoKustaOrderDTO.getBillingAddress().getAddress1() +" "+ kuantoKustaOrderDTO.getBillingAddress().getAddress2());
+        kkData.setZipCode(kuantoKustaOrderDTO.getBillingAddress().getPostalCode());
+        kkData.setCity(kuantoKustaOrderDTO.getBillingAddress().getCity());
+        kkData.setEmail(kuantoKustaOrderDTO.getEmail());
+        kkData.setPhone(kuantoKustaOrderDTO.getBillingAddress().getPhone());
+        kkData.setMaturityDateId(0);
+        kkData.setPaymentMethodId(0);
+        kkData.setSalesmanId(0);
+        kkData.setPaymentDay(0);
+        kkData.setCreditLimit(0.0);
+        kkData.setDeliveryMethodId(0);
+        kkData.setLanguageId(1);
+        kkData.setDiscount(0.0);
+
+        MoloniEntityClientDTO client = MoloniService.getOrCreateClient(kkData);
+        dto.setCustomerId(client.getCustomerId());
+
+        return createPurchaseOrder(dto);
+
+    }
+
+    private static MoloniProductDTO getShippingProduct (String lineName, Double linePrice, int lineOrder){
+        MoloniProductDTO lineProduct = new MoloniProductDTO();
+        lineProduct.setProductId(Long.parseLong(ConstantsEnum.MOLONI_SHIPPING_PRODUCT_ID.getConstantValue().toString()));
+        lineProduct.setProductName(lineName);
+        lineProduct.setLineQuantity(1);
+        lineProduct.setDiscount(0.0);
+        lineProduct.setPriceWithoutVat(linePrice/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString()));
+        lineProduct.setLineOrder(lineOrder);
+
+        List<MoloniProductTaxesDTO> taxes = new ArrayList<>();
+        MoloniProductTaxesDTO tax = new MoloniProductTaxesDTO();
+        tax.setTaxId(Long.parseLong(ConstantsEnum.MOLONI_TAX_ID_VATNORMAL.getConstantValue().toString()));
+        taxes.add(tax);
+        lineProduct.setTaxes(taxes);
+        return lineProduct;
+    }
+
+    private static MoloniProductDTO kkProductToMoloni (KuantoKustaProductDTO i, MoloniProductDTO productDTO, int order ){
+        MoloniProductDTO lineProduct = new MoloniProductDTO();
+        lineProduct.setProductId(productDTO.getProductId());
+        lineProduct.setProductName(i.getName());
+        lineProduct.setLineQuantity(i.getQuantity());
+        lineProduct.setDiscount(0.0);
+        lineProduct.setPriceWithoutVat(i.getPrice()/(1+productDTO.getTaxes().get(0).taxPercentageValue()));
+        lineProduct.setLineOrder(order);
+        lineProduct.setTaxes(productDTO.getTaxes());
+        return lineProduct;
+    }
+    public static OrderDTO createShopifyOrderDtoFromKuantoKustaOrderDto(KuantoKustaOrderDTO kuantoKustaOrderDTO) throws GeneralSecurityException, IOException {
         OrderDTO orderDTO = new OrderDTO();
         orderDTO.setPhone(kuantoKustaOrderDTO.getShippingAddress().getPhone());
         orderDTO.setBillingAdress(getOrderAddressDtoFromKuantoKustaOrderAddressDto(kuantoKustaOrderDTO.getBillingAddress()));
@@ -106,7 +200,6 @@ public class KuantoKustaMotor {
             for (Map.Entry<String, MacroProductDTO> product: productListDTO.entrySet()) {
                 if (kkProduct.getOfferSku().equals(product.getValue().getVariantId())){
                     OrderLineDTO orderLineDTO = new OrderLineDTO();
-
                     orderLineDTO.setVariantId(product.getValue().getVariantId());
                     orderLineDTO.setQuantity(kkProduct.getQuantity());
                     listOrderLines.add(orderLineDTO);

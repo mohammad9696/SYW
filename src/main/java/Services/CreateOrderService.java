@@ -31,7 +31,7 @@ public class CreateOrderService {
         return d.getCustomerDTO().getId();
     }
 
-    public static OrderDTO createDraftOrder(OrderDTO draftOrder){
+    public static OrderDTO createDraftOrderShopify(OrderDTO draftOrder){
         String customerId = getCustomerId(draftOrder.getEmail(), draftOrder.getPhone());
         if (customerId == null){
             customerId = createCustomer(draftOrder.getShippingAddress().getFirstName(), draftOrder.getShippingAddress().getLastName(),

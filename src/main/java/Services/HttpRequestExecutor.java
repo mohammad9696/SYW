@@ -114,8 +114,7 @@ public class HttpRequestExecutor {
             if (httpRequestAuthTypeEnum == HttpRequestAuthTypeEnum.XXX_API_KEY && authKey != null){
                 patch.addHeader("x-api-key", authKey);
             }
-            //patch.addHeader(HttpHeaders.CONTENT_LENGTH,"0");
-
+            patch.setEntity(new StringEntity("", ContentType.DEFAULT_TEXT));
             CloseableHttpResponse getResponse = client.execute(patch);
             System.out.println(getResponse.getEntity());
 

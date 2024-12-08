@@ -32,6 +32,17 @@ public class KuantoKustaOrderDTO {
     @JsonProperty("referring_site")
     private String referringSite;
 
+    @JsonProperty("createdAt")
+    private String createdAt;
+
+    public String getCreatedAt() {
+        return this.createdAt;
+    }
+
+    public void setCreatedAt(final String createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -95,4 +106,5 @@ public class KuantoKustaOrderDTO {
     public void setOrderStatus(String orderStatus) {
         this.orderStatus = orderStatus;
     }
+
 }
