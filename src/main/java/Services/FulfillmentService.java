@@ -3,7 +3,6 @@ package Services;
 import Constants.ConstantsEnum;
 import DTO.*;
 import Utils.Utils;
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +13,9 @@ import java.util.Scanner;
 
 public class FulfillmentService {
     private static final Logger logger = LoggerFactory.getLogger(FulfillmentService.class);
+
     public static void main(String[] args) {
+        FulfillmentService.showPurchaseOrders();
         logger.info("Initiating order fulfillment service.");
         Scanner scanner =new Scanner(System.in);
         System.out.println("1: Process All Orders           2: Process one by one");
@@ -104,6 +105,88 @@ public class FulfillmentService {
             OrderDTO orderDTO = ShopifyOrderService.getOrder(ShopifyOrderService.getOrdersToFulfil(), scanner);
             processOrder(orderDTO, scanner, productDTOList);
         }
+    }
+
+    public static void showPurchaseOrders(){
+        while (true){
+            List<MoloniDocumentDTO> orders = MoloniService.getPurchaseOrders();
+            List<MoloniDocumentDTO> ordersToProcess = new ArrayList<>();
+            for (MoloniDocumentDTO i : orders){
+                if (i.getDocumentValueEuros()>i.getDocumentReconciledValueEuros()){
+                    ordersToProcess.add(i);
+                }
+            }
+            int j = 0;
+            for (MoloniDocumentDTO i : ordersToProcess) {
+                logger.info("{} {} {}",j, i.getInternalOrderNumber(), i.getDocumentValueEuros());
+                j++;
+            }
+            Scanner scanner = new Scanner(System.in);
+            logger.info("Choose order number");
+            int k = scanner.nextInt();
+            shipPurchaseOrder(MoloniService.getPurchaseOrder(ordersToProcess.get(k).getDocumentId()));
+
+        }
+
+    }
+    public static void shipPurchaseOrder(MoloniDocumentDTO purchaseOrder) {
+        OutvioOrderDTO order = outvioOrderFromMoloniDocument(purchaseOrder);
+        OutvioResponseDTO response = HttpRequestExecutor.sendRequest(OutvioResponseDTO.class, order, ConstantsEnum.OUTVIO_CREATE_ORDER_URL.getConstantValue().toString());
+
+        logger.info("Create Outvio order for {} was sucessfull={}", purchaseOrder.getInternalOrderNumber(), response.getSuccess());
+
+
+    }
+    public static OutvioOrderDTO outvioOrderFromMoloniDocument (MoloniDocumentDTO documentDTO){
+
+        MoloniEntityClientDTO client = MoloniService.getClient(null, null, null, documentDTO.getCustomerId(), null);
+        OutvioOrderDTO outvioOrderDTO = new OutvioOrderDTO();
+
+        // Fill OUTVIO_PARAMS
+        OutvioOrderDTO.OutvioParamsDTO outvioParams = new OutvioOrderDTO.OutvioParamsDTO();
+        outvioParams.setApiKey(ConstantsEnum.OUTVIO_API_KEY.getConstantValue().toString());
+        outvioParams.setCmsId("api");
+        outvioOrderDTO.setOutvioParams(outvioParams);
+        outvioOrderDTO.setId(documentDTO.getInternalOrderNumber());
+
+        // Fill client delivery details
+        OutvioOrderDTO.ClientDTO clientDTO = new OutvioOrderDTO.ClientDTO();
+        OutvioOrderDTO.ClientDTO.DeliveryDTO deliveryDTO = new OutvioOrderDTO.ClientDTO.DeliveryDTO();
+        deliveryDTO.setAddress(documentDTO.getDeliveryDestinationAddress());
+        deliveryDTO.setCity(documentDTO.getDeliveryDestinationCity());
+        deliveryDTO.setCountryCode("PT");
+        deliveryDTO.setEmail(client.getEmail());
+        deliveryDTO.setName(documentDTO.getEntityName());
+        deliveryDTO.setPhone(client.getPhone());
+        deliveryDTO.setPostcode(documentDTO.getDeliveryDestinationZipCode());
+        clientDTO.setDelivery(deliveryDTO);
+        outvioOrderDTO.setClient(clientDTO);
+
+        // Set currency
+        outvioOrderDTO.setCurrency("EUR"); // Replace with the currency used in the document
+
+        // Populate products
+        List<OutvioOrderDTO.ProductDTO> products = new ArrayList<>();
+        if (documentDTO.getProductDTOS() != null) {
+            for (MoloniProductDTO moloniProduct : documentDTO.getProductDTOS()) {
+                OutvioOrderDTO.ProductDTO productDTO = new OutvioOrderDTO.ProductDTO();
+                productDTO.setName(moloniProduct.getProductName());
+                productDTO.setPrice(moloniProduct.getPriceWithoutVat());
+                productDTO.setQuantity(moloniProduct.getLineQuantity());
+                products.add(productDTO);
+            }
+        }
+        outvioOrderDTO.setProducts(products);
+
+        // Set shipping information
+        OutvioOrderDTO.ShippingDTO shippingDTO = new OutvioOrderDTO.ShippingDTO();
+        shippingDTO.setPrice(5.0); // Replace with actual shipping price
+        shippingDTO.setMethod("Shipping"); // Replace with the shipping method
+        outvioOrderDTO.setShipping(shippingDTO);
+
+        // Set total value
+        outvioOrderDTO.setTotal(documentDTO.getDocumentValueEuros());
+        return  outvioOrderDTO;
     }
 
     private static void processOrder(OrderDTO orderDTO, Scanner scanner, List<ProductDTO> productDTOList){
@@ -221,7 +304,7 @@ public class FulfillmentService {
 
         if (ship){
             OutvioShipDTO outvioShipDTO= new OutvioShipDTO(orderDTO.getOrderNumber(), volumes);
-            OutvioShipResponseDTO response = HttpRequestExecutor.sendRequest(OutvioShipResponseDTO.class, outvioShipDTO, ConstantsEnum.OUTVIO_SHIP_URL.getConstantValue().toString());
+            OutvioResponseDTO response = HttpRequestExecutor.sendRequest(OutvioResponseDTO.class, outvioShipDTO, ConstantsEnum.OUTVIO_SHIP_URL.getConstantValue().toString());
 
             if (response != null && response.getSuccess()){
                 logger.info("Order {} was shipped successfully", orderDTO.getOrderNumber());

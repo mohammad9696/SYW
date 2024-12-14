@@ -212,9 +212,8 @@ public class StockKeepingUnitsService {
 
         return 0.0;
     }
-    public static StockDetailsDTO getSkuDetails(ProductDTO shopifyProductDTO, StockDetailsDTO reservations, Map<String, StockDetailsDTO> mustDoThese, List<SupplierOrderedLineDate> supplierOrderedLineDatesBySKU){
+    public static StockDetailsDTO getSkuDetails(String sku, Boolean continueToSelOutOfStock, StockDetailsDTO reservations, Map<String, StockDetailsDTO> mustDoThese, List<SupplierOrderedLineDate> supplierOrderedLineDatesBySKU){
 
-        String sku = shopifyProductDTO.sku();
         logger.debug("Getting purchasing needs for sku '{}'  ",sku);
         MoloniProductStocksDTO[] stockMovements = MoloniService.getStockMovements(sku, null, null);
         logger.debug("Got {} stock movements for sku {}", stockMovements.length, sku);
@@ -251,7 +250,7 @@ public class StockKeepingUnitsService {
         }
 
         stockDetails.setSupplierOrderedLineDates(supplierOrderedLineDatesBySKU);
-        stockDetails.setContinueToSellOutOfStock(shopifyProductDTO.getVariants().get(0).getInventoryPolicy().equals("continue"));
+        stockDetails.setContinueToSellOutOfStock(continueToSelOutOfStock);
         for (MoloniProductStocksDTO mps : stockMovements) {
             if (mps.getQuantityMoved() < 0 && mps.getDocumentDTO() != null && mps.getDocumentId() != 0
                     && !MoloniService.isSupplierDocumentTypeId(mps.getDocumentDTO().getDocumentTypeId())) {
@@ -303,9 +302,9 @@ public class StockKeepingUnitsService {
                 stockDetails.setProductName(moloniProductDTO.getProductName());
                 stockDetails.setEan(moloniProductDTO.getEan());
             }
-            stockDetails.setMoloniStock(0-(stockDetails.getShopifyPaidReservations()!=null?stockDetails.getShopifyPaidReservations():0));
+            stockDetails.setMoloniStock(1000-(stockDetails.getShopifyPaidReservations()!=null?stockDetails.getShopifyPaidReservations():0));
             stockDetails.setAvgSalesDays(0.0);
-            stockDetails.setStockDays((stockDetails.getShopifyPaidReservations()!=null?1000.0*-stockDetails.getShopifyPaidReservations():0));
+            stockDetails.setStockDays((stockDetails.getShopifyPaidReservations()!=null?1000.0*stockDetails.getShopifyPaidReservations():0));
 
         }
 
@@ -325,9 +324,9 @@ public class StockKeepingUnitsService {
                         (sku == null && productNameContains == null) ||
                             (sku != null && productNameContains != null)){
                 if(!stockReservations.containsKey(productDTO.sku())){
-                    purchasingNeeds.add(getSkuDetails(productDTO, new StockDetailsDTO(productDTO.sku()), mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(productDTO.sku(), supplierOrderedLineDates)));
+                    purchasingNeeds.add(getSkuDetails(productDTO.sku(), productDTO.getVariants().get(0).getInventoryPolicy().equalsIgnoreCase("continue"), new StockDetailsDTO(productDTO.sku()), mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(productDTO.sku(), supplierOrderedLineDates)));
                 } else {
-                    purchasingNeeds.add(getSkuDetails(productDTO, stockReservations.get(productDTO.sku()), mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(productDTO.sku(), supplierOrderedLineDates)));
+                    purchasingNeeds.add(getSkuDetails(productDTO.sku(), productDTO.getVariants().get(0).getInventoryPolicy().equalsIgnoreCase("continue"), stockReservations.get(productDTO.sku()), mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(productDTO.sku(), supplierOrderedLineDates)));
                 }
             }
         }
@@ -341,7 +340,7 @@ public class StockKeepingUnitsService {
             }
             for (ProductDTO j :products){
                 if (j.sku().equals(i.getKey())){
-                    purchasingNeeds.add((getSkuDetails(j,stockDetailsDTO, mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(i.getKey(), supplierOrderedLineDates))));
+                    purchasingNeeds.add((getSkuDetails(j.sku(), j.getVariants().get(0).getInventoryPolicy().equalsIgnoreCase("continue"),stockDetailsDTO, mustDoThese, MoloniService.getSupplierOrderedLineDatesPerSku(i.getKey(), supplierOrderedLineDates))));
                     break;
                 }
             }

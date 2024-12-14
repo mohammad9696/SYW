@@ -41,6 +41,17 @@ public class MoloniService {
         return null;
 
     }
+    public static MoloniDocumentDTO getPurchaseOrder(String purchaseOrderId){
+        MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+        documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        documentDTO.setDocumentId(purchaseOrderId);
+        return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, documentDTO, ConstantsEnum.MOLONI_PURCHASE_ORDER_GET_ONE_URL.getConstantValue().toString()+getToken());
+    }
+    public static List<MoloniDocumentDTO> getPurchaseOrders(){
+        MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+        documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        return Arrays.asList(HttpRequestExecutor.sendRequest(MoloniDocumentDTO[].class, documentDTO, ConstantsEnum.MOLONI_PURCHASE_ORDER_GET_ALL_URL.getConstantValue().toString()+getToken()));
+    }
     public static MoloniDocumentDTO createPurchaseOrder (MoloniDocumentDTO dto){
         return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, dto, ConstantsEnum.MOLONI_INSERT_PURCHASE_ORDER_URL.getConstantValue().toString()+getToken());
 
@@ -72,7 +83,7 @@ public class MoloniService {
     }
 
     public static MoloniEntityClientDTO getOrCreateClient (MoloniEntityClientDTO clientToGetOrCreate){
-        MoloniEntityClientDTO result = getClient(clientToGetOrCreate.getEmail() , clientToGetOrCreate.getClientNumber(), clientToGetOrCreate.getVat());
+        MoloniEntityClientDTO result = getClient(clientToGetOrCreate.getPhone() , clientToGetOrCreate.getClientNumber(), clientToGetOrCreate.getVat(), clientToGetOrCreate.getCustomerId(), clientToGetOrCreate.getEmail());
         if ( result != null){
             return result;
         }
@@ -82,18 +93,17 @@ public class MoloniService {
 
         return result;
     }
-    public static MoloniEntityClientDTO getClient (String email, String customerNumber, String vatId){
+    public static MoloniEntityClientDTO getClient (String phone, String customerNumber, String vatId, String customerId, String email){
         List<MoloniEntityClientDTO> clientDTOS = new ArrayList<>();
-        if (vatId != null && !vatId.equals("")){
-            clientDTOS =getClientBySearch(vatId);
-            for (MoloniEntityClientDTO i : clientDTOS){
-                if (i.getVat().equals(vatId)){
-                    return i;
-                }
+
+        if (customerId != null && !customerId.equals("")){
+            MoloniEntityClientDTO result = getClientById(customerId);
+            if (result != null){
+                return result;
             }
         }
         if (email != null && !email.equals("")){
-            clientDTOS =getClientBySearch(email);
+            clientDTOS = getClientByEmail(email);
             for (MoloniEntityClientDTO i : clientDTOS){
                 if (i.getEmail().equals(email)){
                     return i;
@@ -108,7 +118,29 @@ public class MoloniService {
                 }
             }
         }
+        if (vatId != null && !vatId.equals("")){
+            clientDTOS =getClientBySearch(vatId);
+            for (MoloniEntityClientDTO i : clientDTOS){
+                if (i.getVat().equals(vatId)){
+                    return i;
+                }
+            }
+        }
+        if (phone != null && !phone.equals("")){
+            clientDTOS =getClientBySearch(phone);
+            for (MoloniEntityClientDTO i : clientDTOS){
+                if (i.getPhone().equals(phone)){
+                    return i;
+                }
+            }
+        }
         return null;
+    }
+    private static MoloniEntityClientDTO getClientById (String customerId){
+        MoloniEntityClientDTO moloniEntityClientDTO = new MoloniEntityClientDTO();
+        moloniEntityClientDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        moloniEntityClientDTO.setCustomerId(customerId);
+        return HttpRequestExecutor.sendRequest(MoloniEntityClientDTO.class, moloniEntityClientDTO, ConstantsEnum.MOLONI_CLIENT_GET_ONE_URL.getConstantValue().toString()+getToken());
     }
     private static List<MoloniEntityClientDTO> getClientBySearch(String search) {
 
@@ -117,6 +149,14 @@ public class MoloniService {
         moloniEntityClientDTO.setSearch(search);
         MoloniEntityClientDTO[] moloniEntityClientListObjectDTO = HttpRequestExecutor.sendRequest(MoloniEntityClientDTO[].class, moloniEntityClientDTO, ConstantsEnum.MOLONI_CLIENT_GET_BY_SEARCH_URL.getConstantValue().toString()+getToken());
 
+        return Arrays.asList(moloniEntityClientListObjectDTO);
+    }
+
+    private static List<MoloniEntityClientDTO> getClientByEmail(String email) {
+        MoloniEntityClientDTO moloniEntityClientDTO = new MoloniEntityClientDTO();
+        moloniEntityClientDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        moloniEntityClientDTO.setEmail(email);
+        MoloniEntityClientDTO[] moloniEntityClientListObjectDTO = HttpRequestExecutor.sendRequest(MoloniEntityClientDTO[].class, moloniEntityClientDTO, ConstantsEnum.MOLONI_CLIENT_GET_BY_EMAIL_URL.getConstantValue().toString()+getToken());
         return Arrays.asList(moloniEntityClientListObjectDTO);
     }
 

@@ -25,7 +25,7 @@ public class MoloniProductTaxesDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("name")
-    private Integer name;
+    private String name;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("tax")
@@ -50,11 +50,11 @@ public class MoloniProductTaxesDTO {
     public MoloniProductTaxesDTO() {
     }
 
-    public Integer getName() {
+    public String getName() {
         return this.name;
     }
 
-    public void setName(final Integer name) {
+    public void setName(final String name) {
         this.name = name;
     }
 

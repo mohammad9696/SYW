@@ -208,8 +208,13 @@ public class ShopifyProductService {
             }
         }
 */
-        List<ProductDTO> result = HttpGraphQLRequestExecutor.getAllProducts();
-
+        List<ProductDTO> allProducts = HttpGraphQLRequestExecutor.getAllProducts();
+        List<ProductDTO> result = new ArrayList<>();
+        for (ProductDTO i : allProducts){
+            if (i.getStatus().equalsIgnoreCase("active")){
+                result.add(i);
+            }
+        }
          logger.info("Got product details for {} products", result.size());
         return result;
     }

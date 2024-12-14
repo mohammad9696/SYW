@@ -105,7 +105,7 @@ public class KuantoKustaMotor {
         dto.setStatus(1);
         MoloniService moloniService = new MoloniService();
         List<MoloniProductDTO> moloniProductDTOS = new ArrayList<>();
-        int docLineOrder = 0;
+        int docLineOrder = 1;
 
         for (KuantoKustaProductDTO i: kuantoKustaOrderDTO.getProducts()){
             MoloniProductDTO productDTO = moloniService.getProduct(i.getOfferSku());
@@ -140,6 +140,7 @@ public class KuantoKustaMotor {
         MoloniEntityClientDTO client = MoloniService.getOrCreateClient(kkData);
         dto.setCustomerId(client.getCustomerId());
 
+        FulfillmentService.shipPurchaseOrder(dto);
         return createPurchaseOrder(dto);
 
     }
