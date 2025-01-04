@@ -72,7 +72,7 @@ public class XlsPriceProcessor {
             }
             logger.debug("Getting SKU Details for {}", dto.getSku());
             try {
-                dto.setStockDetailsDTO(StockKeepingUnitsService.getSkuDetails(productDTO.sku(), productDTO.getVariants().get(0).getInventoryPolicy().equalsIgnoreCase("continue"), reservations.get(dto.getSku()), new ArrayMap<>(), MoloniService.getSupplierOrderedLineDatesPerSku(dto.getSku(),supplierOrderedLineDates)));
+                dto.setStockDetailsDTO(StockKeepingUnitsService.getSkuDetails(productDTO.sku(), productDTO.getVariants().get(0).getInventoryPolicy().equalsIgnoreCase("continue"), reservations.get(dto.getSku()), new ArrayMap<>(), MoloniService.getSupplierOrderedLineDatesPerSku(dto.getSku(),supplierOrderedLineDates), null, null));
                 dto.setCostPrice(StockKeepingUnitsService.getCostPrice(null, dto.getSku()));
                 dto.setMarginWithCurrent(1-(dto.getCostPrice()*1.23/dto.getSmartifyPrice()));
                 dto.setMarginWithMin(1-(dto.getCostPrice()*1.23/dto.getMinPrice()));

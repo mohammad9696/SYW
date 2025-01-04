@@ -18,6 +18,33 @@ public class ShopifyOrderService {
     public static Map<String, StockDetailsDTO> getStockDetails(){
         Map<String, StockDetailsDTO> stringStockDetailsDTOMap = new ArrayMap<>();
         List<OrderDTO> orderList = getOrdersUnpaidAndPaid();
+        List<MoloniDocumentDTO> purchaseOrders = MoloniService.getPurchaseOrders();
+        for (MoloniDocumentDTO order : purchaseOrders){
+            if (order.getDocumentValueEuros() == order.getDocumentReconciledValueEuros()){
+                continue;
+            }
+            MoloniDocumentDTO orderComplete = MoloniService.getPurchaseOrder(order.getDocumentId());
+            if (orderComplete.getDocumentReconciledValueEuros()<0.1){
+                for (MoloniProductDTO product : orderComplete.getProductDTOS()){
+                    StockDetailsDTO stockDetailsDTO = new StockDetailsDTO(product.getSku());
+                    if(stringStockDetailsDTOMap.containsKey(product.getSku())) {
+                        stockDetailsDTO = stringStockDetailsDTOMap.get(product.getSku());
+                    }
+                    int reservedAmount = product.getLineQuantity();
+                    int sumToAmount = stockDetailsDTO.getMoloniPurchaseOrders() != null ? stockDetailsDTO.getMoloniPurchaseOrders():0;
+                    reservedAmount = reservedAmount + sumToAmount;
+                    stockDetailsDTO.setMoloniPurchaseOrders(reservedAmount);
+                    stringStockDetailsDTOMap.put(product.getSku(), stockDetailsDTO);
+
+                }
+            }
+            if (orderComplete.getDocumentValueEuros() > orderComplete.getDocumentReconciledValueEuros()){
+                logger.error("ENCOMENDA PARCIAL, FAZER MANUALMENTE {}", order.getDocumentNumber());
+                logger.error("ENCOMENDA PARCIAL, FAZER MANUALMENTE {}", order.getDocumentNumber());
+                logger.error("ENCOMENDA PARCIAL, FAZER MANUALMENTE {}", order.getDocumentNumber());
+            }
+
+        }
         for (OrderDTO order : orderList){
             for (OrderLineDTO line : order.getLineItems()){
                 StockDetailsDTO stockDetailsDTO = new StockDetailsDTO(line.getSku());

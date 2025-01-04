@@ -288,4 +288,12 @@ public class ProductDTO {
         }
         return  null;
     }
+    public Integer obtainMaxFrequencyPurchase(){
+        try {
+            String freq = this.getMetafield(ProductMetafieldEnum.ETA_MAX_DAYS) != null && this.getMetafield(ProductMetafieldEnum.ETA_MAX_DAYS).getValue() != null ? this.getMetafield(ProductMetafieldEnum.ETA_MAX_DAYS).getValue().toString() : "";
+            return Integer.parseInt(freq);
+        } catch (Exception e){
+            return null;
+        }
+    }
 }

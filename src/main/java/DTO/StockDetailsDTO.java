@@ -7,10 +7,11 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
     private String sku;
     private String ean;
     private String productName;
-    private Integer moloniStock;
+    private Integer availableStock;
     private Integer shopifyStock;
     private Integer shopifyPaidReservations;
     private Integer shopifyUnpaidReservations;
+    private Integer moloniPurchaseOrders;
     private SalesTimePeriodDTO firstPeriod;
     private SalesTimePeriodDTO secondPeriod;
     private SalesTimePeriodDTO thirdPeriod;
@@ -21,6 +22,8 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
     private List<SupplierOrderedLineDate> supplierOrderedLineDates;
     private LocalDateTime lastSale;
     private Boolean isContinueToSellOutOfStock;
+    private Integer recommendedPurchaseUnits;
+    private Integer purchaseFrequencyDays;
 
     public Integer getProductActiveForDays() {
         return productActiveForDays;
@@ -28,6 +31,22 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
 
     public void setProductActiveForDays(Integer productActiveForDays) {
         this.productActiveForDays = productActiveForDays;
+    }
+
+    public Integer getMoloniPurchaseOrders() {
+        return this.moloniPurchaseOrders;
+    }
+
+    public void setMoloniPurchaseOrders(final Integer moloniPurchaseOrders) {
+        this.moloniPurchaseOrders = moloniPurchaseOrders;
+    }
+
+    public MoloniProductStocksDTO[] getStockMovements() {
+        return this.stockMovements;
+    }
+
+    public void setStockMovements(final MoloniProductStocksDTO[] stockMovements) {
+        this.stockMovements = stockMovements;
     }
 
     public String getProductName() {
@@ -90,12 +109,28 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
         this.ean = ean;
     }
 
-    public Integer getMoloniStock() {
-        return moloniStock;
+    public Integer getAvailableStock() {
+        return availableStock;
     }
 
-    public void setMoloniStock(Integer moloniStock) {
-        this.moloniStock = moloniStock;
+    public void setAvailableStock(Integer availableStock) {
+        this.availableStock = availableStock;
+    }
+
+    public Integer getPurchaseFrequencyDays() {
+        return this.purchaseFrequencyDays;
+    }
+
+    public void setPurchaseFrequencyDays(final Integer purchaseFrequencyDays) {
+        this.purchaseFrequencyDays = purchaseFrequencyDays;
+    }
+
+    public Integer getRecommendedPurchaseUnits() {
+        return this.recommendedPurchaseUnits;
+    }
+
+    public void setRecommendedPurchaseUnits(final Integer recommendedPurchaseUnits) {
+        this.recommendedPurchaseUnits = recommendedPurchaseUnits;
     }
 
     public Integer getShopifyStock() {
@@ -140,7 +175,7 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
         return "StockDetailsDTO{" +
                 "sku='" + sku + '\'' +
                 ", productName='" + productName + '\'' +
-                ", moloniStock=" + moloniStock +
+                ", moloniStock=" + availableStock +
                 ", shopifyStock=" + shopifyStock +
                 ", shopifyPaidReservations=" + shopifyPaidReservations +
                 ", shopifyUnpaidReservations=" + shopifyUnpaidReservations +

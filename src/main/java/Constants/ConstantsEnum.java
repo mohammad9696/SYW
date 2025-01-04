@@ -90,6 +90,7 @@ public enum ConstantsEnum {
     MOLONI_TAX_ID_VATNORMAL("moloni.tax.id.vatnormal","insertValueInProperties"),
     MOLONI_MEASUMENTS_UNIT_ID("moloni.measurements.unit.id","insertValueInProperties"),
     MOLONI_PRODUCT_GET_ONE("moloni.product.get.one","insertValueInProperties"),
+    MOLONI_PRODUCT_GET_ALL("moloni.product.get.all","insertValueInProperties"),
     MOLONI_PRODUCT_UPDATE("moloni.product.update","insertValueInProperties"),
     MOLONI_PRODUCT_CREATE("moloni.product.create","insertValueInProperties"),
     MOLONI_DOCUMENT_GET_ALL("moloni.document.get.all","insertValueInProperties"),

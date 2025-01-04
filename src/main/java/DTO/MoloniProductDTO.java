@@ -68,6 +68,9 @@ public class MoloniProductDTO {
     @JsonProperty("properties")
     private MoloniProductProperty[] properties;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("offset")
+    private Integer skipFirstResults;
 
     // handle dos casos em que o moloni manda estruturas de dados incoerentes.
     @JsonSetter("properties")
@@ -89,6 +92,13 @@ public class MoloniProductDTO {
         }
     }
 
+    public Integer getSkipFirstResults() {
+        return this.skipFirstResults;
+    }
+
+    public void setSkipFirstResults(final Integer skipFirstResults) {
+        this.skipFirstResults = skipFirstResults;
+    }
 
     public Integer getLineQuantity() {
         return this.lineQuantity;

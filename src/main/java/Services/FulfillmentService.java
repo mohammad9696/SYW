@@ -54,16 +54,16 @@ public class FulfillmentService {
                 logger.info("Getting line {} details for order {} ",line.getSku(), order.getOrderNumber());
                 for (StockDetailsDTO s : stocks){
                     if (line.getSku().equals(s.getSku())){
-                        line.setMoloniStock(s.getMoloniStock());
+                        line.setMoloniStock(s.getAvailableStock());
                         break;
                     }
                 }
                 if (line.getMoloniStock() == null) {
                     logger.info("Getting stock details for line {} of order {}", line.getSku(), order.getOrderNumber());
                     StockDetailsDTO stockDetailsDTO = new StockDetailsDTO(line.getSku());
-                    stockDetailsDTO.setMoloniStock(MoloniService.getStock(line.getSku()));
+                    stockDetailsDTO.setAvailableStock(MoloniService.getStock(line.getSku()));
                     stocks.add(stockDetailsDTO);
-                    line.setMoloniStock(stockDetailsDTO.getMoloniStock());
+                    line.setMoloniStock(stockDetailsDTO.getAvailableStock());
                 }
 
                 if(line.getQuantity() > line.getMoloniStock()){

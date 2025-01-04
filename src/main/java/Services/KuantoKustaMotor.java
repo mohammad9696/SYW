@@ -97,7 +97,7 @@ public class KuantoKustaMotor {
         dto.setInternalOrderNumber("KK-"+kuantoKustaOrderDTO.getKuantoKustaOrderId());
         dto.setDate(localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         dto.setExpirationDate(localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        dto.setDocumentSetId(MoloniService.getDocumentSetIdByName("SMARTIFY"));
+        dto.setDocumentSetId(MoloniService.getDocumentSetIdByName("KK"));
         dto.setDeliveryDestinationAddress(kuantoKustaOrderDTO.getShippingAddress().getAddress1()+ " " +kuantoKustaOrderDTO.getShippingAddress().getAddress2());
         dto.setDeliveryDestinationCity(kuantoKustaOrderDTO.getShippingAddress().getCity());
         dto.setDeliveryDestinationZipCode(kuantoKustaOrderDTO.getShippingAddress().getPostalCode());

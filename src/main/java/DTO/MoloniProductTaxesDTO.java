@@ -31,13 +31,29 @@ public class MoloniProductTaxesDTO {
     @JsonProperty("tax")
     private Tax tax;
 
+    public Tax getTax() {
+        return this.tax;
+    }
+
+    public void setTax(final Tax tax) {
+        this.tax = tax;
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private class Tax {
+    public class Tax {
         @JsonInclude(JsonInclude.Include.NON_NULL)
         @JsonProperty("value")
         private Integer value;
 
         public Tax() {
+        }
+
+        public Integer getValue() {
+            return this.value;
+        }
+
+        public void setValue(final Integer value) {
+            this.value = value;
         }
     }
 

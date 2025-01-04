@@ -373,6 +373,37 @@ public class MoloniService {
             return true;
         }
     }
+
+    public static List<MoloniProductDTO> getAllProducts(){
+        logger.info("Getting All MoloniProductsDTO");
+        List<MoloniProductDTO> result = new ArrayList<>();
+        try {
+            MoloniProductDTO product = new MoloniProductDTO();
+            product.setCompanyId(Long.parseLong(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString()));
+            product.setSkipFirstResults(0);
+            MoloniProductDTO[] products = new MoloniProductDTO[0];
+            boolean first = true;
+            while (products.length != 0 || first){
+                if (!first) {
+                    product.setSkipFirstResults(product.getSkipFirstResults()+50);
+                }
+                first =false;
+                products = HttpRequestExecutor.sendRequest(MoloniProductDTO[].class, product, ConstantsEnum.MOLONI_PRODUCT_GET_ALL.getConstantValue().toString()+getToken());
+
+                for (MoloniProductDTO p : products){
+                    if (p.getHasStock()==1){
+                        result.add(p);
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            return null;
+        }
+
+        return result;
+    }
+
     public static MoloniProductDTO getProduct(String sku){
         logger.info("Getting MoloniProductDTO sku from moloni {}", sku);
         try {
@@ -546,6 +577,7 @@ public class MoloniService {
     }
 
     public static List<SupplierOrderedLineDate> getSupplierOrderedLineDatesPerSku(String sku, List<SupplierOrderedLineDate> skus ){
+        logger.info("getSupplierOrderedLineDatesPerSku for {}", sku);
         List<SupplierOrderedLineDate> newList = new ArrayList<>();
         for (SupplierOrderedLineDate i : skus){
             if (i.getSku().equals(sku)){
