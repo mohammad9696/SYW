@@ -176,7 +176,7 @@ public class StockKeepingUnitsService {
             }
             if (product == null) continue;
 
-            int paidReservations = stockDetailsDTO.getShopifyPaidReservations() != null ? stockDetailsDTO.getShopifyPaidReservations() : 0;
+            int paidReservations = stockDetailsDTO.getShopifyPaidReservations() != null ? stockDetailsDTO.getShopifyPaidReservations()+stockDetailsDTO.getMoloniPurchaseOrders() : 0;
             if (stockDetailsDTO.getAvailableStock()- paidReservations  == stockDetailsDTO.getShopifyStock()){
                 logger.info("Stock for {} in moloni is {} and in shopify is {} and paid reservations {} not needed to sync",product.sku(), stockDetailsDTO.getAvailableStock(), stockDetailsDTO.getShopifyStock(), paidReservations);
             } else {

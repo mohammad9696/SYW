@@ -177,7 +177,7 @@ public class HttpRequestExecutor {
             String response = EntityUtils.toString(getResponse.getEntity());
             Object object = mapper.readValue(response, responseObject);
 
-            logger.info("Sent POST Request to {} with body {} and got response {}", requestUrl, jsonValue, response);
+            //logger.info("Sent POST Request to {} with body {} and got response {}", requestUrl, jsonValue, response);
 
             return  (S) object;
 

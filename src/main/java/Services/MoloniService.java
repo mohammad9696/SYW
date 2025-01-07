@@ -643,11 +643,4 @@ public class MoloniService {
         }
     }
 
-    public static void main(String[] args) {
-
-        MoloniService moloniService = new MoloniService();
-        List<MoloniEntityClientDTO> a = moloniService.getClientBySearch("Mohammad");
-        System.out.println(a);
-    }
-
 }
