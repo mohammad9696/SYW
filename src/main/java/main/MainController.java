@@ -33,10 +33,10 @@ public class MainController {
         sb.append("11. Get cost price for SKU<br>");
         sb.append("12. Set price for SKU<br>");
         sb.append("13. Compare prices XLSX<br>");
-        sb.append("14. All ETA translations with OpenAI<b4>");
-        sb.append("15. Apply bulk discount per brand");
-        sb.append("16. Apply scheduled prices");
-        sb.append("99. Restart (at any time)");
+        sb.append("14. All ETA translations with OpenAI<br>");
+        sb.append("15. Apply bulk discount per brand<br>");
+        sb.append("16. Apply scheduled prices<br>");
+        sb.append("99. Restart (at any time)<br>");
         return sb.toString();
     }
 
