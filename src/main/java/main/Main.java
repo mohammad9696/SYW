@@ -53,6 +53,8 @@ public class Main {
             System.out.println("12. Set price for SKU");
             System.out.println("13. Compare prices XLSX");
             System.out.println("14. Translate All etas");
+            System.out.println("15. Apply bulk discount per brand");
+            System.out.println("16. Apply scheduled prices");
             System.out.println("99. Restart (at any time)");
 
             Integer option = null;
@@ -105,13 +107,17 @@ public class Main {
             } else if (option == 14){
                 HttpGraphQLRequestExecutor.main(null);
                 chooseProcedure(null);
+            } else if (option == 15){
+                UpdateFeeds.applyBulkDiscounts(scanner);
+                chooseProcedure(null);
+            } else if (option == 16){
+                UpdateFeeds.updateScheduledPrices();
+                chooseProcedure(null);
             } else {
                 System.out.println("Option not available!");
                 chooseProcedure(null);
             }
-        } catch (NumberFormatException e){
-            System.out.println("Will proceed with invalid tracking number");
-        } catch (Exception e){
+        }  catch (Exception e){
             chooseProcedure(null);
         }
 

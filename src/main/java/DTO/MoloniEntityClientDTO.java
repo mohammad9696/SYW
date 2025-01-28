@@ -143,7 +143,7 @@ public class MoloniEntityClientDTO {
 
     @JsonProperty("country")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private CountryDTO country;
+    private MoloniCountryDTO country;
 
     @JsonProperty("maturity_date")
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -168,6 +168,7 @@ public class MoloniEntityClientDTO {
     @JsonProperty("copies")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<CopyDTO> copies;
+
 
     public String getCompanyId() {
         return this.companyId;
@@ -441,11 +442,11 @@ public class MoloniEntityClientDTO {
         this.printDocumentNotes = printDocumentNotes;
     }
 
-    public CountryDTO getCountry() {
+    public MoloniCountryDTO getCountry() {
         return this.country;
     }
 
-    public void setCountry(final CountryDTO country) {
+    public void setCountry(final MoloniCountryDTO country) {
         this.country = country;
     }
 
@@ -490,19 +491,6 @@ public class MoloniEntityClientDTO {
     }
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-class CountryDTO {
-    @JsonProperty("iso_3166_1")
-    private String iso31661;
-
-    @JsonProperty("country_id")
-    private Integer countryId;
-
-    @JsonProperty("name")
-    private String name;
-
-    // Getters and setters omitted for brevity
-}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 class MaturityDateDTO {
@@ -519,6 +507,38 @@ class MaturityDateDTO {
     private Double associatedDiscount;
 
     // Getters and setters omitted for brevity
+
+    public Integer getMaturityDateId() {
+        return this.maturityDateId;
+    }
+
+    public void setMaturityDateId(final Integer maturityDateId) {
+        this.maturityDateId = maturityDateId;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
+    }
+
+    public Integer getDays() {
+        return this.days;
+    }
+
+    public void setDays(final Integer days) {
+        this.days = days;
+    }
+
+    public Double getAssociatedDiscount() {
+        return this.associatedDiscount;
+    }
+
+    public void setAssociatedDiscount(final Double associatedDiscount) {
+        this.associatedDiscount = associatedDiscount;
+    }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -529,7 +549,21 @@ class PaymentMethodDTO {
     @JsonProperty("name")
     private String name;
 
-    // Getters and setters omitted for brevity
+    public Integer getPaymentMethodId() {
+        return this.paymentMethodId;
+    }
+
+    public void setPaymentMethodId(final Integer paymentMethodId) {
+        this.paymentMethodId = paymentMethodId;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
+    }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

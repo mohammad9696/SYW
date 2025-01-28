@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class MoloniService {
@@ -18,6 +19,8 @@ public class MoloniService {
     public static final MoloniDocumentTypeDTO[] types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
     public static String token = null;
     public static LocalDateTime tokenDateTime = null;
+    public static List<MoloniTaxesDTO> taxes = null;
+    public static List<MoloniPaymentMethodDTO> paymentMethods;
 
     public MoloniService() {
     /*    try {
@@ -30,6 +33,53 @@ public class MoloniService {
         }*/
     }
 
+    public static String getPaymentMethodIdByName (String name){
+        List<MoloniPaymentMethodDTO> methods = getAllPaymentMethods();
+        for (MoloniPaymentMethodDTO i : methods){
+            if (name.equalsIgnoreCase(i.getName())){
+                return i.getPaymentMethodId();
+            }
+        }
+        logger.error("Couldn't find payment method with name {}", name);
+        return null;
+    }
+    public static List<MoloniPaymentMethodDTO> getAllPaymentMethods (){
+        if (paymentMethods != null) {
+            return paymentMethods;
+        } else {
+            MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+            documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+            paymentMethods = Arrays.asList(HttpRequestExecutor.sendRequest(MoloniPaymentMethodDTO[].class, documentDTO, ConstantsEnum.MOLONI_PAYMENT_METHODS_GET_ALL.getConstantValue().toString()+getToken()));
+
+            return getAllPaymentMethods();
+        }
+
+    }
+
+    public static MoloniTaxesDTO  getTaxesByCountryAndValue (String countryISO, Integer value){
+        logger.info("Getting tax by country and id value");
+        List<MoloniTaxesDTO> taxesDTOS = getAllTaxes();
+        for (MoloniTaxesDTO i : taxesDTOS){
+            if (i.getFiscalZone().equalsIgnoreCase(countryISO) && i.getValue()==value){
+                return i;
+            }
+        }
+        logger.error("Could not find tax with fiscal zone {} and value {}", countryISO, value);
+        return null;
+    }
+
+    public static List<MoloniTaxesDTO> getAllTaxes (){
+        if (taxes != null) {
+            return taxes;
+        } else {
+            MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+            documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+            taxes = Arrays.asList(HttpRequestExecutor.sendRequest(MoloniTaxesDTO[].class, documentDTO, ConstantsEnum.MOLONI_TAXES_GET_ALL.getConstantValue().toString()+getToken()));
+
+            return getAllTaxes();
+        }
+
+    }
     public static Integer getCountryIdByName (String name){
         List<MoloniCountryDTO> countries = Arrays.asList(HttpRequestExecutor.sendRequest(MoloniCountryDTO[].class, null, ConstantsEnum.MOLONI_COUNTRIES_GET_ALL.getConstantValue().toString()+getToken()));
 
@@ -641,6 +691,102 @@ public class MoloniService {
             logger.info("Preparing to sync: " + productDTO.sku()+ " " + productDTO.getTitle());
             syncMoloniProduct(productDTO);
         }
+    }
+
+    public static void insertInvoiceReceipt(MoloniInvoiceReceiptDTO dto){
+        HttpRequestExecutor.sendRequest(MoloniInvoiceReceiptDTO.class, dto, ConstantsEnum.MOLONI_INVOICE_RECEIPT_INSERT_URL.getConstantValue().toString()+getToken());
+
+    }
+    public static MoloniInvoiceReceiptDTO createInvoiceReceiptFromShopifyOrder(ShopifyWebhookPayloadDTO shopifyPayload) {
+        MoloniInvoiceReceiptDTO invoice = new MoloniInvoiceReceiptDTO();
+
+        // 1. Obter a série de documentos dinamicamente
+        String documentSetId = MoloniService.getDocumentSetIdByName("ADIANTAMENTO");
+        invoice.setDocumentSetId(documentSetId);
+        invoice.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        // 2. Data atual como data da fatura
+        LocalDateTime now = LocalDateTime.now();
+        String formattedDate = now.format(DateTimeFormatter.ISO_DATE); // Formato ISO 8601 (ex.: "2025-01-21")
+        invoice.setDate(formattedDate);
+
+        // 3. Configurar os dados do cliente
+        MoloniEntityClientDTO client = new MoloniEntityClientDTO();
+        client.setName(shopifyPayload.getCustomer().getFirstName() + " " + shopifyPayload.getCustomer().getLastName());
+        client.setVat(shopifyPayload.getBillingAddress().getVatId() != null ? shopifyPayload.getBillingAddress().getVatId() : null);
+        client.setAddress(shopifyPayload.getBillingAddress().getAddress1() + " " + shopifyPayload.getBillingAddress().getAddress2());
+        client.setCity(shopifyPayload.getBillingAddress().getCity());
+        client.setZipCode(shopifyPayload.getBillingAddress().getPostcode());
+        client.setCountryId(MoloniService.getCountryIdByName(shopifyPayload.getBillingAddress().getCountry()));
+
+        MoloniEntityClientDTO moloniClient = MoloniService.getOrCreateClient(client);
+        invoice.setEntityName(moloniClient.getName());
+        invoice.setEntityVat(moloniClient.getVat());
+        invoice.setEntityAddress(moloniClient.getAddress());
+        invoice.setEntityCity(moloniClient.getCity());
+        invoice.setEntityZipCode(moloniClient.getZipCode());
+        invoice.setEntityCountry(moloniClient.getCountry().getName());
+        invoice.setEntityCountryId(moloniClient.getCountryId());
+        invoice.setCustomerId(moloniClient.getCustomerId());
+
+        // 4. Agrupar os produtos por tipo de IVA
+        Map<Double, Double> ivaGroupedTotals = new HashMap<>();
+
+        for (ShopifyWebhookPayloadDTO.LineItem lineItem : shopifyPayload.getLineItems()) {
+            for (ShopifyWebhookPayloadDTO.TaxLine taxLine : lineItem.getTaxLines()) {
+                double taxRate = taxLine.getRate(); // Por exemplo, 0.23 para 23% de IVA
+                double lineTotalExclTax = Double.parseDouble(lineItem.getPrice()) - Double.parseDouble(lineItem.getTaxLines().get(0).getPrice());
+
+                ivaGroupedTotals.put(taxRate, ivaGroupedTotals.getOrDefault(taxRate, 0.0) + lineTotalExclTax);
+            }
+        }
+
+        // 5. Criar produtos por tipo de IVA
+        List<MoloniProductDTO> products = new ArrayList<>();
+        for (Map.Entry<Double, Double> entry : ivaGroupedTotals.entrySet()) {
+            double taxRate = entry.getKey();
+            double totalValue = entry.getValue();
+
+            MoloniProductDTO mp = MoloniService.getProduct("ADIANTAMENTO");
+            MoloniProductDTO product = new MoloniProductDTO();
+            product.setProductName("ADIANTAMENTO - IVA " + (taxRate * 100) + "%");
+            product.setPriceWithoutVat(totalValue);
+            product.setLineQuantity(1);
+            product.setProductId(mp.getProductId());
+
+            // Adicionar os impostos ao produto
+            String countryISO = null;
+            if (shopifyPayload.getShippingAddress() != null){
+                countryISO = shopifyPayload.getShippingAddress().getCountryISOCode();
+            } else {
+                countryISO = shopifyPayload.getCustomer().getDefaultAddress().getCountryISOCode();
+            }
+
+            MoloniTaxesDTO moloniTax =getTaxesByCountryAndValue(countryISO, (int)Math.round(taxRate * 100));
+            MoloniProductTaxesDTO tax = new MoloniProductTaxesDTO();
+            tax.setTaxId(Long.parseLong(moloniTax.getTaxId().toString()));
+            tax.setValueAmount((int)Math.round(taxRate * 100));
+            product.setTaxes(List.of(tax));
+
+            products.add(product);
+        }
+
+        invoice.setProducts(products);
+
+        // 6. Adicionar pagamento
+        MoloniInvoiceReceiptDTO.Payment payment = new MoloniInvoiceReceiptDTO.Payment();
+        payment.setPaymentMethodId(getPaymentMethodIdByName(shopifyPayload.getPaymentGatewayNames().get(0))); // Método de pagamento
+        payment.setValue(Double.parseDouble(shopifyPayload.getCurrentTotalPrice()));
+        payment.setDate(formattedDate);
+
+        invoice.setPayments(List.of(payment));
+
+        // 7. Configurar tipo de documento como fatura-recibo
+        invoice.setDocumentTypeId(27); // Código SAFT para Fatura-Recibo
+
+        // 8. Configurar status como rascunho
+        invoice.setStatus(0); // 0 para rascunho, conforme documentação
+
+        return invoice;
     }
 
 }

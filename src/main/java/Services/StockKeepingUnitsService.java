@@ -151,7 +151,9 @@ public class StockKeepingUnitsService {
     public static void updateOnlineStocks(){
         logger.info("Starting to update all online stocks");
         List<ProductDTO> productList = ShopifyProductService.getShopifyProductList();
-        Map<String, StockDetailsDTO> stockDetails = ShopifyOrderService.getStockDetails();
+        //Map<String, StockDetailsDTO> stockDetails = ShopifyOrderService.getStockDetails();
+        Map<String, StockDetailsDTO> stockDetails = new HashMap<>(ShopifyOrderService.getStockDetails());
+        logger.info("stockDetails is of type: {}", stockDetails.getClass().getName());
         for (ProductDTO product : productList){
             StockDetailsDTO stockDetailsDTO = new StockDetailsDTO(product.sku());
             if(stockDetails.containsKey(product.sku())) {
@@ -161,6 +163,7 @@ public class StockKeepingUnitsService {
             int shopifyStock = product.getVariants().get(0).getInventoryQuantity();
             stockDetailsDTO.setAvailableStock(moloniStock);
             stockDetailsDTO.setShopifyStock(shopifyStock);
+            logger.info("Adding to stockDetails SKU {} with hash {}", product.sku(), product.sku().hashCode());
             stockDetails.put(product.sku(), stockDetailsDTO);
 
         }
@@ -168,13 +171,17 @@ public class StockKeepingUnitsService {
         for (String key : stockDetails.keySet()){
             StockDetailsDTO stockDetailsDTO = stockDetails.get(key);
             ProductDTO product = null;
+
             for (ProductDTO p : productList ){
                 if (p.sku().equals(key)){
                     product = p;
                     break;
                 }
             }
-            if (product == null) continue;
+            if (product == null) {
+                logger.error("Key {} was not found in Shopify product list",key );
+                continue;
+            }
 
             int paidReservations = stockDetailsDTO.getShopifyPaidReservations() != null ? stockDetailsDTO.getShopifyPaidReservations()+stockDetailsDTO.getMoloniPurchaseOrders() : 0;
             if (stockDetailsDTO.getAvailableStock()- paidReservations  == stockDetailsDTO.getShopifyStock()){

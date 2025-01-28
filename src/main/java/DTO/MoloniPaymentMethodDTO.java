@@ -5,34 +5,22 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MoloniCountryDTO {
+public class MoloniPaymentMethodDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("country_id")
-    private Integer countryId;
+    @JsonProperty("payment_method_id")
+    private String paymentMethodId;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("name")
     private String name;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("iso_3166_1")
-    private String iso31661;
-
-    public String getIso31661() {
-        return this.iso31661;
+    public String getPaymentMethodId() {
+        return this.paymentMethodId;
     }
 
-    public void setIso31661(final String iso31661) {
-        this.iso31661 = iso31661;
-    }
-
-    public Integer getCountryId() {
-        return this.countryId;
-    }
-
-    public void setCountryId(final Integer countryId) {
-        this.countryId = countryId;
+    public void setPaymentMethodId(final String paymentMethodId) {
+        this.paymentMethodId = paymentMethodId;
     }
 
     public String getName() {
