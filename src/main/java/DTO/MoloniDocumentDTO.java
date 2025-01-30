@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MoloniDocumentDTO {
 
@@ -50,6 +52,35 @@ public class MoloniDocumentDTO {
     @JsonProperty("entity_name")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String entityName;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("entity_vat")
+    private String entityVat;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("entity_address")
+    private String entityAddress;
+
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("entity_city")
+    private String entityCity;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("entity_zip_code")
+    private String entityZipCode;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("entity_country")
+    private String entityCountry;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("entity_country_id")
+    private Integer entityCountryId;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("notes")
+    private String notes;
 
     @JsonProperty("document_set_id")
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -99,6 +130,133 @@ public class MoloniDocumentDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer status;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("reverse_document_id")
+    private Integer reverseDocumentId;
+
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("payments")
+    private List<MoloniDocumentDTO.Payment> payments;
+
+    public List<MoloniDocumentDTO.Payment> getPayments() {
+        return this.payments;
+    }
+
+    public void setPayments(final List<MoloniDocumentDTO.Payment> payments) {
+        this.payments = payments;
+    }
+
+    public String getEntityVat() {
+        return this.entityVat;
+    }
+
+    public void setEntityVat(final String entityVat) {
+        this.entityVat = entityVat;
+    }
+
+    public String getEntityAddress() {
+        return this.entityAddress;
+    }
+
+    public void setEntityAddress(final String entityAddress) {
+        this.entityAddress = entityAddress;
+    }
+
+    public String getEntityCity() {
+        return this.entityCity;
+    }
+
+    public void setEntityCity(final String entityCity) {
+        this.entityCity = entityCity;
+    }
+
+    public String getEntityZipCode() {
+        return this.entityZipCode;
+    }
+
+    public void setEntityZipCode(final String entityZipCode) {
+        this.entityZipCode = entityZipCode;
+    }
+
+    public String getEntityCountry() {
+        return this.entityCountry;
+    }
+
+    public void setEntityCountry(final String entityCountry) {
+        this.entityCountry = entityCountry;
+    }
+
+    public Integer getEntityCountryId() {
+        return this.entityCountryId;
+    }
+
+    public void setEntityCountryId(final Integer entityCountryId) {
+        this.entityCountryId = entityCountryId;
+    }
+
+    public String getNotes() {
+        return this.notes;
+    }
+
+    public void setNotes(final String notes) {
+        this.notes = notes;
+    }
+
+    public Integer getReverseDocumentId() {
+        return this.reverseDocumentId;
+    }
+
+    public void setReverseDocumentId(final Integer reverseDocumentId) {
+        this.reverseDocumentId = reverseDocumentId;
+    }
+
+    public static class Tax {
+        @JsonProperty("tax_id")
+        private Integer taxId;
+
+        @JsonProperty("value")
+        private Double value;
+
+        // Getters and Setters
+    }
+
+    public static class Payment {
+        @JsonProperty("payment_method_id")
+        private String paymentMethodId;
+
+        @JsonProperty("value")
+        private Double value;
+
+        @JsonProperty("date")
+        private String date;
+
+        // Getters and Setters
+
+        public String getPaymentMethodId() {
+            return this.paymentMethodId;
+        }
+
+        public void setPaymentMethodId(final String paymentMethodId) {
+            this.paymentMethodId = paymentMethodId;
+        }
+
+        public Double getValue() {
+            return this.value;
+        }
+
+        public void setValue(final Double value) {
+            this.value = value;
+        }
+
+        public String getDate() {
+            return this.date;
+        }
+
+        public void setDate(final String date) {
+            this.date = date;
+        }
+    }
     public Boolean getValid() {
         return this.valid;
     }

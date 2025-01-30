@@ -1,6 +1,6 @@
 package Services;
 
-import DTO.MoloniInvoiceReceiptDTO;
+import DTO.MoloniDocumentDTO;
 import DTO.ShopifyWebhookPayloadDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import main.MainController;
@@ -31,7 +31,7 @@ public class ShopifyWebhookManager {
             ObjectMapper objectMapper = new ObjectMapper();
             ShopifyWebhookPayloadDTO shopifyWebhookPayloadDTO = objectMapper.readValue(payload, ShopifyWebhookPayloadDTO.class);
 
-            MoloniInvoiceReceiptDTO invoiceReceiptDTO = MoloniService.createInvoiceReceiptFromShopifyOrder(shopifyWebhookPayloadDTO);
+            MoloniDocumentDTO invoiceReceiptDTO = MoloniService.createInvoiceReceiptFromShopifyOrder(shopifyWebhookPayloadDTO);
             MoloniService.insertInvoiceReceipt(invoiceReceiptDTO);
             return new ResponseEntity<>("Webhook received successfully", HttpStatus.OK);
         } catch (Exception e) {
