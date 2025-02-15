@@ -15,7 +15,7 @@ public class ShopifyOrderService {
 
 
 
-    public static Map<String, StockDetailsDTO> getStockDetails(){
+    public static Map<String, StockDetailsDTO> getStockReservations(){
         Map<String, StockDetailsDTO> stringStockDetailsDTOMap = new ArrayMap<>();
         List<OrderDTO> orderList = getOrdersUnpaidAndPaid();
         List<MoloniDocumentDTO> purchaseOrders = MoloniService.getPurchaseOrders();

@@ -1,6 +1,5 @@
 package Services;
 
-import Constants.ProductMetafieldEnum;
 import DTO.*;
 import Utils.Utils;
 import com.google.api.client.util.ArrayMap;
@@ -91,7 +90,7 @@ public class StockKeepingUnitsService {
 
     public static Map<String, StockDetailsDTO>  getStockReservations() {
         logger.debug("Getting stock reservations");
-        Map<String, StockDetailsDTO> stockReservations = ShopifyOrderService.getStockDetails();
+        Map<String, StockDetailsDTO> stockReservations = ShopifyOrderService.getStockReservations();
         return stockReservations;
 
     }
@@ -151,8 +150,8 @@ public class StockKeepingUnitsService {
     public static void updateOnlineStocks(){
         logger.info("Starting to update all online stocks");
         List<ProductDTO> productList = ShopifyProductService.getShopifyProductList();
-        //Map<String, StockDetailsDTO> stockDetails = ShopifyOrderService.getStockDetails();
-        Map<String, StockDetailsDTO> stockDetails = new HashMap<>(ShopifyOrderService.getStockDetails());
+        //Map<String, StockDetailsDTO> stockDetails = ShopifyOrderService.getStockReservations();
+        Map<String, StockDetailsDTO> stockDetails = new HashMap<>(ShopifyOrderService.getStockReservations());
         logger.info("stockDetails is of type: {}", stockDetails.getClass().getName());
         for (ProductDTO product : productList){
             StockDetailsDTO stockDetailsDTO = new StockDetailsDTO(product.sku());
@@ -168,22 +167,26 @@ public class StockKeepingUnitsService {
 
         }
 
+        loopA:
         for (String key : stockDetails.keySet()){
             StockDetailsDTO stockDetailsDTO = stockDetails.get(key);
             ProductDTO product = null;
 
+            loopB:
             for (ProductDTO p : productList ){
                 if (p.sku().equals(key)){
                     product = p;
-                    break;
+                    break loopB;
                 }
             }
             if (product == null) {
                 logger.error("Key {} was not found in Shopify product list",key );
-                continue;
+                continue loopA;
             }
 
-            int paidReservations = stockDetailsDTO.getShopifyPaidReservations() != null ? stockDetailsDTO.getShopifyPaidReservations()+stockDetailsDTO.getMoloniPurchaseOrders() : 0;
+            int paidReservations = (stockDetailsDTO.getShopifyPaidReservations() != null ? stockDetailsDTO.getShopifyPaidReservations() : 0)
+                    + (stockDetailsDTO.getMoloniPurchaseOrders() != null ? stockDetailsDTO.getMoloniPurchaseOrders() : 0);
+
             if (stockDetailsDTO.getAvailableStock()- paidReservations  == stockDetailsDTO.getShopifyStock()){
                 logger.info("Stock for {} in moloni is {} and in shopify is {} and paid reservations {} not needed to sync",product.sku(), stockDetailsDTO.getAvailableStock(), stockDetailsDTO.getShopifyStock(), paidReservations);
             } else {

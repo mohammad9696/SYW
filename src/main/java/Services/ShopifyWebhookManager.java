@@ -1,6 +1,8 @@
 package Services;
 
+import Constants.ConstantsEnum;
 import DTO.MoloniDocumentDTO;
+import DTO.MoloniEntityClientDTO;
 import DTO.ShopifyWebhookPayloadDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import main.MainController;
@@ -12,11 +14,12 @@ import org.springframework.http.ResponseEntity;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
+import java.util.List;
 
 public class ShopifyWebhookManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ShopifyWebhookManager.class);
-    private static final String SECRET_KEY = "558e96e87bb3987f17249e75ce9812c6ee4741fdb05c199f7e851d5bebfa9dec";
+    private static final String SECRET_KEY = ConstantsEnum.SHOPIFY_WEBHOOK_KEY.getConstantValue().toString();
 
     public static ResponseEntity<String> payloadResponse (String topic, String hmacHeader, String payload)  {
         logger.info("Topic {}, Payload {}", topic, payload);

@@ -132,12 +132,63 @@ public class MoloniDocumentDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("reverse_document_id")
-    private Integer reverseDocumentId;
+    private String reverseDocumentId;
 
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("payments")
     private List<MoloniDocumentDTO.Payment> payments;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("reverse_associated_documents")
+    private List<ReverseDocumentDTO> reverseAssociatedDocuments;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("associated_documents")
+    private List<AssociatedDocumentDTO> associatedDocuments;
+
+    public List<AssociatedDocumentDTO> getAssociatedDocuments() {
+        return this.associatedDocuments;
+    }
+
+    public void setAssociatedDocuments(final List<AssociatedDocumentDTO> associatedDocuments) {
+        this.associatedDocuments = associatedDocuments;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class AssociatedDocumentDTO {
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @JsonProperty("associated_id")
+        private String associatedId;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @JsonProperty("value")
+        private Double value;
+
+        public String getAssociatedId() {
+            return this.associatedId;
+        }
+
+        public void setAssociatedId(final String associatedId) {
+            this.associatedId = associatedId;
+        }
+
+        public Double getValue() {
+            return this.value;
+        }
+
+        public void setValue(final Double value) {
+            this.value = value;
+        }
+    }
+    public List<ReverseDocumentDTO> getReverseAssociatedDocuments() {
+        return this.reverseAssociatedDocuments;
+    }
+
+    public void setReverseAssociatedDocuments(final List<ReverseDocumentDTO> reverseAssociatedDocuments) {
+        this.reverseAssociatedDocuments = reverseAssociatedDocuments;
+    }
 
     public List<MoloniDocumentDTO.Payment> getPayments() {
         return this.payments;
@@ -203,14 +254,309 @@ public class MoloniDocumentDTO {
         this.notes = notes;
     }
 
-    public Integer getReverseDocumentId() {
+    public String getReverseDocumentId() {
         return this.reverseDocumentId;
     }
 
-    public void setReverseDocumentId(final Integer reverseDocumentId) {
+    public void setReverseDocumentId(String reverseDocumentId) {
         this.reverseDocumentId = reverseDocumentId;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ReverseDocumentDTO {
+        @JsonProperty("document_id")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer documentId;
+
+        @JsonProperty("value")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer value;
+
+        @JsonProperty("reverse_associated_document")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private ReverseAssociatedDocumentDTO reverseAssociatedDocument;
+
+        public Integer getDocumentId() {
+            return this.documentId;
+        }
+
+        public void setDocumentId(final Integer documentId) {
+            this.documentId = documentId;
+        }
+
+        public Integer getValue() {
+            return this.value;
+        }
+
+        public void setValue(final Integer value) {
+            this.value = value;
+        }
+
+        public ReverseAssociatedDocumentDTO getReverseAssociatedDocument() {
+            return this.reverseAssociatedDocument;
+        }
+
+        public void setReverseAssociatedDocument(final ReverseAssociatedDocumentDTO reverseAssociatedDocument) {
+            this.reverseAssociatedDocument = reverseAssociatedDocument;
+        }
+    }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ReverseAssociatedDocumentDTO {
+
+        @JsonProperty("document_id")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer documentId;
+
+        @JsonProperty("document_type_id")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer documentTypeId;
+
+        @JsonProperty("document_set_id")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer documentSetId;
+
+        @JsonProperty("number")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer number;
+
+        @JsonProperty("date")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String date;
+
+        @JsonProperty("expiration_date")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String expirationDate;
+
+        @JsonProperty("your_reference")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String yourReference;
+
+        @JsonProperty("our_reference")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String ourReference;
+
+        @JsonProperty("entity_number")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String entityNumber;
+
+        @JsonProperty("entity_name")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String entityName;
+
+        @JsonProperty("entity_vat")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String entityVat;
+
+        @JsonProperty("entity_address")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String entityAddress;
+
+        @JsonProperty("financial_discount")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Double financialDiscount;
+
+        @JsonProperty("gross_value")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Double grossValue;
+
+        @JsonProperty("comercial_discount_value")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Double comercialDiscountValue;
+
+        @JsonProperty("financial_discount_value")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Double financialDiscountValue;
+
+        @JsonProperty("taxes_value")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Double taxesValue;
+
+        @JsonProperty("deduction_value")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Double deductionValue;
+
+        @JsonProperty("net_value")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Double netValue;
+
+        @JsonProperty("status")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer status;
+
+        @JsonProperty("global_guide")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Integer globalGuide;
+
+        public Integer getDocumentId() {
+            return this.documentId;
+        }
+
+        public void setDocumentId(final Integer documentId) {
+            this.documentId = documentId;
+        }
+
+        public Integer getDocumentTypeId() {
+            return this.documentTypeId;
+        }
+
+        public void setDocumentTypeId(final Integer documentTypeId) {
+            this.documentTypeId = documentTypeId;
+        }
+
+        public Integer getDocumentSetId() {
+            return this.documentSetId;
+        }
+
+        public void setDocumentSetId(final Integer documentSetId) {
+            this.documentSetId = documentSetId;
+        }
+
+        public Integer getNumber() {
+            return this.number;
+        }
+
+        public void setNumber(final Integer number) {
+            this.number = number;
+        }
+
+        public String getDate() {
+            return this.date;
+        }
+
+        public void setDate(final String date) {
+            this.date = date;
+        }
+
+        public String getExpirationDate() {
+            return this.expirationDate;
+        }
+
+        public void setExpirationDate(final String expirationDate) {
+            this.expirationDate = expirationDate;
+        }
+
+        public String getYourReference() {
+            return this.yourReference;
+        }
+
+        public void setYourReference(final String yourReference) {
+            this.yourReference = yourReference;
+        }
+
+        public String getOurReference() {
+            return this.ourReference;
+        }
+
+        public void setOurReference(final String ourReference) {
+            this.ourReference = ourReference;
+        }
+
+        public String getEntityNumber() {
+            return this.entityNumber;
+        }
+
+        public void setEntityNumber(final String entityNumber) {
+            this.entityNumber = entityNumber;
+        }
+
+        public String getEntityName() {
+            return this.entityName;
+        }
+
+        public void setEntityName(final String entityName) {
+            this.entityName = entityName;
+        }
+
+        public String getEntityVat() {
+            return this.entityVat;
+        }
+
+        public void setEntityVat(final String entityVat) {
+            this.entityVat = entityVat;
+        }
+
+        public String getEntityAddress() {
+            return this.entityAddress;
+        }
+
+        public void setEntityAddress(final String entityAddress) {
+            this.entityAddress = entityAddress;
+        }
+
+        public Double getFinancialDiscount() {
+            return this.financialDiscount;
+        }
+
+        public void setFinancialDiscount(final Double financialDiscount) {
+            this.financialDiscount = financialDiscount;
+        }
+
+        public Double getGrossValue() {
+            return this.grossValue;
+        }
+
+        public void setGrossValue(final Double grossValue) {
+            this.grossValue = grossValue;
+        }
+
+        public Double getComercialDiscountValue() {
+            return this.comercialDiscountValue;
+        }
+
+        public void setComercialDiscountValue(final Double comercialDiscountValue) {
+            this.comercialDiscountValue = comercialDiscountValue;
+        }
+
+        public Double getFinancialDiscountValue() {
+            return this.financialDiscountValue;
+        }
+
+        public void setFinancialDiscountValue(final Double financialDiscountValue) {
+            this.financialDiscountValue = financialDiscountValue;
+        }
+
+        public Double getTaxesValue() {
+            return this.taxesValue;
+        }
+
+        public void setTaxesValue(final Double taxesValue) {
+            this.taxesValue = taxesValue;
+        }
+
+        public Double getDeductionValue() {
+            return this.deductionValue;
+        }
+
+        public void setDeductionValue(final Double deductionValue) {
+            this.deductionValue = deductionValue;
+        }
+
+        public Double getNetValue() {
+            return this.netValue;
+        }
+
+        public void setNetValue(final Double netValue) {
+            this.netValue = netValue;
+        }
+
+        public Integer getStatus() {
+            return this.status;
+        }
+
+        public void setStatus(final Integer status) {
+            this.status = status;
+        }
+
+        public Integer getGlobalGuide() {
+            return this.globalGuide;
+        }
+
+        public void setGlobalGuide(final Integer globalGuide) {
+            this.globalGuide = globalGuide;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Tax {
         @JsonProperty("tax_id")
         private Integer taxId;
@@ -221,10 +567,17 @@ public class MoloniDocumentDTO {
         // Getters and Setters
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Payment {
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         @JsonProperty("payment_method_id")
         private String paymentMethodId;
 
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @JsonProperty("payment_method_name")
+        private String paymentMethodName;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         @JsonProperty("value")
         private Double value;
 
@@ -361,7 +714,7 @@ public class MoloniDocumentDTO {
         this.documentSetName = documentSetName;
     }
 
-    public Boolean getPdfLinkRequestValid() {
+    public Boolean checkPdfLinkRequestValid() {
         return valid;
     }
 

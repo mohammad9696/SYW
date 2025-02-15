@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.lang.reflect.GenericDeclaration;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -19,6 +18,14 @@ public class MoloniProductDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("product_id")
     private Long productId;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("document_product_id")
+    private Long documentProductId;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("related_id")
+    private Long relatedId;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("category_id")
@@ -71,6 +78,22 @@ public class MoloniProductDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("offset")
     private Integer skipFirstResults;
+
+    public Long getRelatedId() {
+        return this.relatedId;
+    }
+
+    public void setRelatedId(final Long relatedId) {
+        this.relatedId = relatedId;
+    }
+
+    public Long getDocumentProductId() {
+        return this.documentProductId;
+    }
+
+    public void setDocumentProductId(final Long documentProductId) {
+        this.documentProductId = documentProductId;
+    }
 
     // handle dos casos em que o moloni manda estruturas de dados incoerentes.
     @JsonSetter("properties")

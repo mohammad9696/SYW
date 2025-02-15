@@ -20,6 +20,10 @@ public class ShopifyWebhookPayloadDTO {
     private String adminGraphqlApiId;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("name")
+    private String name;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("app_id")
     private Long appId;
 
@@ -102,6 +106,15 @@ public class ShopifyWebhookPayloadDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("created_at")
     private String createdAt; // Propriedade como LocalDateTime
+
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
+    }
 
     public String getCreatedAt() {
         return this.createdAt;

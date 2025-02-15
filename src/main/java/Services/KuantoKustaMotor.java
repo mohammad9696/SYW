@@ -44,7 +44,7 @@ public class KuantoKustaMotor {
             OrderDTO order = null;
             try {
 
-                Boolean valid  = createMoloniOrderDtoFromKuantoKustaOrderDto(kuantoKustaOrderDTO).getPdfLinkRequestValid();
+                Boolean valid  = createMoloniOrderDtoFromKuantoKustaOrderDto(kuantoKustaOrderDTO).checkPdfLinkRequestValid();
                 if (valid){
                     approveOrderKuantoKusta(kuantoKustaOrderDTO.getKuantoKustaOrderId());
                 }

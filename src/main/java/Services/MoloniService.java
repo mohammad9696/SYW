@@ -501,7 +501,7 @@ public class MoloniService {
         document.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
         document.setDocumentId(documentId);
         MoloniDocumentDTO response = HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, document, ConstantsEnum.MOLONI_DOCUMENT_PDF_LINK.getConstantValue()+getToken());
-        if (response != null && response.getPdfLinkRequestValid() == null){
+        if (response != null && response.checkPdfLinkRequestValid() == null){
             logger.info("Building pdf link for documentId {}", documentId);
             queryParams = Utils.getQueryParamsFromUrl(response.getPdfDownloadUrl());
             result = ConstantsEnum.MOLONI_DOCUMENT_PDF_LINK_DOWNLOAD.getConstantValue().toString();
@@ -695,14 +695,49 @@ public class MoloniService {
 
     public static void insertInvoiceReceipt(MoloniDocumentDTO dto){
         HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, dto, ConstantsEnum.MOLONI_INVOICE_RECEIPT_INSERT_URL.getConstantValue().toString()+getToken());
-
     }
-/*
-    public static MoloniCreditNoteDTO createCreditNoteFromInvoice(MoloniInvoiceReceiptDTO invoice) {
-        MoloniCreditNoteDTO creditNote = new MoloniCreditNoteDTO();
+
+    public static MoloniDocumentDTO getOneInvoiceReceipt(String documentId){
+        MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+        documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        documentDTO.setDocumentId(documentId);
+
+        return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, documentDTO, ConstantsEnum.MOLONI_INVOICE_RECEIPT_GET_ONE_URL.getConstantValue().toString()+getToken());
+    }
+
+    public static List<MoloniDocumentDTO> getAllInvoiceReceiptsBySetIdAndCustomer(String setName, String customerId){
+        MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+        documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        documentDTO.setDocumentSetId(MoloniService.getDocumentSetIdByName(setName));
+        documentDTO.setCustomerId(customerId);
+        return getAllInvoiceReceipts(documentDTO);
+    }
+
+    public static List<MoloniDocumentDTO> getAllInvoiceReceipts(MoloniDocumentDTO dto){
+        if (dto == null){
+            dto = new MoloniDocumentDTO();
+            dto.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        }
+
+        return Arrays.asList(HttpRequestExecutor.sendRequest(MoloniDocumentDTO[].class, dto, ConstantsEnum.MOLONI_INVOICE_RECEIPTS_GET_ALL_URL.getConstantValue().toString()+getToken()));
+    }
+
+    public static void insertCreditNote(MoloniDocumentDTO dto){
+        HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, dto, ConstantsEnum.MOLONI_CREDIT_NOTE_INSERT_URL.getConstantValue().toString()+getToken());
+    }
+
+    private static boolean hasExistingCreditNote (MoloniDocumentDTO invoice) {
+        if (invoice.getReverseAssociatedDocuments() != null && !invoice.getReverseAssociatedDocuments().isEmpty()){
+            return true;
+        }
+        return false;
+    }
+
+    public static MoloniDocumentDTO createCreditNoteFromInvoice(MoloniDocumentDTO invoice) {
+        MoloniDocumentDTO creditNote = new MoloniDocumentDTO();
 
         // 1. Validate if there's an existing credit note (reverse document)
-        boolean hasExistingCreditNote = MoloniService.hasExistingCreditNote(invoice.getDocumentId());
+        boolean hasExistingCreditNote = MoloniService.hasExistingCreditNote(invoice);
         if (hasExistingCreditNote) {
             throw new RuntimeException("A credit note already exists for this invoice.");
         }
@@ -711,6 +746,8 @@ public class MoloniService {
         String documentSetId = MoloniService.getDocumentSetIdByName("SM25");
         creditNote.setDocumentSetId(documentSetId);
         creditNote.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        creditNote.setInternalOrderNumber(invoice.getInternalOrderNumber());
+        creditNote.setClientOrderNumber(invoice.getClientOrderNumber());
 
         // 3. Set the credit note date
         LocalDateTime now = LocalDateTime.now();
@@ -728,44 +765,36 @@ public class MoloniService {
         creditNote.setEntityCountryId(invoice.getEntityCountryId());
 
         // 5. Set the credit note reference to the original invoice
-        creditNote.setReverseDocumentId(invoice.getDocumentId()); // Linking to the original invoice
+        MoloniDocumentDTO.AssociatedDocumentDTO ad = new MoloniDocumentDTO.AssociatedDocumentDTO();
+        ad.setAssociatedId(invoice.getDocumentId());
+        ad.setValue(invoice.getDocumentValueEuros());
+        List<MoloniDocumentDTO.AssociatedDocumentDTO> listAd = new ArrayList<>();
+        listAd.add(ad);
+        creditNote.setAssociatedDocuments(listAd);
 
         // 6. Create credit note items (same as invoice, but negative values)
         List<MoloniProductDTO> creditProducts = new ArrayList<>();
-        for (MoloniProductDTO product : invoice.getProducts()) {
+        for (MoloniProductDTO product : Arrays.asList(invoice.getProductDTOS())) {
             MoloniProductDTO creditProduct = new MoloniProductDTO();
-            creditProduct.setProductName("Credit for " + product.getProductName());
-            creditProduct.setPriceWithoutVat(-product.getPriceWithoutVat()); // Negative value
+            creditProduct.setProductName(product.getProductName());
+            creditProduct.setPriceWithoutVat(product.getPriceWithoutVat());
             creditProduct.setLineQuantity(product.getLineQuantity());
             creditProduct.setProductId(product.getProductId());
             creditProduct.setTaxes(product.getTaxes());
+            creditProduct.setRelatedId(product.getDocumentProductId());
             creditProducts.add(creditProduct);
         }
-        creditNote.setProducts(creditProducts);
-
-        // 7. Set payment details (if applicable)
-        List<MoloniInvoiceReceiptDTO.Payment> payments = invoice.getPayments();
-        if (payments != null && !payments.isEmpty()) {
-            List<MoloniCreditNoteDTO.Payment> creditPayments = new ArrayList<>();
-            for (MoloniInvoiceReceiptDTO.Payment payment : payments) {
-                MoloniCreditNoteDTO.Payment creditPayment = new MoloniCreditNoteDTO.Payment();
-                creditPayment.setPaymentMethodId(payment.getPaymentMethodId());
-                creditPayment.setValue(-payment.getValue()); // Negative value
-                creditPayment.setDate(formattedDate);
-                creditPayments.add(creditPayment);
-            }
-            creditNote.setPayments(creditPayments);
-        }
+        creditNote.setProductDTOS(creditProducts.toArray(new MoloniProductDTO[0]));
 
         // 8. Set document type and status
-        creditNote.setDocumentTypeId(23); // SAFT code for Credit Note
+        creditNote.setDocumentTypeId("23"); // SAFT code for Credit Note
         creditNote.setStatus(0); // 0 = Draft
 
-        // 9. Send credit note request to Moloni API
-        MoloniService.insertCreditNote(creditNote);
-
         return creditNote;
-    }*/
+    }
+
+
+
     public static MoloniDocumentDTO createInvoiceReceiptFromShopifyOrder(ShopifyWebhookPayloadDTO shopifyPayload) {
         MoloniDocumentDTO invoice = new MoloniDocumentDTO();
 
@@ -777,6 +806,7 @@ public class MoloniService {
         LocalDateTime now = LocalDateTime.now();
         String formattedDate = now.format(DateTimeFormatter.ISO_DATE); // Formato ISO 8601 (ex.: "2025-01-21")
         invoice.setDate(formattedDate);
+        invoice.setInternalOrderNumber(shopifyPayload.getName());
 
         // 3. Configurar os dados do cliente
         MoloniEntityClientDTO client = new MoloniEntityClientDTO();
