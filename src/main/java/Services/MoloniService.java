@@ -507,7 +507,7 @@ public class MoloniService {
             result = ConstantsEnum.MOLONI_DOCUMENT_PDF_LINK_DOWNLOAD.getConstantValue().toString();
             result = Utils.addParameter(result, "action", "getDownload");
             result = Utils.addParameter(result, "h",queryParams.get("h"));
-            result = Utils.addParameter(result, "d",queryParams.get("d"));
+            result = Utils.addParameter(result, "d",documentId);
             result = Utils.addParameter(result, "e","syw@smartify.pt");
             result = Utils.addParameter(result, "i","1");
             logger.info("Built pdf link for documentId {} as {}", documentId, result);
