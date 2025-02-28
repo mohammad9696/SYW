@@ -6,16 +6,15 @@ import Utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class FulfillmentService {
     private static final Logger logger = LoggerFactory.getLogger(FulfillmentService.class);
 
     public static void main(String[] args) {
-        FulfillmentService.showPurchaseOrders();
+        //FulfillmentService.showPurchaseOrders();
         logger.info("Initiating order fulfillment service.");
         Scanner scanner =new Scanner(System.in);
         System.out.println("1: Process All Orders           2: Process one by one");
@@ -31,7 +30,7 @@ public class FulfillmentService {
             System.out.println("Please insert shopify order number");
             String orderNumber = scanner.next();
             logger.info("Printing invoices for orders {}", orderNumber);
-            MoloniService.printShopifyDocumentsInMoloni(orderNumber);
+            MoloniService.printShopifyDocumentsInMoloni(orderNumber, null);
         } else {
             return;
         }
@@ -189,6 +188,132 @@ public class FulfillmentService {
         return  outvioOrderDTO;
     }
 
+    public static MoloniDocumentDTO createReceiptFromInvoiceAndCreditNote(
+            MoloniDocumentDTO invoice, MoloniDocumentDTO creditNote) {
+
+        if ( invoice == null || creditNote == null){
+            logger.error("Unable to create receipt without valid credit note and invoice!");
+            return null;
+        }
+        MoloniDocumentDTO receipt = new MoloniDocumentDTO();
+
+        // Definir informações básicas do recibo
+        receipt.setCompanyId(invoice.getCompanyId());
+        receipt.setDate(invoice.getDate()); // Usar a mesma data da fatura
+        receipt.setDocumentSetId(invoice.getDocumentSetId());
+        receipt.setCustomerId(invoice.getCustomerId());
+
+        // Calcular o valor líquido do recibo
+        double netValue = invoice.getDocumentValueEuros() - creditNote.getDocumentValueEuros();
+        receipt.setDocumentValueEuros(netValue);
+
+        // Associar a fatura e a nota de crédito
+        List<MoloniDocumentDTO.AssociatedDocumentDTO> associatedDocuments = new ArrayList<>();
+
+        // Documento associado: Fatura
+        MoloniDocumentDTO.AssociatedDocumentDTO associatedInvoice = new MoloniDocumentDTO.AssociatedDocumentDTO();
+        associatedInvoice.setAssociatedId(invoice.getDocumentId());
+        associatedInvoice.setValue(invoice.getDocumentValueEuros());
+        associatedDocuments.add(associatedInvoice);
+
+        // Documento associado: Nota de Crédito
+        MoloniDocumentDTO.AssociatedDocumentDTO associatedCreditNote = new MoloniDocumentDTO.AssociatedDocumentDTO();
+        associatedCreditNote.setAssociatedId(creditNote.getDocumentId());
+        associatedCreditNote.setValue(creditNote.getDocumentValueEuros()); // Valor negativo para abatimento
+        associatedDocuments.add(associatedCreditNote);
+
+        receipt.setAssociatedDocuments(associatedDocuments);
+
+        // Detalhes do pagamento
+        List<MoloniPaymentMethodDTO> payments = new ArrayList<>();
+        MoloniPaymentMethodDTO payment = new MoloniPaymentMethodDTO();
+        payment.setPaymentMethodId(ConstantsEnum.MOLONI_PAYMENT_METHOD_ID.getConstantValue().toString()); // Exemplo: ID do método de pagamento (Pagamento)
+        payment.setDate(invoice.getDate()); // Data do pagamento
+        payment.setValue(netValue); // Valor do pagamento
+        payments.add(payment);
+
+        receipt.setPayments(payments);
+        receipt.setStatus(1);
+        return receipt;
+    }
+
+    public static MoloniDocumentDTO createInvoiceFromOrderDTO(OrderDTO order, String documentSetName, OutvioResponseDTO outvioResponseDTO) {
+        if (documentSetName == null || documentSetName.isEmpty()) {
+            documentSetName = ConstantsEnum.MOLONI_DOCUMENTSET_WEB.getConstantValue().toString(); // Série padrão
+        }
+
+        MoloniDocumentDTO invoice = new MoloniDocumentDTO();
+
+        // 1. Obter a série de documentos
+        String documentSetId = MoloniService.getDocumentSetIdByName(documentSetName);
+        invoice.setDocumentSetId(documentSetId);
+        invoice.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+
+        // 2. Definir a data da Fatura
+        String formattedDate = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
+        invoice.setDate(formattedDate);
+        invoice.setExpirationDate(formattedDate);
+
+        if (outvioResponseDTO != null && order.getShippingAddress() != null){
+
+            invoice.setDeliveryDestinationZipCode(order.getShippingAddress().getPostalCode());
+            invoice.setDeliveryDestinationCity(order.getShippingAddress().getCity());
+            invoice.setDeliveryDestinationAddress(order.getShippingAddress().getAddress1() + " " + Objects.requireNonNullElse(order.getShippingAddress().getAddress2(), ""));
+            invoice.setDeliveryDestinationCountryId(MoloniService.getCountryIdByCountryISOCode(order.getShippingAddress().getCountryCode()));
+
+            invoice.setDeliveryDepartureZipCode(ConstantsEnum.ADDRESS_ZIP_CODE.getConstantValue().toString());
+            invoice.setDeliveryDepartureCity(ConstantsEnum.ADDRESS_CITY.getConstantValue().toString());
+            invoice.setDeliveryDepartureAddress(ConstantsEnum.ADDRESS_TOTAL.getConstantValue().toString());
+            invoice.setDeliveryDepartureCountryId(MoloniService.getCountryIdByCountryISOCode(ConstantsEnum.ADDRESS_COUNTRY_CODE.getConstantValue().toString()));
+            invoice.setDeliveryMethodId(Integer.parseInt(MoloniService.getDeliveryMethodIdByName(outvioResponseDTO.getShipments().get(0).getCourier())));
+            invoice.setDeliveryDatetime(formattedDate);
+        }
+        // 3. Associar a referência da encomenda (nosso número interno)
+        invoice.setInternalOrderNumber(order.getOrderNumber());
+
+        // 4. Buscar ou criar o cliente no Moloni
+        MoloniEntityClientDTO client = MoloniService.getClientObject(order.getBillingAdress().getNipc(), order.getBillingAdress().getFirstName() + " " + order.getBillingAdress().getLastName(),
+                order.getBillingAdress().getAddress1() + " " + order.getBillingAdress().getAddress2(), order.getBillingAdress().getPostalCode(), order.getBillingAdress().getCity(), order.getBillingAdress().getCountryCode(),
+                        order.getEmail(), order.getBillingAdress().getPhone());
+
+        MoloniEntityClientDTO moloniClient = MoloniService.getOrCreateClient(client);
+        invoice.setCustomerId(moloniClient.getCustomerId());
+
+        // 5. Adicionar os produtos da encomenda (mantendo os valores e descrição do Moloni)
+        List<MoloniProductDTO> products = new ArrayList<>();
+        for (OrderLineDTO lineItem : order.getLineItems()) {
+            MoloniProductDTO moloniProduct = MoloniService.getProduct(lineItem.getSku());
+            if (moloniProduct != null) {
+                MoloniProductDTO product = new MoloniProductDTO();
+                product.setProductName(lineItem.getName()); // Mantém o nome do Moloni
+                product.setPriceWithoutVat(lineItem.getPrice()/(1+lineItem.getTaxLineDTOS().get(0).getRate())); // Mantém o preço SEM IVA
+                product.setLineQuantity(lineItem.getQuantity());
+                product.setProductId(moloniProduct.getProductId());
+                product.setTaxes(moloniProduct.getTaxes()); // Mantém os impostos do Moloni
+
+                products.add(product);
+            } else {
+                logger.error("Produto não encontrado no Moloni para SKU: {}", lineItem.getSku());
+            }
+        }
+        MoloniProductDTO portes = MoloniService.getProduct("PORTES");
+        MoloniProductDTO portesDTO = new MoloniProductDTO();
+        portesDTO.setProductName(order.getShippingLine().get(0).getShippingCode());
+        portesDTO.setPriceWithoutVat(Double.parseDouble(order.getShippingLine().get(0).getPrice())/(1+order.getShippingLine().get(0).getTaxLines().get(0).getRate()));
+        portesDTO.setProductId(portes.getProductId());
+        portesDTO.setTaxes(portes.getTaxes());
+
+
+        invoice.setProductDTOS(products.toArray(new MoloniProductDTO[0]));
+
+        // 6. Definir o tipo de documento como "Fatura" (ID 1)
+        invoice.setDocumentTypeId("1");
+
+        // 7. Definir status como rascunho (0)
+        invoice.setStatus(1);
+
+        return invoice;
+    }
     private static void processOrder(OrderDTO orderDTO, Scanner scanner, List<ProductDTO> productDTOList){
         logger.warn("Processing order {}", orderDTO.getOrderNumber());
 
@@ -218,7 +343,6 @@ public class FulfillmentService {
         for (String line : lines){
             System.out.println(line);
         }
-
         System.out.println("Please check physical stocks. Is all in stock?  1: Yes     2: No");
         int option = scanner.nextInt();
         if (option != 1){
@@ -237,10 +361,10 @@ public class FulfillmentService {
 
             proceed = false;
             while (!proceed){
-                System.out.println("Type product " + line.getSku() + " barcode:");
+                System.out.println("BYPASS or Type product " + line.getSku() + " barcode:");
                 String barcode = scanner.next();
                 String toMatch = productDTO.getVariants().get(0).getBarcode();
-                if (toMatch.equals(barcode)){
+                if (toMatch.equals(barcode) || barcode.equals("BYPASS")){
                     proceed = true;
                 } else {
                      MoloniProductDTO productDTO1 = MoloniService.getProduct(productDTO.sku());
@@ -314,15 +438,18 @@ public class FulfillmentService {
                 logger.error("Could not print label for order {}", orderDTO.getOrderNumber());
                 return;
             }
-            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
+            FulfillmentService.billingOrder(orderDTO, response);
+            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber(), null);
             return;
         } else if (pickup) {
             fulfillOrderDirectly(orderDTO, "store-pickup", "store-pickup");
-            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
+
+            FulfillmentService.billingOrder(orderDTO, null);
+            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber(), null);
             logger.warn("This is a store pickup print two copies of invoice");
             logger.warn("This is a store pickup print two copies of invoice");
             logger.warn("This is a store pickup print two copies of invoice");
-            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
+            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber(), "1");
             logger.warn("This is a store pickup print two copies of invoice");
             logger.warn("This is a store pickup print two copies of invoice");
         } else if (manualShipping){
@@ -330,14 +457,58 @@ public class FulfillmentService {
             logger.warn("This is a CTT order, prepare and take to CTT");
             logger.warn("This is a CTT order, prepare and take to CTT");
             logger.warn("This is a CTT order, prepare and take to CTT");
-            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber());
+            FulfillmentService.billingOrder(orderDTO, null);
+            MoloniService.printShopifyDocumentsInMoloni(orderDTO.getOrderNumber(), null);
             logger.warn("This is a CTT order, prepare and take to CTT");
             logger.warn("This is a CTT order, prepare and take to CTT");
         }
+    }
+
+    private static void billingOrder (OrderDTO orderDTO, OutvioResponseDTO outvioResponseDTO){
+        MoloniEntityClientDTO client = MoloniService.getClient(orderDTO.getBillingAdress().getPhone(), null, orderDTO.getBillingAdress().getNipc(), null, orderDTO.getEmail());
+
+        // 1 consultar FR adiantamento
+        List<MoloniDocumentDTO> invoicesInserted = MoloniService.getAllInvoiceReceiptsBySetIdAndCustomer("ADIANTAMENTO",client.getCustomerId());
+        String documentSelected = null;
+        for (MoloniDocumentDTO i : invoicesInserted){
+            if (i.getDocumentValueEuros() == Double.parseDouble(orderDTO.getTotalPrice())){
+                documentSelected = i.getDocumentId();
+            }
+        }
+        MoloniDocumentDTO invoiceReceipt = MoloniService.getOneInvoiceReceipt(documentSelected);
+
+        // 2 criar nota de credito de Adiantamento
+        MoloniDocumentDTO dto = MoloniService.createCreditNoteFromInvoice(invoiceReceipt);
+        dto = MoloniService.insertCreditNote(dto);
+
+        List<MoloniDocumentDTO> creditNotes = MoloniService.getAllCreditNotesBySetIdAndCustomer(ConstantsEnum.MOLONI_DOCUMENTSET_ADIANTAMENTO.getConstantValue().toString(), client.getCustomerId());
+        for (MoloniDocumentDTO i : creditNotes){
+            if (i.getDocumentValueEuros() == Double.parseDouble(orderDTO.getTotalPrice())){
+                documentSelected = i.getDocumentId();
+            }
+        }
+        MoloniDocumentDTO creditNote = MoloniService.getOneCreditNote(documentSelected);
 
 
+        // 3 criar fatura de encomenda shopify
+
+        dto = createInvoiceFromOrderDTO(orderDTO, null, outvioResponseDTO);
+        dto = MoloniService.insertInvoice(dto);
+
+        List<MoloniDocumentDTO> invoices = MoloniService.getAllInvoicesBySetIdAndCustomer(ConstantsEnum.MOLONI_DOCUMENTSET_SMARTIFY.getConstantValue().toString(), client.getCustomerId());
+        for (MoloniDocumentDTO i : invoices){
+            if (i.getDocumentValueEuros() == Double.parseDouble(orderDTO.getTotalPrice())){
+                documentSelected = i.getDocumentId();
+            }
+        }
+        MoloniDocumentDTO invoiceDto = MoloniService.getOneInvoice(documentSelected);
+
+        //4 criar recibo de FT
+        dto = createReceiptFromInvoiceAndCreditNote(invoiceDto, creditNote);
+        MoloniDocumentDTO receipt = MoloniService.insertReceipt(dto);
 
     }
+
     private static String displayOrderLine(OrderLineDTO line, ProductDTO product){
 
         String sku = Utils.normalizeStringLenght(15,line.getSku());

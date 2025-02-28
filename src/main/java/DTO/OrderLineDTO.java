@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderLineDTO {
 
@@ -37,8 +39,24 @@ public class OrderLineDTO {
     private int quantity;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("tax_lines")
+    private List<ShopifyTaxLineDTO> taxLineDTOS;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("moloniStock")
     private Integer moloniStock;
+
+    public List<ShopifyTaxLineDTO> getTaxLineDTOS() {
+        return this.taxLineDTOS;
+    }
+
+    public void setTaxLineDTOS(final List<ShopifyTaxLineDTO> taxLineDTOS) {
+        this.taxLineDTOS = taxLineDTOS;
+    }
+
+    public void setMoloniStock(final Integer moloniStock) {
+        this.moloniStock = moloniStock;
+    }
 
     public Integer getMoloniStock() {
         return moloniStock;

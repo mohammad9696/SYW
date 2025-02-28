@@ -118,24 +118,11 @@ public class KuantoKustaMotor {
         moloniProductDTOS.add(getShippingProduct("KuantoKusta Portes", shippingPrice, docLineOrder));
         dto.setProductDTOS(moloniProductDTOS.toArray(new MoloniProductDTO[0]));
 
-        MoloniEntityClientDTO kkData = new MoloniEntityClientDTO();
-        kkData.setVat(kuantoKustaOrderDTO.getBillingAddress().getNipc());
-        kkData.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
-        kkData.setClientNumber(MoloniService.getNextClientNumber());
-        kkData.setName(kuantoKustaOrderDTO.getBillingAddress().getName());
-        kkData.setAddress(kuantoKustaOrderDTO.getBillingAddress().getAddress1() +" "+ kuantoKustaOrderDTO.getBillingAddress().getAddress2());
-        kkData.setZipCode(kuantoKustaOrderDTO.getBillingAddress().getPostalCode());
-        kkData.setCity(kuantoKustaOrderDTO.getBillingAddress().getCity());
-        kkData.setEmail(kuantoKustaOrderDTO.getEmail());
-        kkData.setPhone(kuantoKustaOrderDTO.getBillingAddress().getPhone());
-        kkData.setMaturityDateId(0);
-        kkData.setPaymentMethodId(0);
-        kkData.setSalesmanId(0);
-        kkData.setPaymentDay(0);
-        kkData.setCreditLimit(0.0);
-        kkData.setDeliveryMethodId(0);
-        kkData.setLanguageId(1);
-        kkData.setDiscount(0.0);
+        MoloniEntityClientDTO kkData = MoloniService.getClientObject(kuantoKustaOrderDTO.getBillingAddress().getNipc(),kuantoKustaOrderDTO.getBillingAddress().getName(),
+                kuantoKustaOrderDTO.getBillingAddress().getAddress1() +" "+ kuantoKustaOrderDTO.getBillingAddress().getAddress2(),
+                kuantoKustaOrderDTO.getBillingAddress().getPostalCode(), kuantoKustaOrderDTO.getBillingAddress().getCity(), "PT",
+                kuantoKustaOrderDTO.getEmail(),kuantoKustaOrderDTO.getBillingAddress().getPhone());
+
 
         MoloniEntityClientDTO client = MoloniService.getOrCreateClient(kkData);
         dto.setCustomerId(client.getCustomerId());

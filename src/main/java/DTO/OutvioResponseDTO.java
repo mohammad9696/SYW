@@ -137,6 +137,30 @@ public class OutvioResponseDTO {
         }
     }
 
+    public List<Shipment> getShipments() {
+        return this.shipments;
+    }
+
+    public void setShipments(final List<Shipment> shipments) {
+        this.shipments = shipments;
+    }
+
+    public void setPdfLabelUrls(final String[] pdfLabelUrls) {
+        this.pdfLabelUrls = pdfLabelUrls;
+    }
+
+    public String getOutvioOrderId() {
+        return this.outvioOrderId;
+    }
+
+    public void setOutvioOrderId(final String outvioOrderId) {
+        this.outvioOrderId = outvioOrderId;
+    }
+
+    public void setSuccess(final Boolean success) {
+        this.success = success;
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Package {
 

@@ -34,8 +34,14 @@ public class ShopifyWebhookManager {
             ObjectMapper objectMapper = new ObjectMapper();
             ShopifyWebhookPayloadDTO shopifyWebhookPayloadDTO = objectMapper.readValue(payload, ShopifyWebhookPayloadDTO.class);
 
-            MoloniDocumentDTO invoiceReceiptDTO = MoloniService.createInvoiceReceiptFromShopifyOrder(shopifyWebhookPayloadDTO);
-            MoloniService.insertInvoiceReceipt(invoiceReceiptDTO);
+            if (MoloniService.getMoloniDocumentIdsFromShopifyOrder(shopifyWebhookPayloadDTO.getName(), null) == null ||
+                    MoloniService.getMoloniDocumentIdsFromShopifyOrder(shopifyWebhookPayloadDTO.getName(), null).length == 0){
+                MoloniDocumentDTO invoiceReceiptDTO = MoloniService.createInvoiceReceiptFromShopifyOrder(shopifyWebhookPayloadDTO);
+                MoloniService.insertInvoiceReceipt(invoiceReceiptDTO);
+            } else {
+                logger.error("Webhook already received {}", payload);
+            }
+
             return new ResponseEntity<>("Webhook received successfully", HttpStatus.OK);
         } catch (Exception e) {
             throw new RuntimeException(e);

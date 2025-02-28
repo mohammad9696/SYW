@@ -21,6 +21,7 @@ public class MoloniService {
     public static LocalDateTime tokenDateTime = null;
     public static List<MoloniTaxesDTO> taxes = null;
     public static List<MoloniPaymentMethodDTO> paymentMethods;
+    public static List<MoloniDeliveryMethodDTO> deliveryMethods;
 
     public MoloniService() {
     /*    try {
@@ -31,6 +32,10 @@ public class MoloniService {
             logger.error("Error Initiating moloni service and getting document types. Trying again...");
             this.types = HttpRequestExecutor.sendRequest(MoloniDocumentTypeDTO[].class, new MoloniDocumentTypeDTO(), ConstantsEnum.MOLONI_DOCUMENT_GET_TYPES.getConstantValue().toString()+getToken());
         }*/
+    }
+
+    public static MoloniDocumentDTO insertReceipt(MoloniDocumentDTO dto){
+        return  HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, dto, ConstantsEnum.MOLONI_RECEIPT_INSERT_URL.getConstantValue().toString()+getToken());
     }
 
     public static String getPaymentMethodIdByName (String name){
@@ -52,6 +57,28 @@ public class MoloniService {
             paymentMethods = Arrays.asList(HttpRequestExecutor.sendRequest(MoloniPaymentMethodDTO[].class, documentDTO, ConstantsEnum.MOLONI_PAYMENT_METHODS_GET_ALL.getConstantValue().toString()+getToken()));
 
             return getAllPaymentMethods();
+        }
+
+    }    public static String getDeliveryMethodIdByName (String name){
+        List<MoloniDeliveryMethodDTO> methods = getAllDeliveryMethods();
+        for (MoloniDeliveryMethodDTO i : methods){
+            if (name.trim().equalsIgnoreCase(i.getName().trim())){
+                return i.getDeliveryMethodId().toString();
+            }
+        }
+        logger.error("Couldn't find payment method with name {}", name);
+        return null;
+    }
+
+    public static List<MoloniDeliveryMethodDTO> getAllDeliveryMethods (){
+        if (deliveryMethods != null) {
+            return deliveryMethods;
+        } else {
+            MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+            documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+            deliveryMethods = Arrays.asList(HttpRequestExecutor.sendRequest(MoloniDeliveryMethodDTO[].class, documentDTO, ConstantsEnum.MOLONI_DELIVERY_METHODS_GET_ALL.getConstantValue().toString()+getToken()));
+
+            return getAllDeliveryMethods();
         }
 
     }
@@ -80,11 +107,26 @@ public class MoloniService {
         }
 
     }
+    public static List<MoloniCountryDTO> getAllCountries (){
+        return Arrays.asList(HttpRequestExecutor.sendRequest(MoloniCountryDTO[].class, null, ConstantsEnum.MOLONI_COUNTRIES_GET_ALL.getConstantValue().toString()+getToken()));
+
+    }
     public static Integer getCountryIdByName (String name){
-        List<MoloniCountryDTO> countries = Arrays.asList(HttpRequestExecutor.sendRequest(MoloniCountryDTO[].class, null, ConstantsEnum.MOLONI_COUNTRIES_GET_ALL.getConstantValue().toString()+getToken()));
+        List<MoloniCountryDTO> countries = getAllCountries();
 
         for (MoloniCountryDTO i : countries){
             if (i.getName().equalsIgnoreCase(name)){
+                return i.getCountryId();
+            }
+        }
+        return null;
+
+    }
+    public static Integer getCountryIdByCountryISOCode (String isoCode){
+        List<MoloniCountryDTO> countries = getAllCountries();
+
+        for (MoloniCountryDTO i : countries){
+            if (i.getIso31661().equalsIgnoreCase(isoCode)){
                 return i.getCountryId();
             }
         }
@@ -130,6 +172,30 @@ public class MoloniService {
         entityClientDTO = HttpRequestExecutor.sendRequest(MoloniEntityClientDTO.class, entityClientDTO, ConstantsEnum.MOLONI_CLIENT_GET_NEXT_NUMBER_URL.getConstantValue().toString()+getToken());
 
         return entityClientDTO.getClientNumber();
+    }
+
+    public static MoloniEntityClientDTO getClientObject (String nif, String name, String address, String postalCode, String city, String countryISO, String email, String phone){
+        MoloniEntityClientDTO object = new MoloniEntityClientDTO();
+        object.setVat(nif);
+        object.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        object.setClientNumber(MoloniService.getNextClientNumber());
+        object.setName(name);
+        object.setAddress(address);
+        object.setZipCode(postalCode);
+        object.setCity(city);
+        object.setEmail(email);
+        object.setPhone(phone);
+        object.setMaturityDateId(0);
+        object.setPaymentMethodId(0);
+        object.setSalesmanId(0);
+        object.setPaymentDay(0);
+        object.setCreditLimit(0.0);
+        object.setDeliveryMethodId(0);
+        object.setLanguageId(1);
+        object.setDiscount(0.0);
+        object.setCountryId(MoloniService.getCountryIdByCountryISOCode(countryISO));
+
+        return object;
     }
 
     public static MoloniEntityClientDTO getOrCreateClient (MoloniEntityClientDTO clientToGetOrCreate){
@@ -474,13 +540,8 @@ public class MoloniService {
 
     }
 
-    public static void getOneDocument(String documentId){
-        //MoloniDocumentDTO response = HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, document, ConstantsEnum.MOLONI_DOCUMENT_GET_ONE.getConstantValue()+getToken());
-
-    }
-
-    public static void printShopifyDocumentsInMoloni(String shopifyOrderNumber ){
-        String[] documentIds = getMoloniDocumentIdsFromShopifyOrder(shopifyOrderNumber);
+    public static void printShopifyDocumentsInMoloni(String shopifyOrderNumber, String documentTypeId){
+        String[] documentIds = getMoloniDocumentIdsFromShopifyOrder(shopifyOrderNumber, documentTypeId);
         if (documentIds == null ){
             logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
             logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
@@ -517,21 +578,24 @@ public class MoloniService {
 
         return result;
     }
-    private static String[] getMoloniDocumentIdsFromShopifyOrder(String shopifyOrderNumber){
-        return getMoloniDocumentIdsFromShopifyOrder(shopifyOrderNumber, 0);
+    public static String[] getMoloniDocumentIdsFromShopifyOrder(String shopifyOrderNumber, String documentTypeId){
+        return getMoloniDocumentIdsFromShopifyOrder(shopifyOrderNumber, 0, documentTypeId);
     }
-    private static String[] getMoloniDocumentIdsFromShopifyOrder(String shopifyOrderNumber, int tries){
+    private static String[] getMoloniDocumentIdsFromShopifyOrder(String shopifyOrderNumber, int tries, String documentTypeId){
         logger.info("Trying to get document for shopify order {}", shopifyOrderNumber);
         MoloniDocumentDTO document = new MoloniDocumentDTO();
         document.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
         document.setInternalOrderNumber(shopifyOrderNumber);
         String[] documentIds;
+        /*
         try {
             logger.info("Waiting 15 seconds for document to be created and then retrieved for order {}", shopifyOrderNumber);
             Thread.sleep(15000);
         } catch (InterruptedException e) {
             logger.error("Waiting 15 seconds for document unsuccessful");
         }
+        */
+
         MoloniDocumentDTO[] response = HttpRequestExecutor.sendRequest(MoloniDocumentDTO[].class, document, ConstantsEnum.MOLONI_DOCUMENT_GET_ALL.getConstantValue()+getToken());
         if(response.length==1){
             logger.info("Document was found with order number {}",shopifyOrderNumber);
@@ -539,9 +603,16 @@ public class MoloniService {
             documentIds[0] = response[0].getDocumentId();
         } else if(response.length > 1){
             logger.warn("More than one documents were found for order {}",shopifyOrderNumber);
-            documentIds = new String[response.length];
-            for (int i = 0; i<response.length; i++){
-                documentIds[i] = response[i].getDocumentId();
+            boolean all = documentTypeId == null || documentTypeId.equals("") ? true : false;
+            List<MoloniDocumentDTO> documents = new ArrayList<>();
+            for (MoloniDocumentDTO i : response){
+                if (i.getDocumentTypeId().equals("") || all){
+                    documents.add(i);
+                }
+            }
+            documentIds = new String[documents.size()];
+            for (int i = 0; i<documents.size(); i++){
+                documentIds[i] = documents.get(i).getDocumentId();
             }
         } else {
             documentIds = null;
@@ -549,7 +620,7 @@ public class MoloniService {
 
             tries++;
             if(tries<=6){
-                documentIds = getMoloniDocumentIdsFromShopifyOrder(shopifyOrderNumber, tries);
+                documentIds = getMoloniDocumentIdsFromShopifyOrder(shopifyOrderNumber, tries, null);
             } else {
                 logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
                 logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
@@ -697,6 +768,35 @@ public class MoloniService {
         HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, dto, ConstantsEnum.MOLONI_INVOICE_RECEIPT_INSERT_URL.getConstantValue().toString()+getToken());
     }
 
+    public static MoloniDocumentDTO getOneInvoice(String documentId){
+        MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+        documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        documentDTO.setDocumentId(documentId);
+
+        return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, documentDTO, ConstantsEnum.MOLONI_INVOICE_GET_ONE_URL.getConstantValue().toString()+getToken());
+    }
+
+    public static List<MoloniDocumentDTO> getAllInvoicesBySetIdAndCustomer(String setName, String customerId){
+        MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+        documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        documentDTO.setDocumentSetId(MoloniService.getDocumentSetIdByName(setName));
+        documentDTO.setCustomerId(customerId);
+        return getAllInvoices(documentDTO);
+    }
+
+    public static List<MoloniDocumentDTO> getAllInvoices(MoloniDocumentDTO dto){
+        if (dto == null){
+            dto = new MoloniDocumentDTO();
+            dto.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        }
+
+        return Arrays.asList(HttpRequestExecutor.sendRequest(MoloniDocumentDTO[].class, dto, ConstantsEnum.MOLONI_INVOICE_GET_ALL_URL.getConstantValue().toString()+getToken()));
+    }
+
+    public static MoloniDocumentDTO insertInvoice(MoloniDocumentDTO dto){
+        return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, dto, ConstantsEnum.MOLONI_INVOICE_INSERT_URL.getConstantValue().toString()+getToken());
+    }
+
     public static MoloniDocumentDTO getOneInvoiceReceipt(String documentId){
         MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
         documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
@@ -722,8 +822,33 @@ public class MoloniService {
         return Arrays.asList(HttpRequestExecutor.sendRequest(MoloniDocumentDTO[].class, dto, ConstantsEnum.MOLONI_INVOICE_RECEIPTS_GET_ALL_URL.getConstantValue().toString()+getToken()));
     }
 
-    public static void insertCreditNote(MoloniDocumentDTO dto){
-        HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, dto, ConstantsEnum.MOLONI_CREDIT_NOTE_INSERT_URL.getConstantValue().toString()+getToken());
+    public static MoloniDocumentDTO getOneCreditNote(String documentId){
+        MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+        documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        documentDTO.setDocumentId(documentId);
+
+        return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, documentDTO, ConstantsEnum.MOLONI_CREDIT_NOTE_GET_ONE_URL.getConstantValue().toString()+getToken());
+    }
+
+    public static List<MoloniDocumentDTO> getAllCreditNotesBySetIdAndCustomer(String setName, String customerId){
+        MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+        documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        documentDTO.setDocumentSetId(MoloniService.getDocumentSetIdByName(setName));
+        documentDTO.setCustomerId(customerId);
+        return getAllCreditNotes(documentDTO);
+    }
+
+    public static List<MoloniDocumentDTO> getAllCreditNotes(MoloniDocumentDTO dto){
+        if (dto == null){
+            dto = new MoloniDocumentDTO();
+            dto.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        }
+
+        return Arrays.asList(HttpRequestExecutor.sendRequest(MoloniDocumentDTO[].class, dto, ConstantsEnum.MOLONI_CREDIT_NOTE_GET_ALL_URL.getConstantValue().toString()+getToken()));
+    }
+
+    public static MoloniDocumentDTO insertCreditNote(MoloniDocumentDTO dto){
+        return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, dto, ConstantsEnum.MOLONI_CREDIT_NOTE_INSERT_URL.getConstantValue().toString()+getToken());
     }
 
     private static boolean hasExistingCreditNote (MoloniDocumentDTO invoice) {
@@ -743,7 +868,7 @@ public class MoloniService {
         }
 
         // 2. Fetch the document series ID for "SM25"
-        String documentSetId = MoloniService.getDocumentSetIdByName("SM25");
+        String documentSetId = MoloniService.getDocumentSetIdByName(ConstantsEnum.MOLONI_DOCUMENTSET_ADIANTAMENTO.getConstantValue().toString());
         creditNote.setDocumentSetId(documentSetId);
         creditNote.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
         creditNote.setInternalOrderNumber(invoice.getInternalOrderNumber());
@@ -788,7 +913,7 @@ public class MoloniService {
 
         // 8. Set document type and status
         creditNote.setDocumentTypeId("23"); // SAFT code for Credit Note
-        creditNote.setStatus(0); // 0 = Draft
+        creditNote.setStatus(1); // 0 = Draft
 
         return creditNote;
     }
@@ -799,7 +924,7 @@ public class MoloniService {
         MoloniDocumentDTO invoice = new MoloniDocumentDTO();
 
         // 1. Obter a série de documentos dinamicamente
-        String documentSetId = MoloniService.getDocumentSetIdByName("ADIANTAMENTO");
+        String documentSetId = MoloniService.getDocumentSetIdByName(ConstantsEnum.MOLONI_DOCUMENTSET_ADIANTAMENTO.getConstantValue().toString());
         invoice.setDocumentSetId(documentSetId);
         invoice.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
         // 2. Data atual como data da fatura
@@ -810,12 +935,18 @@ public class MoloniService {
 
         // 3. Configurar os dados do cliente
         MoloniEntityClientDTO client = new MoloniEntityClientDTO();
-        client.setName(shopifyPayload.getCustomer().getFirstName() + " " + shopifyPayload.getCustomer().getLastName());
+        client.setName(shopifyPayload.getBillingAddress().getFirstName() + " " + shopifyPayload.getBillingAddress().getLastName());
         client.setVat(shopifyPayload.getBillingAddress().getVatId() != null ? shopifyPayload.getBillingAddress().getVatId() : null);
         client.setAddress(shopifyPayload.getBillingAddress().getAddress1() + " " + shopifyPayload.getBillingAddress().getAddress2());
         client.setCity(shopifyPayload.getBillingAddress().getCity());
         client.setZipCode(shopifyPayload.getBillingAddress().getPostcode());
-        client.setCountryId(MoloniService.getCountryIdByName(shopifyPayload.getBillingAddress().getCountry()));
+        String customerEmail = shopifyPayload.getCustomer().getEmail();
+        String customerPhone = shopifyPayload.getBillingAddress().getPhone();
+        client.setEmail(customerEmail != null ? customerEmail : null);
+        client.setPhone(customerPhone != null ? customerPhone : null);
+
+
+        client = MoloniService.getClientObject(client.getVat(), client.getName(), client.getAddress(), client.getZipCode(), client.getCity(), shopifyPayload.getBillingAddress().getCountryISOCode(), client.getEmail(), client.getPhone());
 
         MoloniEntityClientDTO moloniClient = MoloniService.getOrCreateClient(client);
         invoice.setEntityName(moloniClient.getName());
@@ -823,7 +954,6 @@ public class MoloniService {
         invoice.setEntityAddress(moloniClient.getAddress());
         invoice.setEntityCity(moloniClient.getCity());
         invoice.setEntityZipCode(moloniClient.getZipCode());
-        invoice.setEntityCountry(moloniClient.getCountry().getName());
         invoice.setEntityCountryId(moloniClient.getCountryId());
         invoice.setCustomerId(moloniClient.getCustomerId());
 
@@ -833,7 +963,7 @@ public class MoloniService {
         for (ShopifyWebhookPayloadDTO.LineItem lineItem : shopifyPayload.getLineItems()) {
             for (ShopifyWebhookPayloadDTO.TaxLine taxLine : lineItem.getTaxLines()) {
                 double taxRate = taxLine.getRate(); // Por exemplo, 0.23 para 23% de IVA
-                double lineTotalExclTax = Double.parseDouble(lineItem.getPrice()) - Double.parseDouble(lineItem.getTaxLines().get(0).getPrice());
+                double lineTotalExclTax = Double.parseDouble(lineItem.getPrice())*lineItem.getQuantity() - Double.parseDouble(lineItem.getTaxLines().get(0).getPrice());
 
                 ivaGroupedTotals.put(taxRate, ivaGroupedTotals.getOrDefault(taxRate, 0.0) + lineTotalExclTax);
             }
@@ -845,7 +975,7 @@ public class MoloniService {
             double taxRate = entry.getKey();
             double totalValue = entry.getValue();
 
-            MoloniProductDTO mp = MoloniService.getProduct("ADIANTAMENTO");
+            MoloniProductDTO mp = MoloniService.getProduct(ConstantsEnum.MOLONI_ADIANTAMENTO_PRODUCT_SKU.getConstantValue().toString());
             MoloniProductDTO product = new MoloniProductDTO();
             product.setProductName("ADIANTAMENTO - IVA " + (taxRate * 100) + "%");
             product.setPriceWithoutVat(totalValue);
@@ -871,19 +1001,43 @@ public class MoloniService {
 
         invoice.setProductDTOS(products.toArray(new MoloniProductDTO[0]));
 
-        // 6. Adicionar pagamento
-        MoloniDocumentDTO.Payment payment = new MoloniDocumentDTO.Payment();
+        // 6. **Adicionar os portes de envio**
+        if (shopifyPayload.getShippingLines() != null && !shopifyPayload.getShippingLines().isEmpty()) {
+            for (ShopifyWebhookPayloadDTO.ShippingLine shippingLine : shopifyPayload.getShippingLines()) {
+                double shippingCostExclTax = Double.parseDouble(shippingLine.getPrice()) - Double.parseDouble(shippingLine.getTaxLines().get(0).getPrice());
+                double shippingTaxRate = shippingLine.getTaxLines().get(0).getRate();
+
+                MoloniProductDTO shippingProduct = new MoloniProductDTO();
+                shippingProduct.setProductName("Portes de Envio");
+                shippingProduct.setPriceWithoutVat(shippingCostExclTax);
+                shippingProduct.setLineQuantity(1);
+                shippingProduct.setProductId(MoloniService.getProduct(ConstantsEnum.MOLONI_SHIPPING_PRODUCT_SKU.getConstantValue().toString()).getProductId());
+
+                // Adicionar IVA aos portes
+                MoloniTaxesDTO shippingTax = getTaxesByCountryAndValue(shopifyPayload.getBillingAddress().getCountryISOCode(), (int) Math.round(shippingTaxRate * 100));
+                MoloniProductTaxesDTO tax = new MoloniProductTaxesDTO();
+                tax.setTaxId(Long.parseLong(shippingTax.getTaxId().toString()));
+                tax.setValueAmount((int) Math.round(shippingTaxRate * 100));
+                shippingProduct.setTaxes(List.of(tax));
+
+                products.add(shippingProduct);
+            }
+        }
+
+        invoice.setProductDTOS(products.toArray(new MoloniProductDTO[0]));
+        // 8. Adicionar pagamento
+        MoloniPaymentMethodDTO payment = new MoloniPaymentMethodDTO();
         payment.setPaymentMethodId(getPaymentMethodIdByName(shopifyPayload.getPaymentGatewayNames().get(0))); // Método de pagamento
         payment.setValue(Double.parseDouble(shopifyPayload.getCurrentTotalPrice()));
         payment.setDate(formattedDate);
 
         invoice.setPayments(List.of(payment));
 
-        // 7. Configurar tipo de documento como fatura-recibo
+        // 8. Configurar tipo de documento como fatura-recibo
         invoice.setDocumentTypeId("27"); // Código SAFT para Fatura-Recibo
 
-        // 8. Configurar status como rascunho
-        invoice.setStatus(0); // 0 para rascunho, conforme documentação
+        // 9. Configurar status como rascunho
+        invoice.setStatus(1); // 0 para rascunho, conforme documentação
 
         return invoice;
     }

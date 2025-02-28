@@ -126,6 +126,90 @@ public class MoloniDocumentDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer deliveryDestinationCountryId;
 
+    @JsonProperty("delivery_method_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer deliveryMethodId;
+
+    @JsonProperty("delivery_datetime")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String deliveryDatetime;
+
+    @JsonProperty("delivery_departure_address")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String deliveryDepartureAddress;
+
+    @JsonProperty("delivery_departure_city")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String deliveryDepartureCity;
+
+    @JsonProperty("delivery_departure_zip_code")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String deliveryDepartureZipCode;
+
+    @JsonProperty("delivery_departure_country")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer deliveryDepartureCountryId;
+
+    @JsonProperty("vehicle_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer vehicleId;
+
+    public Integer getDeliveryMethodId() {
+        return this.deliveryMethodId;
+    }
+
+    public void setDeliveryMethodId(final Integer deliveryMethodId) {
+        this.deliveryMethodId = deliveryMethodId;
+    }
+
+    public String getDeliveryDepartureAddress() {
+        return this.deliveryDepartureAddress;
+    }
+
+    public void setDeliveryDepartureAddress(final String deliveryDepartureAddress) {
+        this.deliveryDepartureAddress = deliveryDepartureAddress;
+    }
+
+    public String getDeliveryDepartureCity() {
+        return this.deliveryDepartureCity;
+    }
+
+    public void setDeliveryDepartureCity(final String deliveryDepartureCity) {
+        this.deliveryDepartureCity = deliveryDepartureCity;
+    }
+
+    public String getDeliveryDepartureZipCode() {
+        return this.deliveryDepartureZipCode;
+    }
+
+    public void setDeliveryDepartureZipCode(final String deliveryDepartureZipCode) {
+        this.deliveryDepartureZipCode = deliveryDepartureZipCode;
+    }
+
+    public Integer getDeliveryDepartureCountryId() {
+        return this.deliveryDepartureCountryId;
+    }
+
+    public void setDeliveryDepartureCountryId(final Integer deliveryDepartureCountryId) {
+        this.deliveryDepartureCountryId = deliveryDepartureCountryId;
+    }
+
+    public String getDeliveryDatetime() {
+        return this.deliveryDatetime;
+    }
+
+    public void setDeliveryDatetime(final String deliveryDatetime) {
+        this.deliveryDatetime = deliveryDatetime;
+    }
+
+    public Integer getVehicleId() {
+        return this.vehicleId;
+    }
+
+    public void setVehicleId(final Integer vehicleId) {
+        this.vehicleId = vehicleId;
+    }
+
     @JsonProperty("status")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer status;
@@ -137,7 +221,7 @@ public class MoloniDocumentDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("payments")
-    private List<MoloniDocumentDTO.Payment> payments;
+    private List<MoloniPaymentMethodDTO> payments;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("reverse_associated_documents")
@@ -190,11 +274,11 @@ public class MoloniDocumentDTO {
         this.reverseAssociatedDocuments = reverseAssociatedDocuments;
     }
 
-    public List<MoloniDocumentDTO.Payment> getPayments() {
+    public List<MoloniPaymentMethodDTO> getPayments() {
         return this.payments;
     }
 
-    public void setPayments(final List<MoloniDocumentDTO.Payment> payments) {
+    public void setPayments(final List<MoloniPaymentMethodDTO> payments) {
         this.payments = payments;
     }
 
@@ -567,49 +651,6 @@ public class MoloniDocumentDTO {
         // Getters and Setters
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Payment {
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        @JsonProperty("payment_method_id")
-        private String paymentMethodId;
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        @JsonProperty("payment_method_name")
-        private String paymentMethodName;
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        @JsonProperty("value")
-        private Double value;
-
-        @JsonProperty("date")
-        private String date;
-
-        // Getters and Setters
-
-        public String getPaymentMethodId() {
-            return this.paymentMethodId;
-        }
-
-        public void setPaymentMethodId(final String paymentMethodId) {
-            this.paymentMethodId = paymentMethodId;
-        }
-
-        public Double getValue() {
-            return this.value;
-        }
-
-        public void setValue(final Double value) {
-            this.value = value;
-        }
-
-        public String getDate() {
-            return this.date;
-        }
-
-        public void setDate(final String date) {
-            this.date = date;
-        }
-    }
     public Boolean getValid() {
         return this.valid;
     }

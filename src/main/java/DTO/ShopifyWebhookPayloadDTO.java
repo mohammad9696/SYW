@@ -368,6 +368,18 @@ public class ShopifyWebhookPayloadDTO {
         @JsonProperty("company")
         private String vatId;
 
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @JsonProperty("phone")
+        private String phone;
+
+        public String getPhone() {
+            return this.phone;
+        }
+
+        public void setPhone(final String phone) {
+            this.phone = phone;
+        }
+
         public String getCountryISOCode() {
             return this.countryISOCode;
         }
@@ -991,7 +1003,18 @@ public class ShopifyWebhookPayloadDTO {
         @JsonProperty("price")
         private String price;
 
-        // Getters and Setters
+        @JsonProperty("tax_lines")
+        private List<TaxLine> taxLines;
+
+
+        public List<TaxLine> getTaxLines() {
+            return this.taxLines;
+        }
+
+        public void setTaxLines(final List<TaxLine> taxLines) {
+            this.taxLines = taxLines;
+        }
+
         public String getTitle() {
             return title;
         }

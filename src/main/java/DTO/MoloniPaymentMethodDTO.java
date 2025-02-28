@@ -15,6 +15,17 @@ public class MoloniPaymentMethodDTO {
     @JsonProperty("name")
     private String name;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("payment_method_name")
+    private String paymentMethodName;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("value")
+    private Double value;
+
+    @JsonProperty("date")
+    private String date;
+
     public String getPaymentMethodId() {
         return this.paymentMethodId;
     }
@@ -29,5 +40,29 @@ public class MoloniPaymentMethodDTO {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public String getPaymentMethodName() {
+        return this.paymentMethodName;
+    }
+
+    public void setPaymentMethodName(final String paymentMethodName) {
+        this.paymentMethodName = paymentMethodName;
+    }
+
+    public Double getValue() {
+        return this.value;
+    }
+
+    public void setValue(final Double value) {
+        this.value = value;
+    }
+
+    public String getDate() {
+        return this.date;
+    }
+
+    public void setDate(final String date) {
+        this.date = date;
     }
 }
