@@ -93,14 +93,14 @@ public class XlsPriceProcessor {
             XlsPorductDataPositionsDTO xlsPorductDataPositionsDTO = new XlsPorductDataPositionsDTO();
             for (String j : data.get(1)){
                 i++;
-                switch (j){
+                switch (j.toLowerCase()){
                     case "ean":
                         xlsPorductDataPositionsDTO.setEan(i);
                         break;
                     case "sku":
                         xlsPorductDataPositionsDTO.setSku(i);
                         break;
-                    case "name":
+                    case "product":
                         xlsPorductDataPositionsDTO.setName(i);
                         break;
                     case "min":

@@ -771,6 +771,10 @@ public class MoloniService {
     public static MoloniDocumentDTO getOneInvoice(String documentId){
         MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
         documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        if (documentId == null || documentId == ""){
+            logger.error("Document id is null. Could not retrieve oneInvoice");
+            return null;
+        }
         documentDTO.setDocumentId(documentId);
 
         return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, documentDTO, ConstantsEnum.MOLONI_INVOICE_GET_ONE_URL.getConstantValue().toString()+getToken());
@@ -779,7 +783,9 @@ public class MoloniService {
     public static List<MoloniDocumentDTO> getAllInvoicesBySetIdAndCustomer(String setName, String customerId){
         MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
         documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
-        documentDTO.setDocumentSetId(MoloniService.getDocumentSetIdByName(setName));
+        if (setName != null){
+            documentDTO.setDocumentSetId(MoloniService.getDocumentSetIdByName(setName));
+        }
         documentDTO.setCustomerId(customerId);
         return getAllInvoices(documentDTO);
     }
@@ -800,6 +806,10 @@ public class MoloniService {
     public static MoloniDocumentDTO getOneInvoiceReceipt(String documentId){
         MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
         documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        if (documentId == null || documentId == ""){
+            logger.error("Document id is null. Could not retrieve oneInvoiceReceipt");
+            return null;
+        }
         documentDTO.setDocumentId(documentId);
 
         return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, documentDTO, ConstantsEnum.MOLONI_INVOICE_RECEIPT_GET_ONE_URL.getConstantValue().toString()+getToken());
@@ -825,6 +835,10 @@ public class MoloniService {
     public static MoloniDocumentDTO getOneCreditNote(String documentId){
         MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
         documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        if (documentId == null || documentId == ""){
+            logger.error("Document id is null. Could not retrieve oneCreditNote");
+            return null;
+        }
         documentDTO.setDocumentId(documentId);
 
         return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, documentDTO, ConstantsEnum.MOLONI_CREDIT_NOTE_GET_ONE_URL.getConstantValue().toString()+getToken());
@@ -963,8 +977,8 @@ public class MoloniService {
         for (ShopifyWebhookPayloadDTO.LineItem lineItem : shopifyPayload.getLineItems()) {
             for (ShopifyWebhookPayloadDTO.TaxLine taxLine : lineItem.getTaxLines()) {
                 double taxRate = taxLine.getRate(); // Por exemplo, 0.23 para 23% de IVA
-                double lineTotalExclTax = Double.parseDouble(lineItem.getPrice())*lineItem.getQuantity() - Double.parseDouble(lineItem.getTaxLines().get(0).getPrice());
-
+                //double lineTotalExclTax = Double.parseDouble(lineItem.getPrice())*lineItem.getQuantity() - Double.parseDouble(lineItem.getTaxLines().get(0).getPrice());
+                double lineTotalExclTax= Double.parseDouble(lineItem.getPrice())*lineItem.getQuantity()/(1+taxRate);
                 ivaGroupedTotals.put(taxRate, ivaGroupedTotals.getOrDefault(taxRate, 0.0) + lineTotalExclTax);
             }
         }

@@ -199,9 +199,10 @@ public class FulfillmentService {
 
         // Definir informações básicas do recibo
         receipt.setCompanyId(invoice.getCompanyId());
-        receipt.setDate(invoice.getDate()); // Usar a mesma data da fatura
+        receipt.setDate(creditNote.getDate()); // Usar a mesma data da nota de credito
         receipt.setDocumentSetId(invoice.getDocumentSetId());
         receipt.setCustomerId(invoice.getCustomerId());
+        receipt.setInternalOrderNumber(invoice.getInternalOrderNumber());
 
         // Calcular o valor líquido do recibo
         double netValue = invoice.getDocumentValueEuros() - creditNote.getDocumentValueEuros();
@@ -283,13 +284,25 @@ public class FulfillmentService {
         List<MoloniProductDTO> products = new ArrayList<>();
         for (OrderLineDTO lineItem : order.getLineItems()) {
             MoloniProductDTO moloniProduct = MoloniService.getProduct(lineItem.getSku());
+            Double taxRate = lineItem.getTaxLineDTOS().get(0).getRate();
+
+            String countryISO = null;
+            if (order.getShippingAddress() != null){
+                countryISO = order.getShippingAddress().getCountryCode();
+            } else {
+                countryISO = ConstantsEnum.ADDRESS_COUNTRY_CODE.getConstantValue().toString();
+            }
+            MoloniTaxesDTO moloniTax =MoloniService.getTaxesByCountryAndValue(countryISO, (int)Math.round(taxRate * 100));
+            MoloniProductTaxesDTO tax = new MoloniProductTaxesDTO();
+            tax.setTaxId(Long.parseLong(moloniTax.getTaxId().toString()));
+            tax.setValueAmount((int)Math.round(taxRate * 100));
             if (moloniProduct != null) {
                 MoloniProductDTO product = new MoloniProductDTO();
                 product.setProductName(lineItem.getName()); // Mantém o nome do Moloni
                 product.setPriceWithoutVat(lineItem.getPrice()/(1+lineItem.getTaxLineDTOS().get(0).getRate())); // Mantém o preço SEM IVA
                 product.setLineQuantity(lineItem.getQuantity());
                 product.setProductId(moloniProduct.getProductId());
-                product.setTaxes(moloniProduct.getTaxes()); // Mantém os impostos do Moloni
+                product.setTaxes(List.of(tax)); // Mantém os impostos do Moloni
 
                 products.add(product);
             } else {
@@ -297,23 +310,56 @@ public class FulfillmentService {
             }
         }
         MoloniProductDTO portes = MoloniService.getProduct("PORTES");
-        MoloniProductDTO portesDTO = new MoloniProductDTO();
-        portesDTO.setProductName(order.getShippingLine().get(0).getShippingCode());
-        portesDTO.setPriceWithoutVat(Double.parseDouble(order.getShippingLine().get(0).getPrice())/(1+order.getShippingLine().get(0).getTaxLines().get(0).getRate()));
-        portesDTO.setProductId(portes.getProductId());
-        portesDTO.setTaxes(portes.getTaxes());
 
+        // Verifica se o método de envio é recolha em loja (baseado no código de envio)
+        boolean isStorePickup = order.getShippingLine().get(0).getShippingCode().toLowerCase().contains("smartify.pt");
 
-        invoice.setProductDTOS(products.toArray(new MoloniProductDTO[0]));
+        // Se não for recolha em loja, adiciona a alínea de portes
+        if (!isStorePickup) {
+            MoloniProductDTO portesDTO = new MoloniProductDTO();
+            portesDTO.setProductName(order.getShippingLine().get(0).getShippingCode());
 
-        // 6. Definir o tipo de documento como "Fatura" (ID 1)
-        invoice.setDocumentTypeId("1");
+            double shippingPrice = Double.parseDouble(order.getShippingLine().get(0).getPrice());
+            double taxRate = 0.0;
 
-        // 7. Definir status como rascunho (0)
-        invoice.setStatus(1);
+            // Se houver taxas nos portes, usa essa taxa
+            if (!order.getShippingLine().get(0).getTaxLines().isEmpty()) {
+                taxRate = order.getShippingLine().get(0).getTaxLines().get(0).getRate();
+            }
+
+            // Se não houver taxa definida nos portes, usa a maior taxa dos produtos da fatura
+            if (taxRate == 0.0) {
+                for (MoloniProductDTO product : products) {
+                    if (!product.getTaxes().isEmpty() && product.getTaxes().get(0).getTax().getValue() > taxRate) {
+                        taxRate = product.getTaxes().get(0).getTax().getValue();
+                    }
+                }
+            }
+
+            // Define o preço SEM IVA e aplica a taxa encontrada
+            portesDTO.setPriceWithoutVat(shippingPrice / (1 + taxRate));
+            portesDTO.setProductId(portes.getProductId());
+            portesDTO.setLineQuantity(1);
+            // Define a taxa de imposto (mesmo que seja grátis, tem imposto)
+            MoloniTaxesDTO shippingTax = MoloniService.getTaxesByCountryAndValue(order.getBillingAdress().getCountryCode(), (int) Math.round(taxRate * 100));
+            MoloniProductTaxesDTO tax = new MoloniProductTaxesDTO();
+            tax.setTaxId(Long.parseLong(shippingTax.getTaxId().toString()));
+            tax.setValueAmount((int) Math.round(taxRate * 100));
+            portesDTO.setTaxes(List.of(tax));
+            // Adiciona os portes à lista de produtos da fatura
+            products.add(portesDTO);
+            invoice.setProductDTOS(products.toArray(new MoloniProductDTO[0]));
+
+            // 6. Definir o tipo de documento como "Fatura" (ID 1)
+            invoice.setDocumentTypeId("1");
+
+            // 7. Definir status como rascunho (0)
+            invoice.setStatus(1);
+        }
 
         return invoice;
     }
+
     private static void processOrder(OrderDTO orderDTO, Scanner scanner, List<ProductDTO> productDTOList){
         logger.warn("Processing order {}", orderDTO.getOrderNumber());
 
@@ -495,7 +541,7 @@ public class FulfillmentService {
         dto = createInvoiceFromOrderDTO(orderDTO, null, outvioResponseDTO);
         dto = MoloniService.insertInvoice(dto);
 
-        List<MoloniDocumentDTO> invoices = MoloniService.getAllInvoicesBySetIdAndCustomer(ConstantsEnum.MOLONI_DOCUMENTSET_SMARTIFY.getConstantValue().toString(), client.getCustomerId());
+        List<MoloniDocumentDTO> invoices = MoloniService.getAllInvoicesBySetIdAndCustomer(null, client.getCustomerId());
         for (MoloniDocumentDTO i : invoices){
             if (i.getDocumentValueEuros() == Double.parseDouble(orderDTO.getTotalPrice())){
                 documentSelected = i.getDocumentId();
