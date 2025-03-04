@@ -1018,19 +1018,29 @@ public class MoloniService {
         // 6. **Adicionar os portes de envio**
         if (shopifyPayload.getShippingLines() != null && !shopifyPayload.getShippingLines().isEmpty()) {
             for (ShopifyWebhookPayloadDTO.ShippingLine shippingLine : shopifyPayload.getShippingLines()) {
-                double shippingCostExclTax = Double.parseDouble(shippingLine.getPrice()) - Double.parseDouble(shippingLine.getTaxLines().get(0).getPrice());
-                double shippingTaxRate = shippingLine.getTaxLines().get(0).getRate();
 
+                double shippingTaxRate = 0.0;
+                Long shippingTaxRateId;
+                MoloniProductDTO portes = MoloniService.getProduct(ConstantsEnum.MOLONI_SHIPPING_PRODUCT_SKU.getConstantValue().toString());
+                if (!shippingLine.getTaxLines().isEmpty()) {
+                    shippingTaxRate = shippingLine.getTaxLines().get(0).getRate();
+                    MoloniTaxesDTO shippingTax = getTaxesByCountryAndValue(shopifyPayload.getBillingAddress().getCountryISOCode(), (int) Math.round(shippingTaxRate * 100));
+                    shippingTaxRateId = Long.parseLong(shippingTax.getTaxId().toString());
+                } else {
+                    shippingTaxRateId = portes.getTaxes().get(0).getTaxId();
+                    shippingTaxRate = portes.getTaxes().get(0).getTax().getValue()/100;
+                }
+                double shippingCostExclTax = Double.parseDouble(shippingLine.getPrice())/(1+shippingTaxRate);
                 MoloniProductDTO shippingProduct = new MoloniProductDTO();
                 shippingProduct.setProductName("Portes de Envio");
                 shippingProduct.setPriceWithoutVat(shippingCostExclTax);
                 shippingProduct.setLineQuantity(1);
-                shippingProduct.setProductId(MoloniService.getProduct(ConstantsEnum.MOLONI_SHIPPING_PRODUCT_SKU.getConstantValue().toString()).getProductId());
+                shippingProduct.setProductId(portes.getProductId());
 
                 // Adicionar IVA aos portes
-                MoloniTaxesDTO shippingTax = getTaxesByCountryAndValue(shopifyPayload.getBillingAddress().getCountryISOCode(), (int) Math.round(shippingTaxRate * 100));
+
                 MoloniProductTaxesDTO tax = new MoloniProductTaxesDTO();
-                tax.setTaxId(Long.parseLong(shippingTax.getTaxId().toString()));
+                tax.setTaxId(Long.parseLong(shippingTaxRateId.toString()));
                 tax.setValueAmount((int) Math.round(shippingTaxRate * 100));
                 shippingProduct.setTaxes(List.of(tax));
 

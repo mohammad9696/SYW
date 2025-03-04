@@ -584,7 +584,7 @@ public class FulfillmentService {
         orders.setFulfillmentOrderDTO(or);
 
         String reqUrl = ConstantsEnum.FULFILLMENT_REQUEST_URL_PREFIX.getConstantValue().toString();
-        Object result = HttpRequestExecutor.sendRequest(Object.class, orders , reqUrl);
+        Object result = HttpRequestExecutor.sendRequestShopify(Object.class, orders , reqUrl);
         System.out.println(result);
     }
 }
