@@ -31,6 +31,11 @@ public class FulfillmentService {
             String orderNumber = scanner.next();
             logger.info("Printing invoices for orders {}", orderNumber);
             MoloniService.printShopifyDocumentsInMoloni(orderNumber, null);
+        } else if (option == 4){
+            System.out.println("DEBUG FECHAR SE NAO SABER DO QUE SE TRATA");
+            String orderNumber = scanner.next();
+            OrderDTO orderDTO = ShopifyOrderService.getFulfilledOrderByName(orderNumber);
+            billingOrder(orderDTO, null);
         } else {
             return;
         }
@@ -300,7 +305,7 @@ public class FulfillmentService {
                 MoloniProductDTO product = new MoloniProductDTO();
                 product.setProductName(lineItem.getName()); // Mantém o nome do Moloni
                 product.setPriceWithoutVat(lineItem.getPrice()/(1+lineItem.getTaxLineDTOS().get(0).getRate())); // Mantém o preço SEM IVA
-                product.setLineQuantity(lineItem.getQuantity());
+                product.setLineQuantity(lineItem.getFulfillableQuantity());
                 product.setProductId(moloniProduct.getProductId());
                 product.setTaxes(List.of(tax)); // Mantém os impostos do Moloni
 

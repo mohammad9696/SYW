@@ -3,7 +3,10 @@ package Services;
 import Constants.ConstantsEnum;
 import DTO.*;
 import Utils.Utils;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.ArrayMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,15 +202,29 @@ public class MoloniService {
     }
 
     public static MoloniEntityClientDTO getOrCreateClient (MoloniEntityClientDTO clientToGetOrCreate){
+
+        if (clientToGetOrCreate.getCountryId()==(MoloniService.getCountryIdByCountryISOCode("pt"))){
+            clientToGetOrCreate.setVat(clientToGetOrCreate.getVat().trim().replaceAll("[^0-9]", ""));
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
         MoloniEntityClientDTO result = getClient(clientToGetOrCreate.getPhone() , clientToGetOrCreate.getClientNumber(), clientToGetOrCreate.getVat(), clientToGetOrCreate.getCustomerId(), clientToGetOrCreate.getEmail());
         if ( result != null){
             return result;
         }
+        String response = HttpRequestExecutor.sendRequest(String.class, clientToGetOrCreate, ConstantsEnum.MOLONI_CLIENT_INSERT_URL.getConstantValue().toString()+getToken());
+        String responseString = response.toString();
+        try {
+            return objectMapper.readValue(responseString.toString(), MoloniEntityClientDTO.class);
+        } catch (Exception e) {
+            logger.error("Error creating client name:{} email:{} phone:{} vat:{}, responseString: {}", clientToGetOrCreate.getName(), clientToGetOrCreate.getContactEmail(), clientToGetOrCreate.getContactPhone(), clientToGetOrCreate.getVat(), responseString);
+            if (responseString.contains("vat")){
+                clientToGetOrCreate.setVat("999999990");
+                return HttpRequestExecutor.sendRequest(MoloniEntityClientDTO.class, clientToGetOrCreate, ConstantsEnum.MOLONI_CLIENT_INSERT_URL.getConstantValue().toString()+getToken());
 
-        result = HttpRequestExecutor.sendRequest(MoloniEntityClientDTO.class, clientToGetOrCreate, ConstantsEnum.MOLONI_CLIENT_INSERT_URL.getConstantValue().toString()+getToken());
-
-
-        return result;
+            }
+        }
+        return null;
     }
     public static MoloniEntityClientDTO getClient (String phone, String customerNumber, String vatId, String customerId, String email){
         List<MoloniEntityClientDTO> clientDTOS = new ArrayList<>();
@@ -616,10 +633,10 @@ public class MoloniService {
             }
         } else {
             documentIds = null;
-            logger.info("No document was found with order number {} trying again in 15 seconds",shopifyOrderNumber);
+            logger.info("No document was found with order number {}",shopifyOrderNumber);
 
             tries++;
-            if(tries<=6){
+            if(tries<=1){
                 documentIds = getMoloniDocumentIdsFromShopifyOrder(shopifyOrderNumber, tries, null);
             } else {
                 logger.error("Unable to get document don't close this order {} and show supervisor",shopifyOrderNumber);
@@ -978,7 +995,7 @@ public class MoloniService {
             for (ShopifyWebhookPayloadDTO.TaxLine taxLine : lineItem.getTaxLines()) {
                 double taxRate = taxLine.getRate(); // Por exemplo, 0.23 para 23% de IVA
                 //double lineTotalExclTax = Double.parseDouble(lineItem.getPrice())*lineItem.getQuantity() - Double.parseDouble(lineItem.getTaxLines().get(0).getPrice());
-                double lineTotalExclTax= Double.parseDouble(lineItem.getPrice())*lineItem.getQuantity()/(1+taxRate);
+                double lineTotalExclTax= Double.parseDouble(lineItem.getPrice())*lineItem.getCurrentQuantity()/(1+taxRate);
                 ivaGroupedTotals.put(taxRate, ivaGroupedTotals.getOrDefault(taxRate, 0.0) + lineTotalExclTax);
             }
         }

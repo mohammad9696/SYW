@@ -109,7 +109,7 @@ public class XlsPriceProcessor {
                     case "max":
                         xlsPorductDataPositionsDTO.setMax(i);
                         break;
-                    case "Smartify":
+                    case "smartify":
                         xlsPorductDataPositionsDTO.setSmartifyPrice(i);
                         break;
 
@@ -121,21 +121,27 @@ public class XlsPriceProcessor {
 
             List<ProductCompareDataDTO> productCompareDataDTOS = new ArrayList<>();
             for (Map.Entry<Integer, List<String>> j : data.entrySet()){
-                if (j.getKey()==1) {continue;}
+                try {
+                    if (j.getKey()==1) {continue;}
 
-                List<CompetitorCompareDataDTO> competitorCompareDataDTOS = new ArrayList<>();
-                int u = 0;
-                for (Integer k : xlsPorductDataPositionsDTO.getCompetitorPositions()){
-                    if (Double.parseDouble(j.getValue().get(k)) != 0){
-                        CompetitorCompareDataDTO competitorCompareDataDTO = new CompetitorCompareDataDTO(competitorNames.get(u),  Double.parseDouble(j.getValue().get(k)));
-                        competitorCompareDataDTOS.add(competitorCompareDataDTO);
+                    List<CompetitorCompareDataDTO> competitorCompareDataDTOS = new ArrayList<>();
+                    int u = 0;
+                    for (Integer k : xlsPorductDataPositionsDTO.getCompetitorPositions()){
+
+                        if (j.getValue().get(k)!= null && Double.parseDouble(j.getValue().get(k)) != 0 ){
+                            CompetitorCompareDataDTO competitorCompareDataDTO = new CompetitorCompareDataDTO(competitorNames.get(u),  Double.parseDouble(j.getValue().get(k)));
+                            competitorCompareDataDTOS.add(competitorCompareDataDTO);
+                        }
+                        u++;
                     }
-                    u++;
+                    ProductCompareDataDTO productCompareDataDTO = new ProductCompareDataDTO(j.getValue().get(xlsPorductDataPositionsDTO.getEan()),
+                            j.getValue().get(xlsPorductDataPositionsDTO.getSku()), j.getValue().get(xlsPorductDataPositionsDTO.getName()),
+                            competitorCompareDataDTOS, Double.parseDouble(j.getValue().get(xlsPorductDataPositionsDTO.getSmartifyPrice())),Double.parseDouble(j.getValue().get(xlsPorductDataPositionsDTO.getMin())), Double.parseDouble(j.getValue().get(xlsPorductDataPositionsDTO.getMax())));
+                    productCompareDataDTOS.add(productCompareDataDTO);
+                } catch (Exception e){
+                    logger.error("Error calculating line {}", j);
                 }
-                ProductCompareDataDTO productCompareDataDTO = new ProductCompareDataDTO(j.getValue().get(xlsPorductDataPositionsDTO.getEan()),
-                        j.getValue().get(xlsPorductDataPositionsDTO.getSku()), j.getValue().get(xlsPorductDataPositionsDTO.getName()),
-                        competitorCompareDataDTOS, Double.parseDouble(j.getValue().get(xlsPorductDataPositionsDTO.getSmartifyPrice())),Double.parseDouble(j.getValue().get(xlsPorductDataPositionsDTO.getMin())), Double.parseDouble(j.getValue().get(xlsPorductDataPositionsDTO.getMax())));
-                productCompareDataDTOS.add(productCompareDataDTO);
+
             }
             productCompareData = productCompareDataDTOS;
             filteredProductCompareData = productCompareData;

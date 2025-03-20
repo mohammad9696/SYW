@@ -84,26 +84,21 @@ public class ShopifyOrderService {
         }
     }
 
+    protected static OrderDTO getFulfilledOrderByName(String orderNumber){
+        List<OrderDTO> orders = getOrdersGeneric(ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS_FULFILLED.getConstantValue().toString());
+        for (OrderDTO i : orders){
+            if (i.getOrderNumber().equalsIgnoreCase(orderNumber)){
+                return i;
+            }
+        }
+        return null;
+    }
     protected static List<OrderDTO> getOrdersToFulfil(){
         logger.info("Getting orders to fulfill from shopify");
         TypeReference<OrderListDTO> typeReference = new TypeReference<OrderListDTO>() {};
         Map<String, Object> params = new HashMap<>();
-        OrderListDTO list = HttpRequestExecutor.getObjectRequestShopify(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS.getConstantValue().toString(), params);
-        logger.info("Got {} orders to fulfill", list.getOrders().size());
-        while (!params.isEmpty()){
-            logger.info("shopify order list is paginated. Getting next page.");
-            String newReqUrl = params.get("newReqUrl").toString();
-            params.remove("newReqUrl");
-            OrderListDTO resultNext = HttpRequestExecutor.getObjectRequestShopify(typeReference, newReqUrl, params);
-            for (OrderDTO i : list.getOrders()){
-                if (i.getId().equals(resultNext.getOrders().get(0).getId())){
-                    return list.getOrders();
-                }
-            }
-            for (OrderDTO i : resultNext.getOrders()){
-                list.getOrders().add(i);
-            }
-        }
+        OrderListDTO list = new OrderListDTO();
+        list.setOrders(getOrdersGeneric(ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS.getConstantValue().toString()));
 
         List<OrderDTO> ordersToFulfill = new ArrayList<>();
         Collections.reverse(list.getOrders());
@@ -124,9 +119,13 @@ public class ShopifyOrderService {
     }
 
     protected static List<OrderDTO> getOrdersUnpaidAndPaid(){
+        return getOrdersGeneric(ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS_ALL_OPEN_UNPAID_AND_PAID.getConstantValue().toString());
+
+    }
+    protected static List<OrderDTO> getOrdersGeneric(String requestUrl){
         TypeReference<OrderListDTO> typeReference = new TypeReference<OrderListDTO>() {};
         Map<String, Object> params = new HashMap<>();
-        OrderListDTO list = HttpRequestExecutor.getObjectRequestShopify(typeReference, ConstantsEnum.GET_REQUEST_SHOPIFY_ORDERS_ALL_OPEN_UNPAID_AND_PAID.getConstantValue().toString(), params);
+        OrderListDTO list = HttpRequestExecutor.getObjectRequestShopify(typeReference,requestUrl, params);
         while (!params.isEmpty()){
             logger.info("shopify order list is paginated. Getting next page.");
             String newReqUrl = params.get("newReqUrl").toString();

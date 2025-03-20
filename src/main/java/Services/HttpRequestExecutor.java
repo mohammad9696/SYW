@@ -175,9 +175,12 @@ public class HttpRequestExecutor {
             CloseableHttpClient client = HttpClients.createDefault();
             CloseableHttpResponse getResponse = client.execute(post);
             String response = EntityUtils.toString(getResponse.getEntity());
-            Object object = mapper.readValue(response, responseObject);
+            logger.info("Sent POST Request to {} with body {} and got response {}", requestUrl, jsonValue, response);
 
-            //logger.info("Sent POST Request to {} with body {} and got response {}", requestUrl, jsonValue, response);
+            if (responseObject== String.class){
+                return (S)response;
+            }
+            Object object = mapper.readValue(response, responseObject);
 
             return  (S) object;
 

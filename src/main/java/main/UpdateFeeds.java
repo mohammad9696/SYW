@@ -109,7 +109,11 @@ public class UpdateFeeds {
                 if(priceToSet != null && priceToSet>0.00){
                     HttpGraphQLRequestExecutor.removeMetafield(p.getMetafield(priceMetafield));
                     HttpGraphQLRequestExecutor.removeMetafield(p.getMetafield(dateMetafield));
-                    ShopifyProductService.updateProductPrice(p, priceToSet, p.getVariants().get(0).getCompareAtPrice(), true);
+                    Double compareAtPrice =p.getVariants().get(0).getCompareAtPrice();
+                    if (compareAtPrice == null){
+                        compareAtPrice = p.getVariants().get(0).getPrice() > priceToSet ? p.getVariants().get(0).getPrice() : 0;
+                    }
+                    ShopifyProductService.updateProductPrice(p, priceToSet, compareAtPrice, true);
                 }
 
             } catch (Exception e){

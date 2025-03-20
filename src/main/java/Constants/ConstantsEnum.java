@@ -14,6 +14,7 @@ public enum ConstantsEnum {
     GET_REQUEST_SHOPIFY_PRODUCTS("shopify.get.products","insertValueInProperties"),
     GET_REQUEST_TESTSHOPIFY_PRODUCTS("test.shopify.get.products","insertValueInProperties"),
     GET_REQUEST_SHOPIFY_ORDERS("shopify.get.orders","insertValueInProperties"),
+    GET_REQUEST_SHOPIFY_ORDERS_FULFILLED("shopify.get.orders.fulfilled","insertValueInProperties"),
     GET_REQUEST_SHOPIFY_ORDERS_ALL_OPEN_UNPAID_AND_PAID("shopify.getAllOpen.orders","insertValueInProperties"),
     CREATE_ORDER_REQUEST_SHOPIFY("shopify.create.order","insertValueInProperties"),
     UPDATE_ORDER_REQUEST_SHOPIFY_PREFIX("shopify.update.order.prefix","insertValueInProperties"),
