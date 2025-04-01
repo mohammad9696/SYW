@@ -154,6 +154,18 @@ public class MoloniDocumentDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer vehicleId;
 
+    @JsonProperty("send_email")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<SendEmail> sendEmail;
+
+    public List<SendEmail> getSendEmail() {
+        return this.sendEmail;
+    }
+
+    public void setSendEmail(final List<SendEmail> sendEmail) {
+        this.sendEmail = sendEmail;
+    }
+
     public Integer getDeliveryMethodId() {
         return this.deliveryMethodId;
     }
@@ -345,6 +357,38 @@ public class MoloniDocumentDTO {
     public void setReverseDocumentId(String reverseDocumentId) {
         this.reverseDocumentId = reverseDocumentId;
     }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class SendEmail {
+        private String email;
+        private String name;
+        private String msg;
+
+        public String getEmail() {
+            return this.email;
+        }
+
+        public void setEmail(final String email) {
+            this.email = email;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public void setName(final String name) {
+            this.name = name;
+        }
+
+        public String getMsg() {
+            return this.msg;
+        }
+
+        public void setMsg(final String msg) {
+            this.msg = msg;
+        }
+    }
+
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ReverseDocumentDTO {

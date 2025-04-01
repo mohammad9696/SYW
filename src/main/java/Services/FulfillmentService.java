@@ -194,7 +194,7 @@ public class FulfillmentService {
     }
 
     public static MoloniDocumentDTO createReceiptFromInvoiceAndCreditNote(
-            MoloniDocumentDTO invoice, MoloniDocumentDTO creditNote) {
+            MoloniDocumentDTO invoice, MoloniDocumentDTO creditNote, MoloniEntityClientDTO moloniEntityClientDTO) {
 
         if ( invoice == null || creditNote == null){
             logger.error("Unable to create receipt without valid credit note and invoice!");
@@ -240,10 +240,18 @@ public class FulfillmentService {
 
         receipt.setPayments(payments);
         receipt.setStatus(1);
+
+        MoloniDocumentDTO.SendEmail sendEmailDTO = new MoloniDocumentDTO.SendEmail();
+        List<MoloniDocumentDTO.SendEmail> array = new ArrayList<>();
+        sendEmailDTO.setEmail(moloniEntityClientDTO.getEmail());
+        sendEmailDTO.setName(moloniEntityClientDTO.getName());
+        sendEmailDTO.setMsg("Olá! Em seguimento da emissão da fatura final, segue o recibo de regularização da mesma.");
+        array.add(sendEmailDTO);
+        receipt.setSendEmail(array);
         return receipt;
     }
 
-    public static MoloniDocumentDTO createInvoiceFromOrderDTO(OrderDTO order, String documentSetName, OutvioResponseDTO outvioResponseDTO) {
+    public static MoloniDocumentDTO createInvoiceFromOrderDTO(OrderDTO order, String documentSetName, OutvioResponseDTO outvioResponseDTO, MoloniEntityClientDTO moloniEntityClientDTO) {
         if (documentSetName == null || documentSetName.isEmpty()) {
             documentSetName = ConstantsEnum.MOLONI_DOCUMENTSET_WEB.getConstantValue().toString(); // Série padrão
         }
@@ -360,6 +368,14 @@ public class FulfillmentService {
 
             // 7. Definir status como rascunho (0)
             invoice.setStatus(1);
+
+            MoloniDocumentDTO.SendEmail sendEmailDTO = new MoloniDocumentDTO.SendEmail();
+            List<MoloniDocumentDTO.SendEmail> array = new ArrayList<>();
+            sendEmailDTO.setEmail(moloniEntityClientDTO.getEmail());
+            sendEmailDTO.setName(moloniEntityClientDTO.getName());
+            sendEmailDTO.setMsg("Olá! Em seguimento do seu pedido o qual agradecemos, segue a Fatura final.");
+            array.add(sendEmailDTO);
+            invoice.setSendEmail(array);
         }
 
         return invoice;
@@ -519,7 +535,7 @@ public class FulfillmentService {
         MoloniEntityClientDTO client = MoloniService.getClient(orderDTO.getBillingAdress().getPhone(), null, orderDTO.getBillingAdress().getNipc(), null, orderDTO.getEmail());
 
         // 1 consultar FR adiantamento
-        List<MoloniDocumentDTO> invoicesInserted = MoloniService.getAllInvoiceReceiptsBySetIdAndCustomer("ADIANTAMENTO",client.getCustomerId());
+        List<MoloniDocumentDTO> invoicesInserted = MoloniService.getAllInvoiceReceiptsBySetIdAndCustomer(ConstantsEnum.MOLONI_DOCUMENTSET_ADIANTAMENTO.getConstantValue().toString(),client.getCustomerId());
         String documentSelected = null;
         for (MoloniDocumentDTO i : invoicesInserted){
             if (i.getDocumentValueEuros() == Double.parseDouble(orderDTO.getTotalPrice())){
@@ -528,8 +544,9 @@ public class FulfillmentService {
         }
         MoloniDocumentDTO invoiceReceipt = MoloniService.getOneInvoiceReceipt(documentSelected);
 
+        MoloniEntityClientDTO moloniEntityClientDTO = MoloniService.getClient(null, null, null, invoiceReceipt.getCustomerId(), null);
         // 2 criar nota de credito de Adiantamento
-        MoloniDocumentDTO dto = MoloniService.createCreditNoteFromInvoice(invoiceReceipt);
+        MoloniDocumentDTO dto = MoloniService.createCreditNoteFromInvoice(invoiceReceipt, moloniEntityClientDTO);
         dto = MoloniService.insertCreditNote(dto);
 
         List<MoloniDocumentDTO> creditNotes = MoloniService.getAllCreditNotesBySetIdAndCustomer(ConstantsEnum.MOLONI_DOCUMENTSET_ADIANTAMENTO.getConstantValue().toString(), client.getCustomerId());
@@ -543,7 +560,7 @@ public class FulfillmentService {
 
         // 3 criar fatura de encomenda shopify
 
-        dto = createInvoiceFromOrderDTO(orderDTO, null, outvioResponseDTO);
+        dto = createInvoiceFromOrderDTO(orderDTO, null, outvioResponseDTO, moloniEntityClientDTO);
         dto = MoloniService.insertInvoice(dto);
 
         List<MoloniDocumentDTO> invoices = MoloniService.getAllInvoicesBySetIdAndCustomer(null, client.getCustomerId());
@@ -555,7 +572,7 @@ public class FulfillmentService {
         MoloniDocumentDTO invoiceDto = MoloniService.getOneInvoice(documentSelected);
 
         //4 criar recibo de FT
-        dto = createReceiptFromInvoiceAndCreditNote(invoiceDto, creditNote);
+        dto = createReceiptFromInvoiceAndCreditNote(invoiceDto, creditNote, moloniEntityClientDTO);
         MoloniDocumentDTO receipt = MoloniService.insertReceipt(dto);
 
     }

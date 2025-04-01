@@ -203,7 +203,7 @@ public class MoloniService {
 
     public static MoloniEntityClientDTO getOrCreateClient (MoloniEntityClientDTO clientToGetOrCreate){
 
-        if (clientToGetOrCreate.getCountryId()==(MoloniService.getCountryIdByCountryISOCode("pt"))){
+        if (clientToGetOrCreate.getVat() != null && clientToGetOrCreate.getCountryId()==(MoloniService.getCountryIdByCountryISOCode("pt"))){
             clientToGetOrCreate.setVat(clientToGetOrCreate.getVat().trim().replaceAll("[^0-9]", ""));
         }
 
@@ -623,8 +623,15 @@ public class MoloniService {
             boolean all = documentTypeId == null || documentTypeId.equals("") ? true : false;
             List<MoloniDocumentDTO> documents = new ArrayList<>();
             for (MoloniDocumentDTO i : response){
-                if (i.getDocumentTypeId().equals("") || all){
-                    documents.add(i);
+                if (all || i.getDocumentTypeId().equals(documentTypeId)){
+                    String vat = i.getEntityVat();
+                    if (vat != null && vat.startsWith("5")) {
+                        documents.add(i);
+                    } else {
+                        if (i.getDocumentTypeId().equals("1")) {
+                            documents.add(i);
+                        }
+                    }
                 }
             }
             documentIds = new String[documents.size()];
@@ -889,7 +896,7 @@ public class MoloniService {
         return false;
     }
 
-    public static MoloniDocumentDTO createCreditNoteFromInvoice(MoloniDocumentDTO invoice) {
+    public static MoloniDocumentDTO createCreditNoteFromInvoice(MoloniDocumentDTO invoice, MoloniEntityClientDTO moloniEntityClientDTO) {
         MoloniDocumentDTO creditNote = new MoloniDocumentDTO();
 
         // 1. Validate if there's an existing credit note (reverse document)
@@ -945,6 +952,14 @@ public class MoloniService {
         // 8. Set document type and status
         creditNote.setDocumentTypeId("23"); // SAFT code for Credit Note
         creditNote.setStatus(1); // 0 = Draft
+
+        MoloniDocumentDTO.SendEmail sendEmailDTO = new MoloniDocumentDTO.SendEmail();
+        List<MoloniDocumentDTO.SendEmail> array = new ArrayList<>();
+        sendEmailDTO.setEmail(moloniEntityClientDTO.getEmail());
+        sendEmailDTO.setName(moloniEntityClientDTO.getName());
+        sendEmailDTO.setMsg("Olá! Em seguimento do seu pagamento o qual agradecemos, segue a Nota de crédito do adiantamento. Posteriormente receberá a fatura final");
+        array.add(sendEmailDTO);
+        creditNote.setSendEmail(array);
 
         return creditNote;
     }
@@ -1080,6 +1095,14 @@ public class MoloniService {
         // 9. Configurar status como rascunho
         invoice.setStatus(1); // 0 para rascunho, conforme documentação
 
+        //10 email para envio de documento
+        MoloniDocumentDTO.SendEmail sendEmailDTO = new MoloniDocumentDTO.SendEmail();
+        List<MoloniDocumentDTO.SendEmail> array = new ArrayList<>();
+        sendEmailDTO.setEmail(client.getEmail());
+        sendEmailDTO.setName(client.getName());
+        sendEmailDTO.setMsg("Olá! Em seguimento do seu pagamento o qual agradecemos, segue a Fatura-Recibo de adiantamento. Posteriormente receberá a fatura final");
+        array.add(sendEmailDTO);
+        invoice.setSendEmail(array);
         return invoice;
     }
 
