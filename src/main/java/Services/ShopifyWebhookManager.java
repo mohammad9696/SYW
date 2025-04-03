@@ -35,8 +35,8 @@ public class ShopifyWebhookManager {
             ShopifyWebhookPayloadDTO shopifyWebhookPayloadDTO = objectMapper.readValue(payload, ShopifyWebhookPayloadDTO.class);
 
             if (topic.contains("orders/paid")){
-                if (MoloniService.getMoloniDocumentIdsFromShopifyOrder(shopifyWebhookPayloadDTO.getName(), null) == null ||
-                        MoloniService.getMoloniDocumentIdsFromShopifyOrder(shopifyWebhookPayloadDTO.getName(), null).length == 0){
+                String[] ids = MoloniService.getMoloniDocumentIdsFromShopifyOrder(shopifyWebhookPayloadDTO.getName(), null);
+                if ( ids == null || ids.length == 0){
                     MoloniDocumentDTO invoiceReceiptDTO = MoloniService.createInvoiceReceiptFromShopifyOrder(shopifyWebhookPayloadDTO);
                     MoloniService.insertInvoiceReceipt(invoiceReceiptDTO);
                 } else {

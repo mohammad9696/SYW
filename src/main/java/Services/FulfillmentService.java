@@ -13,7 +13,7 @@ import java.util.*;
 public class FulfillmentService {
     private static final Logger logger = LoggerFactory.getLogger(FulfillmentService.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         //FulfillmentService.showPurchaseOrders();
         logger.info("Initiating order fulfillment service.");
         Scanner scanner =new Scanner(System.in);
@@ -42,7 +42,7 @@ public class FulfillmentService {
 
     }
 
-    private static void autoProcessingOrders (Scanner scanner){
+    private static void autoProcessingOrders (Scanner scanner) throws Exception {
         logger.info("Processing all orders");
         List<ProductDTO> productDTOList = ShopifyProductService.getShopifyProductList();
         List<StockDetailsDTO> stocks = new ArrayList<>();
@@ -102,7 +102,7 @@ public class FulfillmentService {
         }
     }
 
-    private static void processOrdersIndividually(Scanner scanner){
+    private static void processOrdersIndividually(Scanner scanner) throws Exception {
 
         List<ProductDTO> productDTOList = ShopifyProductService.getShopifyProductList();
         while (true){
@@ -381,7 +381,7 @@ public class FulfillmentService {
         return invoice;
     }
 
-    private static void processOrder(OrderDTO orderDTO, Scanner scanner, List<ProductDTO> productDTOList){
+    private static void processOrder(OrderDTO orderDTO, Scanner scanner, List<ProductDTO> productDTOList) throws Exception {
         logger.warn("Processing order {}", orderDTO.getOrderNumber());
 
         String sku = Utils.normalizeStringLenght(15,"Sku");
@@ -531,16 +531,23 @@ public class FulfillmentService {
         }
     }
 
-    private static void billingOrder (OrderDTO orderDTO, OutvioResponseDTO outvioResponseDTO){
+    private static void billingOrder (OrderDTO orderDTO, OutvioResponseDTO outvioResponseDTO) throws Exception {
         MoloniEntityClientDTO client = MoloniService.getClient(orderDTO.getBillingAdress().getPhone(), null, orderDTO.getBillingAdress().getNipc(), null, orderDTO.getEmail());
 
         // 1 consultar FR adiantamento
         List<MoloniDocumentDTO> invoicesInserted = MoloniService.getAllInvoiceReceiptsBySetIdAndCustomer(ConstantsEnum.MOLONI_DOCUMENTSET_ADIANTAMENTO.getConstantValue().toString(),client.getCustomerId());
         String documentSelected = null;
+        int count = 0;
         for (MoloniDocumentDTO i : invoicesInserted){
-            if (i.getDocumentValueEuros() == Double.parseDouble(orderDTO.getTotalPrice())){
+            if (i.getDocumentValueEuros() == Double.parseDouble(orderDTO.getTotalPrice()) && i.getInternalOrderNumber()!= null
+                && i.getInternalOrderNumber().equals(orderDTO.getOrderNumber())){
                 documentSelected = i.getDocumentId();
+                count++;
             }
+        }
+        if (count > 1) {
+            logger.error("Existe mais do que um adiantamento emitido para a mesma encomenda. Verificar manualmente e tratar");
+            throw new Exception("Existe mais do que um adiantamento emitido para a mesma encomenda. Verificar manualmente e tratar");
         }
         MoloniDocumentDTO invoiceReceipt = MoloniService.getOneInvoiceReceipt(documentSelected);
 
