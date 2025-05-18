@@ -24,7 +24,7 @@ public enum PartnerFeedPropertiesEnum {
     IMAGE_2_URL ("image2", "T", 19),
     IMAGE_3_URL ("image3", "U", 20),
     INVENTORY("inventory","V", 21),
-    PRECO_TABELA("precoTabelaComIva","W", 22),
+    PRECO_TABELA("precoTabelaSemIVA","W", 22),
     MARGEM_COM_PVP_SMARTIFY("margemComPVPdaSMARTIFY","X", 23);
 
     private String column_name;

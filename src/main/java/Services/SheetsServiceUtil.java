@@ -4,6 +4,7 @@ import Constants.ConstantsEnum;
 import Constants.PartnerFeedPropertiesEnum;
 import Constants.KuantoKustaPropertiesEnum;
 import Constants.ProductPropertiesEnum;
+import DTO.MoloniProductDTO;
 import DTO.ProductDTO;
 import DTO.MacroProductDTO;
 import DTO.ProductVariantDTO;
@@ -117,6 +118,8 @@ public class SheetsServiceUtil {
     private static List<Object> partnerFeedSheetProductRow(MacroProductDTO macroProductDTO){
         List<Object> productRow = startPartnerSheetRow();
 
+        MoloniProductDTO moloniProductDTO = MoloniService.getProduct(macroProductDTO.getSku());
+        Double tax = moloniProductDTO != null && moloniProductDTO.getTaxes().size() > 0 ? (1+moloniProductDTO.getTaxes().get(0).taxPercentageValue()) : Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString());
         if (macroProductDTO.getId() != null) {
             productRow.set(PartnerFeedPropertiesEnum.ID.getColumn_number(), macroProductDTO.getVariantId());
         }
@@ -183,7 +186,7 @@ public class SheetsServiceUtil {
 
 
         if(macroProductDTO.getPrice() != null){
-            productRow.set(PartnerFeedPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPrice()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString()));
+            productRow.set(PartnerFeedPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPrice()/tax);
             productRow.set(PartnerFeedPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), macroProductDTO.getPrice());
         }
 
@@ -201,7 +204,7 @@ public class SheetsServiceUtil {
         if (macroProductDTO.getInventory() != null){
             int inventoryToSet = macroProductDTO.getInventory();
             if (inventoryToSet <= 0){
-                if (macroProductDTO.getInventoryPolicy().equals("continue")){
+                if (macroProductDTO.getInventoryPolicy().equalsIgnoreCase("continue")){
                     inventoryToSet = 1;
                 }
             } else if (inventoryToSet > 25){
@@ -210,8 +213,8 @@ public class SheetsServiceUtil {
             productRow.set(PartnerFeedPropertiesEnum.INVENTORY.getColumn_number(), inventoryToSet );
         }
 
-        Double costPrice = StockKeepingUnitsService.getCostPrice(null, macroProductDTO.getSku())*Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString());
-        Double pvp = macroProductDTO.getPrice();
+        Double costPrice = StockKeepingUnitsService.getCostPrice(null, macroProductDTO.getSku());
+        Double pvp = macroProductDTO.getPrice()/tax;
         Double margin ;
         Double marginPercentage;
         Double sellPrice;
@@ -222,6 +225,9 @@ public class SheetsServiceUtil {
             if (marginPercentage/2 > Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100 ){
                 sellPrice = pvp * (1.0- Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100);
                 partnerMargin = Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100;
+            } else  if (marginPercentage/2 < Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MIN.getConstantValue().toString())/100 ){
+                sellPrice = pvp / (1.0- Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MIN.getConstantValue().toString())/100);
+                partnerMargin = Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MIN.getConstantValue().toString())/100;
             } else {
                 sellPrice = pvp * (1.0 - marginPercentage/2);
                 partnerMargin = marginPercentage/2;

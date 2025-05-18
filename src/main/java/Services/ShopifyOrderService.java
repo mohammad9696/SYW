@@ -45,6 +45,35 @@ public class ShopifyOrderService {
             }
 
         }
+
+        List<MoloniDocumentDTO> billOfLadings = MoloniService.getBillOfLadings();
+        for (MoloniDocumentDTO order : billOfLadings){
+            if (order.getDocumentValueEuros() == order.getDocumentReconciledValueEuros()){
+                continue;
+            }
+            MoloniDocumentDTO billOfLadingComplete = MoloniService.getBillOfLading(order.getDocumentId());
+            if (billOfLadingComplete.getDocumentReconciledValueEuros()<0.1){
+                for (MoloniProductDTO product : billOfLadingComplete.getProductDTOS()){
+                    StockDetailsDTO stockDetailsDTO = new StockDetailsDTO(product.getSku());
+                    if(stringStockDetailsDTOMap.containsKey(product.getSku())) {
+                        stockDetailsDTO = stringStockDetailsDTOMap.get(product.getSku());
+                    }
+                    int reservedAmount = product.getLineQuantity();
+                    int sumToAmount = stockDetailsDTO.getMoloniBillsOfLading() != null ? stockDetailsDTO.getMoloniBillsOfLading():0;
+                    reservedAmount = reservedAmount + sumToAmount;
+                    stockDetailsDTO.setMoloniBillsOfLading(reservedAmount);
+                    stringStockDetailsDTOMap.put(product.getSku(), stockDetailsDTO);
+
+                }
+            }
+            if (billOfLadingComplete.getDocumentValueEuros() > billOfLadingComplete.getDocumentReconciledValueEuros()){
+                logger.error("ENCOMENDA PARCIAL, FAZER MANUALMENTE {}", order.getDocumentNumber());
+                logger.error("ENCOMENDA PARCIAL, FAZER MANUALMENTE {}", order.getDocumentNumber());
+                logger.error("ENCOMENDA PARCIAL, FAZER MANUALMENTE {}", order.getDocumentNumber());
+            }
+
+        }
+
         for (OrderDTO order : orderList){
             for (OrderLineDTO line : order.getLineItems()){
                 StockDetailsDTO stockDetailsDTO = new StockDetailsDTO(line.getSku());

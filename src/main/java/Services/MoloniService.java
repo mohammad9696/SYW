@@ -136,6 +136,17 @@ public class MoloniService {
         return null;
 
     }
+    public static MoloniDocumentDTO getBillOfLading(String billOfLadingId){
+        MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+        documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        documentDTO.setDocumentId(billOfLadingId);
+        return HttpRequestExecutor.sendRequest(MoloniDocumentDTO.class, documentDTO, ConstantsEnum.MOLONI_BILL_OF_LADING_GET_ONE_URL.getConstantValue().toString()+getToken());
+    }
+    public static List<MoloniDocumentDTO> getBillOfLadings(){
+        MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
+        documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
+        return Arrays.asList(HttpRequestExecutor.sendRequest(MoloniDocumentDTO[].class, documentDTO, ConstantsEnum.MOLONI_BILL_OF_LADING_GET_ALL_URL.getConstantValue().toString()+getToken()));
+    }
     public static MoloniDocumentDTO getPurchaseOrder(String purchaseOrderId){
         MoloniDocumentDTO documentDTO = new MoloniDocumentDTO();
         documentDTO.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
@@ -694,31 +705,37 @@ public class MoloniService {
     }
 
     public static void syncMoloniProduct(ProductDTO productDTO){
-        logger.info("Syncing product {} data to Moloni", productDTO.sku());
-        MoloniProductDTO moloniProductDTO = getProduct(productDTO.sku());
-        boolean isNeededToSync = true;
+        try {
+            logger.info("Syncing product {} data to Moloni", productDTO.sku());
+            MoloniProductDTO moloniProductDTO = getProduct(productDTO.sku());
+            boolean isNeededToSync = true;
+            double tax = moloniProductDTO != null && moloniProductDTO.getTaxes().size() > 0 ? (1+moloniProductDTO.getTaxes().get(0).taxPercentageValue()) : Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString());
 
-        if (moloniProductDTO != null){
-            DecimalFormat decimalFormat = new DecimalFormat("0.00");
-            double shopifyProductPrice = Double.parseDouble(decimalFormat.format(productDTO.getVariants().get(0).getPrice()/Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString())));
-            double moloniProductPrice = Double.parseDouble(decimalFormat.format(moloniProductDTO.getPriceWithoutVat()));
-            if (productDTO.getTitle().equals(moloniProductDTO.getProductName()) && shopifyProductPrice - moloniProductPrice == 0.0){
-                if(productDTO.getVariants().get(0).getBarcode() != null && productDTO.getVariants().get(0).getBarcode().equals(moloniProductDTO.getEan())){
-                    isNeededToSync = false;
-                    logger.info("Not syncing because already up to date: " + productDTO.sku()+ " " + productDTO.getTitle());
+            if (moloniProductDTO != null){
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+                double shopifyProductPrice = Double.parseDouble(decimalFormat.format(productDTO.getVariants().get(0).getPrice()/tax));
+                double moloniProductPrice = Double.parseDouble(decimalFormat.format(moloniProductDTO.getPriceWithoutVat()));
+                if (productDTO.getTitle().equals(moloniProductDTO.getProductName()) && shopifyProductPrice - moloniProductPrice == 0.0){
+                    if(productDTO.getVariants().get(0).getBarcode() != null && productDTO.getVariants().get(0).getBarcode().equals(moloniProductDTO.getEan())){
+                        isNeededToSync = false;
+                        logger.info("Not syncing because already up to date: " + productDTO.sku()+ " " + productDTO.getTitle());
+                    }
                 }
-            }
 
-            if (isNeededToSync){
-                moloniProductDTO = new MoloniProductDTO(moloniProductDTO.getCompanyId(), moloniProductDTO.getProductId(),
-                        productDTO.getVariants().get(0).getBarcode(), productDTO.getTitle(), productDTO.sku(),
-                        shopifyProductPrice);
-                updateProduct(moloniProductDTO);
-                logger.info("Synced successfully: " + productDTO.sku()+ " " + productDTO.getTitle());
+                if (isNeededToSync){
+                    moloniProductDTO = new MoloniProductDTO(moloniProductDTO.getCompanyId(), moloniProductDTO.getProductId(),
+                            productDTO.getVariants().get(0).getBarcode(), productDTO.getTitle(), productDTO.sku(),
+                            shopifyProductPrice);
+                    updateProduct(moloniProductDTO);
+                    logger.info("Synced successfully: " + productDTO.sku()+ " " + productDTO.getTitle());
+                }
+            } else {
+                logger.info("Not syncing because already up to date: " + productDTO.sku()+ " " + productDTO.getTitle());
             }
-        } else {
-            logger.info("Not syncing because already up to date: " + productDTO.sku()+ " " + productDTO.getTitle());
+        } catch (Exception e) {
+            logger.error("Error Syncing product with SKU {}", productDTO.sku());
         }
+
     }
 
     public static List<SupplierOrderedLineDate> getSupplierOrderedLineDatesPerSku(String sku, List<SupplierOrderedLineDate> skus ){
@@ -766,20 +783,11 @@ public class MoloniService {
         List<ProductDTO> products = ShopifyProductService.getShopifyProductList();
         List<ProductDTO> productsToSync = new ArrayList<>();
         boolean isToAdd = true;
+        Set<String> seenSkus = new HashSet<>();
         for (ProductDTO productDTO : products) {
-            for (ProductDTO productDTO2 : products) {
-                if (!productDTO.getId().equals(productDTO2.getId()) &&
-                        productDTO.sku() != null &&
-                        productDTO2.sku() != null &&
-                        productDTO.sku().equals(productDTO2.sku())) {
-                    isToAdd=false;
-                    break;
-                }
-            }
-            if (isToAdd){
+            if (productDTO.sku() != null && seenSkus.add(productDTO.sku())) {
                 productsToSync.add(productDTO);
             }
-            isToAdd = true;
         }
 
         for (ProductDTO productDTO : productsToSync) {
@@ -953,13 +961,16 @@ public class MoloniService {
         creditNote.setDocumentTypeId("23"); // SAFT code for Credit Note
         creditNote.setStatus(1); // 0 = Draft
 
-        MoloniDocumentDTO.SendEmail sendEmailDTO = new MoloniDocumentDTO.SendEmail();
-        List<MoloniDocumentDTO.SendEmail> array = new ArrayList<>();
-        sendEmailDTO.setEmail(moloniEntityClientDTO.getEmail());
-        sendEmailDTO.setName(moloniEntityClientDTO.getName());
-        sendEmailDTO.setMsg("Olá! Em seguimento do seu pagamento o qual agradecemos, segue a Nota de crédito do adiantamento. Posteriormente receberá a fatura final");
-        array.add(sendEmailDTO);
-        creditNote.setSendEmail(array);
+        if (moloniEntityClientDTO.getVat()!= null && moloniEntityClientDTO.getVat().startsWith("5")){
+
+            MoloniDocumentDTO.SendEmail sendEmailDTO = new MoloniDocumentDTO.SendEmail();
+            List<MoloniDocumentDTO.SendEmail> array = new ArrayList<>();
+            sendEmailDTO.setEmail(moloniEntityClientDTO.getEmail());
+            sendEmailDTO.setName(moloniEntityClientDTO.getName());
+            sendEmailDTO.setMsg("Olá! Em seguimento do seu pagamento o qual agradecemos, segue a Nota de crédito do adiantamento. Posteriormente receberá a fatura final");
+            array.add(sendEmailDTO);
+            creditNote.setSendEmail(array);
+        }
 
         return creditNote;
     }

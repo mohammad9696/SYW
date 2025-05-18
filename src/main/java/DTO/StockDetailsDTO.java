@@ -12,6 +12,7 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
     private Integer shopifyPaidReservations;
     private Integer shopifyUnpaidReservations;
     private Integer moloniPurchaseOrders;
+    private Integer moloniBillsOfLading;
     private SalesTimePeriodDTO firstPeriod;
     private SalesTimePeriodDTO secondPeriod;
     private SalesTimePeriodDTO thirdPeriod;
@@ -76,6 +77,14 @@ public class StockDetailsDTO implements  Comparable<StockDetailsDTO> {
     public SalesTimePeriodDTO getFirstPeriod() {
 
         return firstPeriod;
+    }
+
+    public Integer getMoloniBillsOfLading() {
+        return this.moloniBillsOfLading;
+    }
+
+    public void setMoloniBillsOfLading(final Integer moloniBillsOfLading) {
+        this.moloniBillsOfLading = moloniBillsOfLading;
     }
 
     public SalesTimePeriodDTO getSecondPeriod() {

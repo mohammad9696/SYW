@@ -160,7 +160,7 @@ public class FulfillmentService {
         deliveryDTO.setCity(documentDTO.getDeliveryDestinationCity());
         deliveryDTO.setCountryCode("PT");
         deliveryDTO.setEmail(client.getEmail());
-        deliveryDTO.setName(documentDTO.getEntityName());
+        deliveryDTO.setName(client.getName());
         deliveryDTO.setPhone(client.getPhone());
         deliveryDTO.setPostcode(documentDTO.getDeliveryDestinationZipCode());
         clientDTO.setDelivery(deliveryDTO);

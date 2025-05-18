@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class HttpGraphQLRequestExecutor {
 
@@ -135,111 +136,77 @@ public class HttpGraphQLRequestExecutor {
     }
     public static List<GQLMutationTranslationsVariablesDTO.Translation> translate(List<GQLQueryTranslatableResourceResponseDTO.TranslatableContent> toTranslate, int tries){
         logger.info("Translating from OpenAI. Request try {}", tries);
-        List<GQLMutationTranslationsVariablesDTO.Translation> dto = null;
+
         Map<String, List<GQLMutationTranslationsVariablesDTO.Translation>> translated = new HashMap<>();
         List<GQLQueryTranslatableResourceResponseDTO.TranslatableContent> notTranslated = new ArrayList<>();
 
-        for (GQLQueryTranslatableResourceResponseDTO.TranslatableContent i : toTranslate){
-            if (OpenAIService.memory.containsKey(i.getValue())){
-                List<GQLMutationTranslationsVariablesDTO.Translation> translations = OpenAIService.memory.get(i.getValue());
-                for (GQLMutationTranslationsVariablesDTO.Translation j : translations){
-                    j.setDigest(i.getDigest());
+        // 1. Verifica cache
+        for (GQLQueryTranslatableResourceResponseDTO.TranslatableContent i : toTranslate) {
+            if (OpenAIService.memory.containsKey(i.getValue())) {
+                List<GQLMutationTranslationsVariablesDTO.Translation> cachedOriginal = OpenAIService.memory.get(i.getValue());
+                List<GQLMutationTranslationsVariablesDTO.Translation> cached = new ArrayList<>();
+                for (GQLMutationTranslationsVariablesDTO.Translation t : cachedOriginal) {
+                    GQLMutationTranslationsVariablesDTO.Translation copy = new GQLMutationTranslationsVariablesDTO.Translation();
+                    copy.setKey(t.getKey());
+                    copy.setLocale(t.getLocale());
+                    copy.setValue(t.getValue());
+                    // aqui ainda vais sobrepor:
+                    copy.setDigest(i.getDigest());
+                    copy.setResourceId(i.getResourceId());
+
+                    cached.add(copy);
                 }
-                translated.put(i.getResourceId(), translations);
+                // Atualiza digest
+                for (GQLMutationTranslationsVariablesDTO.Translation j : cached) {
+                    j.setDigest(i.getDigest());
+                    j.setResourceId(i.getResourceId());
+                }
+                translated.put(i.getResourceId(), cached);
             } else {
                 notTranslated.add(i);
             }
         }
 
-        String contentJson = null;
-        try {
-            if (notTranslated.size()!=0){
+        List<GQLMutationTranslationsVariablesDTO.Translation> newTranslations = new ArrayList<>();
+
+        // 2. Faz chamada à API para novos
+        if (!notTranslated.isEmpty()) {
+            try {
                 OpenAIResponseDTO result = OpenAIService.getTranslations(notTranslated);
                 OpenAIResponseDTO.Choice choice = result.getChoices().get(0);
+                String contentJson = choice.getMessage().getContent();
 
-                contentJson = choice.getMessage().getContent();
-
-                dto =  new ObjectMapper().readValue(contentJson, new TypeReference<List<GQLMutationTranslationsVariablesDTO.Translation>>(){});
-            } else {
-                dto = new ArrayList<>();
-            }
-
-        } catch (JsonProcessingException e) {
-            logger.error("Try {} ; Error parsing OpenAI response JSON for resource ID {}, {}, {}", tries, toTranslate.get(0).getResourceId(), toTranslate.get(1).getResourceId(), toTranslate.get(2).getResourceId());
-            if (tries <5){
-                return translate(toTranslate,tries+1);
-            }
-        }
-
-        for (GQLMutationTranslationsVariablesDTO.Translation i : dto){
-            if (!OpenAIService.memory.containsKey(i.getTranslatedContent())){
-                List<GQLMutationTranslationsVariablesDTO.Translation> translations = new ArrayList<>();
-                for (GQLMutationTranslationsVariablesDTO.Translation j : dto){
-                    if (j.getResourceId().equals(i.getResourceId())){
-                        translations.add(j);
-                    }
-                }
-                OpenAIService.memory.put(i.getTranslatedContent(), translations);
-            }
-        }
-        /*
-        if(notTranslated.size()>0){//nt=1 t=2
-            for (GQLQueryTranslatableResourceResponseDTO.TranslatableContent i : toTranslate){
-                if (dto.getResourceId1().equals(i.getResourceId())){
-                    OpenAIService.memory.put(i.getValue(), dto.getTranslations1());
-                    break;
-                }
-            }
-
-        }
-        if(notTranslated.size()>1){//nt=2 t=1
-            for (GQLQueryTranslatableResourceResponseDTO.TranslatableContent i : toTranslate){
-                if (dto.getResourceId2().equals(i.getResourceId())){
-                    OpenAIService.memory.put(i.getValue(), dto.getTranslations2());
-                    break;
-                }
-            }
-        }
-        if(notTranslated.size()>2){//nt=3 t=0
-            for (GQLQueryTranslatableResourceResponseDTO.TranslatableContent i : toTranslate){
-                if (dto.getResourceId3().equals(i.getResourceId())){
-                    OpenAIService.memory.put(i.getValue(), dto.getTranslations3());
-                    break;
+                newTranslations = new ObjectMapper().readValue(
+                        contentJson,
+                        new TypeReference<List<GQLMutationTranslationsVariablesDTO.Translation>>() {}
+                );
+            } catch (Exception e) {
+                String id1 = toTranslate.size() > 0 ? toTranslate.get(0).getResourceId() : "n/a";
+                String id2 = toTranslate.size() > 1 ? toTranslate.get(1).getResourceId() : "n/a";
+                String id3 = toTranslate.size() > 2 ? toTranslate.get(2).getResourceId() : "n/a";
+                logger.error("Try {} ; Error parsing OpenAI response JSON for resource IDs: {}, {}, {}", tries, id1, id2, id3);
+                if (tries < 5) {
+                    return translate(toTranslate, tries + 1);
                 }
             }
         }
 
-        boolean used3 = false;
-        boolean used2 = false;
-        boolean used1 = false;
-        for(Map.Entry<String,List<GQLMutationTranslationsVariablesDTO.Translation>> i : translated.entrySet()){
-            if (translated.size() == 0) {
-                break;
-            }
-            if (translated.size() >0 && !used3) {
-                dto.setResourceId3(i.getKey());
-                dto.setTranslations3(i.getValue());
-                used3=true;
-                continue;
-            }
-
-            if (translated.size() > 1 && !used2) {
-                dto.setResourceId2(i.getKey());
-                dto.setTranslations2(i.getValue());
-                used2=true;
-                continue;
-            }
-
-            if (translated.size() > 2 && !used1) {
-                dto.setResourceId1(i.getKey());
-                dto.setTranslations1(i.getValue());
+        // 3. Atualiza cache com novas traduções
+        for (GQLMutationTranslationsVariablesDTO.Translation t : newTranslations) {
+            if (!OpenAIService.memory.containsKey(t.getTranslatedContent())) {
+                List<GQLMutationTranslationsVariablesDTO.Translation> sameResource = newTranslations.stream()
+                        .filter(j -> j.getResourceId().equals(t.getResourceId()))
+                        .collect(Collectors.toList());
+                OpenAIService.memory.put(t.getTranslatedContent(), sameResource);
             }
         }
 
-*/
-        return dto;
+        // 4. Junta novas + cache e retorna
+        List<GQLMutationTranslationsVariablesDTO.Translation> finalTranslations = new ArrayList<>(newTranslations);
+        translated.values().forEach(finalTranslations::addAll);
+
+        return finalTranslations;
     }
-
     public static List<GQLQueryTranslationsResponseDTO.Node> metafieldsToTranslate(String id){
         GQLQueryTranslationsResponseDTO a = getProductETAsById(id);
         List<GQLQueryTranslationsResponseDTO.Node> nodes = new ArrayList<>();
@@ -340,6 +307,9 @@ public class HttpGraphQLRequestExecutor {
             Map<String, Object> variables = new HashMap<>();
             index = 1;
             for (Map.Entry<String, List<GQLMutationTranslationsVariablesDTO.Translation>> entry : groupedByResourceId.entrySet()) {
+                if (entry.getKey() == null) {
+                    continue;
+                }
                 for (GQLMutationTranslationsVariablesDTO.Translation i : entry.getValue()){
                     i.setResourceId(null);
                     i.setTranslatedContent(null);
@@ -407,11 +377,14 @@ public class HttpGraphQLRequestExecutor {
 
     public static void main(String[] args) {
         List<ProductDTO> productDTOS = getAllProducts();
-        int interval = 10;
+        int interval = 5;
         int k = 0;
         List<String> ids = new ArrayList<>();
 
         for (ProductDTO i : productDTOS){
+            if (!i.getVariants().get(0).getInventoryPolicy().equalsIgnoreCase("continue") && i.getVariants().get(0).getInventoryQuantity()<1) {
+                continue;
+            }
             if (k % interval == 0 && k>0){
                 try {
                     logger.info("{} Translating ETAs for last {} before {} {}",k,interval, i.sku(), i.getTitle());
