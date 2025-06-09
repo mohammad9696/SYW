@@ -2,9 +2,22 @@ package Constants;
 
 public enum PartnerFeedPropertiesEnum {
 
-    ID ("id", "A", 0),
-    TITLE ("title", "B", 1),
-    BRAND ("brand", "C", 2),
+    BARCODE ("ean", "A", 0),
+    SKU ("sku", "B", 1),
+    TITLE ("title", "C", 2),
+    AI_DESCRIPTION("description","D",3),
+    BRAND ("brand", "E", 4),
+    PRECO_TABELA_COM_IVA("global_price","F", 5),
+    INVENTORY("stock","G", 6),
+    CONDN("condition","H",7),
+    IMAGE_1_URL ("image", "I", 8),
+    MINQTAL("min_quantity_alert","J",9),
+    PCKGQT("package_quantity","K",10),
+    DELIVERY_MIN_DAYS ("minDaysDelivery", "L", 11),
+    SHPPR("shipping_price","M",12),
+    WEIGHT ("weight", "N", 13);
+
+/*
     PRODUCT_TYPE ("productType", "D", 3),
     CREATED_AT ("createdAt", "E", 4),
     UPDATED_AT ("updatedAt", "F", 5),
@@ -13,20 +26,15 @@ public enum PartnerFeedPropertiesEnum {
     TAGS ("tags", "I", 8),
     PRICE_WITHOUT_VAT("priceWithoutVat","J",9),
     PRICE_WITH_VAT("priceWithVAT", "K", 10),
-    SKU ("sku", "L", 11),
-    BARCODE ("barcode", "M", 12),
-    WEIGHT ("weight", "N", 13),
+
     WEIGHT_UNIT ("weightUnit", "O", 14),
     REQUIRES_SHIPPING ("requiresShipping", "P", 15),
-    DELIVERY_MIN_DAYS ("minDaysDelivery", "Q", 16),
     DELIVERY_MAX_DAYS ("maxDaysDelivery", "R", 17),
-    IMAGE_1_URL ("image1", "S", 18),
+
     IMAGE_2_URL ("image2", "T", 19),
     IMAGE_3_URL ("image3", "U", 20),
-    INVENTORY("inventory","V", 21),
-    PRECO_TABELA("precoTabelaSemIVA","W", 22),
     MARGEM_COM_PVP_SMARTIFY("margemComPVPdaSMARTIFY","X", 23);
-
+*/
     private String column_name;
     private String column_letter;
     private int column_number;

@@ -2,6 +2,7 @@ package DTO;
 
 import Constants.ConstantsEnum;
 import Constants.ProductPropertiesEnum;
+import Services.OpenAIService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +43,7 @@ public class MacroProductDTO {
     private Double previousPriceFnacVat;
     private Integer deliveryMinDays;
     private Integer deliveryMaxDays;
+    private String aiDescription;
 
     public String getVariantId() {
         return variantId;
@@ -170,6 +172,14 @@ public class MacroProductDTO {
 
     public void setDeliveryMaxDays(final Integer deliveryMaxDays) {
         this.deliveryMaxDays = deliveryMaxDays;
+    }
+
+    public String getAiDescription() {
+        return this.aiDescription;
+    }
+
+    public void setAiDescription(final String aiDescription) {
+        this.aiDescription = aiDescription;
     }
 
     public MacroProductDTO(List<Object> productObject){
@@ -412,6 +422,12 @@ public class MacroProductDTO {
             this.deliveryMaxDays = null;
         }
 
+        if (productObject.get(ProductPropertiesEnum.AI_DESCRIPTION.getColumn_number()) != null){
+            this.aiDescription = productObject.get(ProductPropertiesEnum.AI_DESCRIPTION.getColumn_number()).toString();
+        } else {
+            this.aiDescription = null;
+        }
+
     }
     public Map<String, Object> getProductMap(){
         Map<String, Object> map = new LinkedHashMap<>();
@@ -445,12 +461,12 @@ public class MacroProductDTO {
         map.put(ProductPropertiesEnum.PREVIOUS_PRICE_FNAC.getColumn_name(), previousPriceFnacVat);
         map.put(ProductPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_name(), deliveryMinDays);
         map.put(ProductPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_name(), deliveryMaxDays);
-
+        map.put(ProductPropertiesEnum.AI_DESCRIPTION.getColumn_name(), aiDescription);
 
         return map;
     }
 
-    public MacroProductDTO(String id, String variantId, String title, String bodyHtml, String brand, String productType, String createdAt, String updatedAt, String url, String status, String tags, Double price, String sku, String barcode, Double weight, String weightUnit, Boolean requiresShipping, List<ProductImageDTO> images, Integer inventory, String inventoryPolicy, Double priceDottVat, Double previousPriceDottVat, Double priceWortenVat, Double previousPriceWortenVat, Double priceAmazonVat, Double previousPriceAmazonVat, Double priceFnacVat, Double previousPriceFnacVat, Integer deliveryMinDays, Integer deliveryMaxDays) {
+    public MacroProductDTO(String id, String variantId, String title, String bodyHtml, String brand, String productType, String createdAt, String updatedAt, String url, String status, String tags, Double price, String sku, String barcode, Double weight, String weightUnit, Boolean requiresShipping, List<ProductImageDTO> images, Integer inventory, String inventoryPolicy, Double priceDottVat, Double previousPriceDottVat, Double priceWortenVat, Double previousPriceWortenVat, Double priceAmazonVat, Double previousPriceAmazonVat, Double priceFnacVat, Double previousPriceFnacVat, Integer deliveryMinDays, Integer deliveryMaxDays, String aiDescription) {
         this.id = id;
         this.variantId = variantId;
         this.title = title;
@@ -481,6 +497,7 @@ public class MacroProductDTO {
         this.previousPriceFnacVat = previousPriceFnacVat;
         this.deliveryMinDays = deliveryMinDays;
         this.deliveryMaxDays = deliveryMaxDays;
+        this.aiDescription = aiDescription;
     }
 
     public static MacroProductDTO updateProduct (MacroProductDTO original, MacroProductDTO update ){
@@ -514,9 +531,13 @@ public class MacroProductDTO {
         Double previousPriceAmazonVat = original.getPreviousPriceAmazonVat();
         Double priceFnacVat = original.getPriceFnacVat();
         Double previousPriceFnacVat = original.getPreviousPriceFnacVat();
+        String aiDescription = original.getAiDescription();
+        if (aiDescription == null || aiDescription.length()<100){
+            aiDescription = OpenAIService.getAISummarised(bodyHtml);
+        }
 
 
-        return new MacroProductDTO(id, variantId, title, bodyHtml, brand, productType, createdAt, updatedAt, handle, status, tags, price, sku, barcode,weight, weightUnit, requiresShipping, images, inventory, inventoryPolicy, priceDottVat, previousPriceDottVat, priceWortenVat, previousPriceWortenVat, priceAmazonVat, previousPriceAmazonVat, priceFnacVat, previousPriceFnacVat, deliveryDaysMin, deliveryDaysMax);
+        return new MacroProductDTO(id, variantId, title, bodyHtml, brand, productType, createdAt, updatedAt, handle, status, tags, price, sku, barcode,weight, weightUnit, requiresShipping, images, inventory, inventoryPolicy, priceDottVat, previousPriceDottVat, priceWortenVat, previousPriceWortenVat, priceAmazonVat, previousPriceAmazonVat, priceFnacVat, previousPriceFnacVat, deliveryDaysMin, deliveryDaysMax, aiDescription);
     }
 
     public String getTitle() {

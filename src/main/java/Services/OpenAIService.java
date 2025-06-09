@@ -80,10 +80,25 @@ public class OpenAIService {
 
         return result;
     }
+
+    public static String getAISummarised (String bodyHtml){
+        OpenAIRequestDTO dto = new OpenAIRequestDTO("gpt-4o-mini", null, 16384, 0.5);
+        List<OpenAIRequestDTO.Message> messages = new ArrayList<>();
+
+        messages.add(new OpenAIRequestDTO.Message("system", "You are a writing tool who's input is HtmlBody that outputs always in Portuguese (Portugal) non html plain text without formatting."));
+        messages.add(new OpenAIRequestDTO.Message("user", "Rewrite the product description below for use on a marketplace (like Amazon, Fnac, or Worten), making it significantly different from the original to avoid SEO duplication. Change the structure, vocabulary, tone, and focus. Make it more concise and targeted to a customer who is comparing products quickly. Avoid repeating phrases or keywords from the original. Use a tone suitable for marketplaces — informative, persuasive, and focused on practical benefits.\n" +
+                "\n" +
+                "Original text:" +bodyHtml ));
+        dto.setMessages(messages);
+
+        OpenAIResponseDTO result = HttpRequestExecutor.sendRequest(OpenAIResponseDTO.class, dto, null, ConstantsEnum.OPENAI_REQUEST_URL.getConstantValue().toString(), HttpRequestAuthTypeEnum.BEARER_TOKEN,
+                ConstantsEnum.OPENAI_API_KEY.getConstantValue().toString());
+
+        return result.getChoices().get(0).getMessage().getContent().toString();
+    }
+
+
     public static void main(String[] args) {
-
-
-
 
     }
 }

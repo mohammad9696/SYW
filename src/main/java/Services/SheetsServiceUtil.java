@@ -15,6 +15,9 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import main.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -23,6 +26,7 @@ import java.text.ParseException;
 import java.util.*;
 
 public class SheetsServiceUtil {
+    private static final Logger logger = LoggerFactory.getLogger(SheetsServiceUtil.class);
     private static final String APPLICATION_NAME = "Smartify your Sheets";
 
     public static Sheets getSheetsService() throws IOException, GeneralSecurityException {
@@ -86,7 +90,13 @@ public class SheetsServiceUtil {
         _values.add(partnerFeedSheetHeaderRow());
         for (Map.Entry<String, MacroProductDTO> obj : originalProductList.entrySet()){
             if(obj.getValue().getStatus().equalsIgnoreCase("active") && isProductSellable(obj)){
-                _values.add(partnerFeedSheetProductRow(obj.getValue()));
+                try {
+                    _values.add(partnerFeedSheetProductRow(obj.getValue()));
+                } catch (Exception e){
+
+                    logger.error("Unable to add to partner feed SKU {}",obj.getKey());
+                }
+
             }
         }
 
@@ -115,23 +125,90 @@ public class SheetsServiceUtil {
         return headers;
     }
 
-    private static List<Object> partnerFeedSheetProductRow(MacroProductDTO macroProductDTO){
+    private static List<Object> partnerFeedSheetProductRow(MacroProductDTO macroProductDTO) throws Exception {
         List<Object> productRow = startPartnerSheetRow();
 
         MoloniProductDTO moloniProductDTO = MoloniService.getProduct(macroProductDTO.getSku());
         Double tax = moloniProductDTO != null && moloniProductDTO.getTaxes().size() > 0 ? (1+moloniProductDTO.getTaxes().get(0).taxPercentageValue()) : Double.parseDouble(ConstantsEnum.VAT_PT.getConstantValue().toString());
-        if (macroProductDTO.getId() != null) {
-            productRow.set(PartnerFeedPropertiesEnum.ID.getColumn_number(), macroProductDTO.getVariantId());
+
+        if(macroProductDTO.getBarcode() != null) {
+            productRow.set(PartnerFeedPropertiesEnum.BARCODE.getColumn_number(), macroProductDTO.getBarcode());
+        }
+
+        if(macroProductDTO.getSku() != null){
+            productRow.set(PartnerFeedPropertiesEnum.SKU.getColumn_number(), macroProductDTO.getSku());
         }
 
         if (macroProductDTO.getTitle() != null) {
             productRow.set(PartnerFeedPropertiesEnum.TITLE.getColumn_number(), macroProductDTO.getTitle());
         }
 
+        if (macroProductDTO.getAiDescription()!= null ) {
+            productRow.set(PartnerFeedPropertiesEnum.AI_DESCRIPTION.getColumn_number(), macroProductDTO.getAiDescription());
+        }
+
         if(macroProductDTO.getBrand() != null){
             productRow.set(PartnerFeedPropertiesEnum.BRAND.getColumn_number(), macroProductDTO.getBrand());
         }
 
+        Double costPrice = StockKeepingUnitsService.getCostPrice(null, macroProductDTO.getSku());
+        Double pvp = macroProductDTO.getPrice()/tax;
+        Double margin ;
+        Double marginPercentage;
+        Double sellPrice;
+        Double partnerMargin =0.0;
+        if (costPrice != null && costPrice > 0.0) {
+            margin = pvp-costPrice;
+            marginPercentage = margin/pvp;
+            if (marginPercentage/2 > Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100 ){
+                sellPrice = pvp * (1.0- Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100);
+                partnerMargin = Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100;
+            } else  if (marginPercentage/2 < Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MIN.getConstantValue().toString())/100 ){
+                sellPrice = pvp / (1.0- Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MIN.getConstantValue().toString())/100);
+                partnerMargin = Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MIN.getConstantValue().toString())/100;
+            } else {
+                sellPrice = pvp * (1.0 - marginPercentage/2);
+                partnerMargin = marginPercentage/2;
+            }
+            //productRow.set(PartnerFeedPropertiesEnum.MARGEM_COM_PVP_SMARTIFY.getColumn_number(), partnerMargin);
+            Double price = sellPrice*tax;
+            if (price== null || price<0.1) {
+                throw new Exception("Price not available for SKU " + macroProductDTO.getSku() );
+            }
+            productRow.set(PartnerFeedPropertiesEnum.PRECO_TABELA_COM_IVA.getColumn_number(), price);
+        }
+
+        if (macroProductDTO.getInventory() != null){
+            int inventoryToSet = macroProductDTO.getInventory();
+            if (inventoryToSet <= 0){
+                inventoryToSet = 0;
+            } else if (inventoryToSet > 25){
+                inventoryToSet = 25;
+            }
+            productRow.set(PartnerFeedPropertiesEnum.INVENTORY.getColumn_number(), inventoryToSet );
+        }
+
+        productRow.set(PartnerFeedPropertiesEnum.CONDN.getColumn_number(), "new");
+        if (macroProductDTO.getImages() != null && macroProductDTO.getImages().size() > 0) {
+            productRow.set(PartnerFeedPropertiesEnum.IMAGE_1_URL.getColumn_number(), macroProductDTO.getImages().get(0).getSrc());
+        }
+        productRow.set(PartnerFeedPropertiesEnum.MINQTAL.getColumn_number(), "0");
+        productRow.set(PartnerFeedPropertiesEnum.PCKGQT.getColumn_number(), "1");
+
+        if (macroProductDTO.getDeliveryMinDays() != null){
+            productRow.set(PartnerFeedPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_number(), macroProductDTO.getDeliveryMinDays());
+        }
+        productRow.set(PartnerFeedPropertiesEnum.SHPPR.getColumn_number(), "");
+
+        if (macroProductDTO.getWeight() != null){
+            Double weight = macroProductDTO.getWeight();
+            if (macroProductDTO.getWeightUnit() != null && macroProductDTO.getWeightUnit().equalsIgnoreCase("GRAMS")){
+                weight = weight/1000;
+            }
+            productRow.set(PartnerFeedPropertiesEnum.WEIGHT.getColumn_number(), weight);
+        }
+
+        /*
         if(macroProductDTO.getProductType() != null){
             productRow.set(PartnerFeedPropertiesEnum.PRODUCT_TYPE.getColumn_number(), macroProductDTO.getProductType());
         }
@@ -156,26 +233,6 @@ public class SheetsServiceUtil {
             productRow.set(PartnerFeedPropertiesEnum.TAGS.getColumn_number(), macroProductDTO.getTags());
         }
 
-        if(macroProductDTO.getSku() != null){
-            productRow.set(PartnerFeedPropertiesEnum.SKU.getColumn_number(), macroProductDTO.getSku());
-        }
-
-        if(macroProductDTO.getBarcode() != null) {
-            productRow.set(PartnerFeedPropertiesEnum.BARCODE.getColumn_number(), macroProductDTO.getBarcode());
-        }
-
-        if (macroProductDTO.getWeight() != null){
-            productRow.set(PartnerFeedPropertiesEnum.WEIGHT.getColumn_number(), macroProductDTO.getWeight());
-        }
-
-        if (macroProductDTO.getWeightUnit() != null){
-            productRow.set(PartnerFeedPropertiesEnum.WEIGHT_UNIT.getColumn_number(), macroProductDTO.getWeightUnit());
-        }
-
-        if (macroProductDTO.getDeliveryMinDays() != null){
-            productRow.set(PartnerFeedPropertiesEnum.DELIVERY_MIN_DAYS.getColumn_number(), macroProductDTO.getDeliveryMinDays());
-        }
-
         if (macroProductDTO.getDeliveryMaxDays() != null){
             productRow.set(PartnerFeedPropertiesEnum.DELIVERY_MAX_DAYS.getColumn_number(), macroProductDTO.getDeliveryMaxDays());
         }
@@ -183,13 +240,10 @@ public class SheetsServiceUtil {
         if (macroProductDTO.getRequiresShipping() != null){
             productRow.set(PartnerFeedPropertiesEnum.REQUIRES_SHIPPING.getColumn_number(), macroProductDTO.getRequiresShipping());
         }
-
-
         if(macroProductDTO.getPrice() != null){
             productRow.set(PartnerFeedPropertiesEnum.PRICE_WITHOUT_VAT.getColumn_number(), macroProductDTO.getPrice()/tax);
             productRow.set(PartnerFeedPropertiesEnum.PRICE_WITH_VAT.getColumn_number(), macroProductDTO.getPrice());
         }
-
         if (macroProductDTO.getImages().size() >= 3){
             productRow.set(PartnerFeedPropertiesEnum.IMAGE_1_URL.getColumn_number(), macroProductDTO.getImages().get(0).getSrc());
             productRow.set(PartnerFeedPropertiesEnum.IMAGE_2_URL.getColumn_number(), macroProductDTO.getImages().get(1).getSrc());
@@ -200,43 +254,7 @@ public class SheetsServiceUtil {
         } else if (macroProductDTO.getImages().size() == 1) {
             productRow.set(PartnerFeedPropertiesEnum.IMAGE_1_URL.getColumn_number(), macroProductDTO.getImages().get(0).getSrc());
         }
-
-        if (macroProductDTO.getInventory() != null){
-            int inventoryToSet = macroProductDTO.getInventory();
-            if (inventoryToSet <= 0){
-                if (macroProductDTO.getInventoryPolicy().equalsIgnoreCase("continue")){
-                    inventoryToSet = 1;
-                }
-            } else if (inventoryToSet > 25){
-                inventoryToSet = 25;
-            }
-            productRow.set(PartnerFeedPropertiesEnum.INVENTORY.getColumn_number(), inventoryToSet );
-        }
-
-        Double costPrice = StockKeepingUnitsService.getCostPrice(null, macroProductDTO.getSku());
-        Double pvp = macroProductDTO.getPrice()/tax;
-        Double margin ;
-        Double marginPercentage;
-        Double sellPrice;
-        Double partnerMargin;
-        if (costPrice != null && costPrice > 0.0) {
-            margin = pvp-costPrice;
-            marginPercentage = margin/pvp;
-            if (marginPercentage/2 > Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100 ){
-                sellPrice = pvp * (1.0- Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100);
-                partnerMargin = Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MAX.getConstantValue().toString())/100;
-            } else  if (marginPercentage/2 < Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MIN.getConstantValue().toString())/100 ){
-                sellPrice = pvp / (1.0- Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MIN.getConstantValue().toString())/100);
-                partnerMargin = Double.parseDouble(ConstantsEnum.SHEETS_PARTNER_MARGIN_MIN.getConstantValue().toString())/100;
-            } else {
-                sellPrice = pvp * (1.0 - marginPercentage/2);
-                partnerMargin = marginPercentage/2;
-            }
-            productRow.set(PartnerFeedPropertiesEnum.MARGEM_COM_PVP_SMARTIFY.getColumn_number(), partnerMargin);
-            productRow.set(PartnerFeedPropertiesEnum.PRECO_TABELA.getColumn_number(), sellPrice);
-        }
-
-
+*/
         return productRow;
     }
 
@@ -486,6 +504,10 @@ public class SheetsServiceUtil {
         if (productDTO.containsKey(ProductPropertiesEnum.PREVIOUS_PRICE_FNAC.getColumn_name()) && productDTO.get(ProductPropertiesEnum.PREVIOUS_PRICE_FNAC.getColumn_name()) != null){
             productRow.set(ProductPropertiesEnum.PREVIOUS_PRICE_FNAC.getColumn_number(),productDTO.get(ProductPropertiesEnum.PREVIOUS_PRICE_FNAC.getColumn_name()));
         }
+        if (productDTO.containsKey(ProductPropertiesEnum.AI_DESCRIPTION.getColumn_name()) && productDTO.get(ProductPropertiesEnum.AI_DESCRIPTION.getColumn_name()) != null){
+            productRow.set(ProductPropertiesEnum.AI_DESCRIPTION.getColumn_number(),productDTO.get(ProductPropertiesEnum.AI_DESCRIPTION.getColumn_name()));
+        }
+
         productRow.add(ProductPropertiesEnum.values().length,";");
 
         return productRow;

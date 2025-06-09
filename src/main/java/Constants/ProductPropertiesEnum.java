@@ -32,7 +32,8 @@ public enum ProductPropertiesEnum {
     PRICE_AMAZON("priceAmazonVat","AB",27),
     PREVIOUS_PRICE_AMAZON("previousPriceAmazonVat","AC",28),
     PRICE_FNAC("priceFnacVat","AD",29),
-    PREVIOUS_PRICE_FNAC("previousPriceFnacVat","AE",30);
+    PREVIOUS_PRICE_FNAC("previousPriceFnacVat","AE",30),
+    AI_DESCRIPTION("summarisedDescription","AF",31);
 
     private String column_name;
     private String column_letter;
