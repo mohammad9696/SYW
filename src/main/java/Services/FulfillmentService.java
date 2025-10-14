@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.*;
 
 public class FulfillmentService {
@@ -264,11 +265,14 @@ public class FulfillmentService {
         invoice.setCompanyId(ConstantsEnum.MOLONI_COMPANY_ID.getConstantValue().toString());
 
         // 2. Definir a data da Fatura
-        String formattedDate = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
+        ZoneId zone = ZoneId.of("Europe/Lisbon");
+        LocalDateTime now = LocalDateTime.now(zone);
+        String formattedDate = now.format(DateTimeFormatter.ISO_DATE);
+        String formattedDateTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         invoice.setDate(formattedDate);
         invoice.setExpirationDate(formattedDate);
 
-        if (outvioResponseDTO != null && order.getShippingAddress() != null){
+        if (order.getShippingAddress() != null){
 
             invoice.setDeliveryDestinationZipCode(order.getShippingAddress().getPostalCode());
             invoice.setDeliveryDestinationCity(order.getShippingAddress().getCity());
@@ -279,8 +283,12 @@ public class FulfillmentService {
             invoice.setDeliveryDepartureCity(ConstantsEnum.ADDRESS_CITY.getConstantValue().toString());
             invoice.setDeliveryDepartureAddress(ConstantsEnum.ADDRESS_TOTAL.getConstantValue().toString());
             invoice.setDeliveryDepartureCountryId(MoloniService.getCountryIdByCountryISOCode(ConstantsEnum.ADDRESS_COUNTRY_CODE.getConstantValue().toString()));
-            invoice.setDeliveryMethodId(Integer.parseInt(MoloniService.getDeliveryMethodIdByName(outvioResponseDTO.getShipments().get(0).getCourier())));
-            invoice.setDeliveryDatetime(formattedDate);
+            String deliveryMethodName = "Transportadora";
+            if (outvioResponseDTO != null) {
+               deliveryMethodName = outvioResponseDTO.getShipments().get(0).getCourier();
+            }
+            invoice.setDeliveryMethodId(Integer.parseInt(MoloniService.getDeliveryMethodIdByName(deliveryMethodName)));
+            invoice.setDeliveryDatetime(formattedDateTime);
         }
         // 3. Associar a referência da encomenda (nosso número interno)
         invoice.setInternalOrderNumber(order.getOrderNumber());
@@ -430,8 +438,9 @@ public class FulfillmentService {
             while (!proceed){
                 System.out.println("BYPASS or Type product " + line.getSku() + " barcode:");
                 String barcode = scanner.next();
-                String toMatch = productDTO.getVariants().get(0).getBarcode();
-                if (toMatch.equals(barcode) || barcode.equals("BYPASS")){
+                String toMatch = productDTO.getVariants().get(0).getBarcode() != null ? productDTO.getVariants().get(0).getBarcode() : "";
+
+                if (barcode.equals("BYPASS") || toMatch.equals(barcode) ){
                     proceed = true;
                 } else {
                      MoloniProductDTO productDTO1 = MoloniService.getProduct(productDTO.sku());

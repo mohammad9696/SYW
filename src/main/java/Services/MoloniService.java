@@ -246,38 +246,49 @@ public class MoloniService {
                 return result;
             }
         }
+        // 1) Se VAT parece válido (9 dígitos) e não é o placeholder 999999990: tentar apenas por VAT
+        boolean hasStrictVat = vatId != null && vatId.matches("\\d{9}") && !"999999990".equals(vatId);
+        if (hasStrictVat) {
+            clientDTOS = getClientBySearch(vatId);
+            for (MoloniEntityClientDTO i : clientDTOS) {
+                if (i.getVat() != null && i.getVat().equals(vatId)) {
+                    return i;
+                }
+            }
+            // Não encontrou por VAT válido — não cair para outros critérios (vamos criar nova ficha a montante)
+            return null;
+        }
+        // Caso contrário (VAT ausente, inválido, ou placeholder 999999990), continuar com e-mail → customerNumber → telefone
+        // 2) Sem VAT: procurar por e-mail
         if (email != null && !email.equals("")){
             clientDTOS = getClientByEmail(email);
             for (MoloniEntityClientDTO i : clientDTOS){
-                if (i.getEmail().equals(email)){
+                if (i.getEmail() != null && i.getEmail().equals(email)){
                     return i;
                 }
             }
         }
+
+        // 3) Depois CustomerNumber (se for referência do Moloni)
         if (customerNumber != null && !customerNumber.equals("")){
-            clientDTOS =getClientBySearch(customerNumber);
+            clientDTOS = getClientBySearch(customerNumber);
             for (MoloniEntityClientDTO i : clientDTOS){
-                if (i.getClientNumber().equals(customerNumber)){
+                if (i.getClientNumber() != null && i.getClientNumber().equals(customerNumber)){
                     return i;
                 }
             }
         }
-        if (vatId != null && !vatId.equals("")){
-            clientDTOS =getClientBySearch(vatId);
-            for (MoloniEntityClientDTO i : clientDTOS){
-                if (i.getVat().equals(vatId)){
-                    return i;
-                }
-            }
-        }
+
+        // 4) Telefone como último recurso (mais propenso a colisões)
         if (phone != null && !phone.equals("")){
-            clientDTOS =getClientBySearch(phone);
+            clientDTOS = getClientBySearch(phone);
             for (MoloniEntityClientDTO i : clientDTOS){
-                if (i.getPhone().equals(phone)){
+                if (i.getPhone() != null && i.getPhone().equals(phone)){
                     return i;
                 }
             }
         }
+
         return null;
     }
     private static MoloniEntityClientDTO getClientById (String customerId){
